@@ -54,7 +54,7 @@ def main():
 
     n_hidden = 128
     n_layer = 3
-    rnn = LSTM(n_joints, n_hidden, n_categories, n_layer)
+    rnn = LSTM(n_joints, n_hidden, n_categories, n_layer, n_steps)
     rnn.to(device)
 
     criterion = nn.CrossEntropyLoss()
@@ -164,6 +164,8 @@ def load_x(x_path, n_steps):
     file.close()
     blocks = int(len(x) / n_steps)
     fixed_size = blocks * n_steps
+    print(x_path)
+    print(len(x))
     return np.array(np.array_split(x[:fixed_size], blocks))
 
 

@@ -8,12 +8,13 @@ import csv
 def main():
     coordinates_path = 'coordinates'
     silhouettes_path = 'unprocessed'
-    for subject_id, subject_path in enumerate([f.path for f in os.scandir(silhouettes_path)]):
-        for action_dir_path in [f.path for f in os.scandir(subject_path)]:
-            for repetition_id, repetition_path in enumerate([f.path for f in os.scandir(action_dir_path)]):
+    for subject_id, subject_path in enumerate(sorted([f.path for f in os.scandir(silhouettes_path)])):
+        for action_dir_path in sorted([f.path for f in os.scandir(subject_path)]):
+            for repetition_id, repetition_path in enumerate(sorted([f.path for f in os.scandir(action_dir_path)])):
                 pr = os.path.join(repetition_path, 'pose_results')
                 res = os.path.join(coordinates_path, '/'.join(repetition_path.split('/')[1:]), 'x.csv')
-                pathlib.Path(os.path.dirname(res)).mkdir(parents=True)
+                if not os.path.exists(res):
+                    pathlib.Path(os.path.dirname(res)).mkdir(parents=True)
                 final_pose = get_best_poses_array(pr)
                 with open(res, "w+") as my_csv:
                     csvWriter = csv.writer(my_csv, delimiter=',')
@@ -34,10 +35,10 @@ def get_frame_with_better_acc(poses_array, frame_id, joints_count=17):
 
 
 def get_best_poses_array(poses_directory):
-    last_frame_id = int(
-        max([get_last_frame_id(os.path.join(poses_directory, pf)) for pf in os.listdir(poses_directory)]))
+    last_frame_id = max(
+        [int(get_last_frame_id(os.path.join(poses_directory, pf))) for pf in os.listdir(poses_directory)])
     poses_array = []
-    for pose_file in os.listdir(poses_directory):
+    for pose_file in sorted(os.listdir(poses_directory)):
         tmp_pose = {}
         pose_path = os.path.join(poses_directory, pose_file)
         with open(pose_path, 'r') as file:
