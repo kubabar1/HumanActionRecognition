@@ -164,8 +164,6 @@ def load_x(x_path, n_steps):
     file.close()
     blocks = int(len(x) / n_steps)
     fixed_size = blocks * n_steps
-    print(x_path)
-    print(len(x))
     return np.array(np.array_split(x[:fixed_size], blocks))
 
 
