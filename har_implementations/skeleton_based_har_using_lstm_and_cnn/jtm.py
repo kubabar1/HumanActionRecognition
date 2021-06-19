@@ -6,6 +6,28 @@ import os
 from PIL import Image
 
 
+def draw_circle(img, x, y, rgb, image_width, image_height):
+    for i in range(5):
+        x_c = int(x) - 2 + i
+        for j in range(5):
+            y_c = int(y) - 2 + j
+            if 0 < y_c < image_height and 0 < x_c < image_width:
+                img[y_c, x_c] = rgb
+    img[y - 1, x - 3] = rgb
+    img[y, x - 3] = rgb
+    img[y + 1, x - 3] = rgb
+    img[y - 1, x + 3] = rgb
+    img[y, x + 3] = rgb
+    img[y + 1, x + 3] = rgb
+
+    img[y - 3, x - 1] = rgb
+    img[y - 3, x] = rgb
+    img[y - 3, x + 1] = rgb
+    img[y - 3, x - 1] = rgb
+    img[y - 3, x] = rgb
+    img[y - 3, x + 1] = rgb
+
+
 def jtm(positions_w, positions_h, image_width, image_height, L=1, s_min=0, s_max=1, b_min=0, b_max=1):
     img = np.zeros((image_height, image_width, 3))
     frames_count = len(positions_w)
@@ -38,10 +60,10 @@ def jtm(positions_w, positions_h, image_width, image_height, L=1, s_min=0, s_max
                 h = hue[frame_id]
             # elif kpt_id in analysed_kpts_right:
             else:
-                h = hue[frame_id]
+                h = 1 - hue[frame_id]
             rgb = colorsys.hsv_to_rgb(h, s, v)
             if kpt_id in all_analysed_kpts:
-                img[int(y), int(x)] = rgb
+                draw_circle(img, int(x), int(y), rgb, image_width, image_height)
     return img
 
 
