@@ -13,19 +13,32 @@ def draw_circle(img, x, y, rgb, image_width, image_height):
             y_c = int(y) - 2 + j
             if 0 < y_c < image_height and 0 < x_c < image_width:
                 img[y_c, x_c] = rgb
-    img[y - 1, x - 3] = rgb
-    img[y, x - 3] = rgb
-    img[y + 1, x - 3] = rgb
-    img[y - 1, x + 3] = rgb
-    img[y, x + 3] = rgb
-    img[y + 1, x + 3] = rgb
 
-    img[y - 3, x - 1] = rgb
-    img[y - 3, x] = rgb
-    img[y - 3, x + 1] = rgb
-    img[y - 3, x - 1] = rgb
-    img[y - 3, x] = rgb
-    img[y - 3, x + 1] = rgb
+    if 0 < y - 1 < image_height and 0 < x - 3 < image_width:
+        img[y - 1, x - 3] = rgb
+    if 0 < y < image_height and 0 < x - 3 < image_width:
+        img[y, x - 3] = rgb
+    if 0 < y + 1 < image_height and 0 < x - 3 < image_width:
+        img[y + 1, x - 3] = rgb
+    if 0 < y - 1 < image_height and 0 < x + 3 < image_width:
+        img[y - 1, x + 3] = rgb
+    if 0 < y < image_height and 0 < x + 3 < image_width:
+        img[y, x + 3] = rgb
+    if 0 < y + 1 < image_height and 0 < x + 3 < image_width:
+        img[y + 1, x + 3] = rgb
+
+    if 0 < y - 3 < image_height and 0 < x - 1 < image_width:
+        img[y - 3, x - 1] = rgb
+    if 0 < y - 3 < image_height and 0 < x < image_width:
+        img[y - 3, x] = rgb
+    if 0 < y - 3 < image_height and 0 < x + 1 < image_width:
+        img[y - 3, x + 1] = rgb
+    if 0 < y - 3 < image_height and 0 < x - 1 < image_width:
+        img[y - 3, x - 1] = rgb
+    if 0 < y - 3 < image_height and 0 < x < image_width:
+        img[y - 3, x] = rgb
+    if 0 < y - 3 < image_height and 0 < x + 1 < image_width:
+        img[y - 3, x + 1] = rgb
 
 
 def jtm(positions_w, positions_h, image_width, image_height, L=1, s_min=0, s_max=1, b_min=0, b_max=1):
@@ -63,7 +76,8 @@ def jtm(positions_w, positions_h, image_width, image_height, L=1, s_min=0, s_max
                 h = 1 - hue[frame_id]
             rgb = colorsys.hsv_to_rgb(h, s, v)
             if kpt_id in all_analysed_kpts:
-                draw_circle(img, int(x), int(y), rgb, image_width, image_height)
+                img[int(y), int(x)] = rgb
+                # draw_circle(img, int(x), int(y), rgb, image_width, image_height)
     return img
 
 
