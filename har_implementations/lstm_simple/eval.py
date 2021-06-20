@@ -40,12 +40,13 @@ n_steps = 32
 n_joints = 34
 n_categories = len(LABELS)
 
-pp = '/home/kuba/workspace/human_action_recognition/HumanActionRecognition/lstm_simple/data/coordinates/s01/a10/r05/x.csv'
-x_test = load_x(pp, n_steps)
+estimated_kpts = './dataset_utils/coordinates/s01/a04/r05/x.csv'
+x_test = load_x(estimated_kpts, n_steps)
 tensor_x_test = torch.from_numpy(x_test)
 
-model = LSTM(n_joints, n_hidden, n_categories, n_layer)
-model.load_state_dict(torch.load('./model.pth'))
+model = LSTM(n_joints, n_hidden, n_categories, n_layer, n_steps)
+# model.load_state_dict(torch.load('./model.pth'))
+model.load_state_dict(torch.load('./har_simple_lstm_model.pth'))
 model.eval()
 output = model(tensor_x_test)
 guess, guess_i = category_from_output(output, LABELS)

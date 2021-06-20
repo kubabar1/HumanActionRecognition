@@ -28,7 +28,7 @@ def main():
         # "T_POSE"
     ]
 
-    coordinates_path = './data/coordinates'
+    coordinates_path = 'datasets/coordinates'
 
     n_steps = 32  # 32 timesteps per series
     n_joints = 34
