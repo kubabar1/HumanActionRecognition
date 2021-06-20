@@ -5,26 +5,28 @@ import numpy as np
 
 
 def jtm_res_to_PIL_img(res):
-    res_tmp = res.copy()
-    res_tmp[res_tmp == 0] = 1
+    res_tmp = np.array(res)
     res_tmp *= 255
-    return Image.fromarray(np.array(res_tmp, dtype=np.uint8), 'RGB')
+    res_tmp = np.array(res_tmp, dtype=np.uint8)
+    res_tmp[res_tmp == 0] = 255
+    return Image.fromarray(res_tmp, 'RGB')
 
 
-def show_results_jtm(res, title, show_results=True, save_img=False):
+def show_results_jtm(res, title, show_results=True, save_img=False, resize=None):
     # eps = np.spacing(0.0)
     # im1 = plt.pcolormesh(res, cmap=plt.cm.jet, vmin=eps)
     # plt.imshow(res, cmap=plt.cm.jet, vmin=eps)
-    res_tmp = res.copy()
+    res_tmp = np.array(res)
     if show_results:
-        res_tmp[res_tmp == 0] = 1
         fig = plt.gcf()
         fig.canvas.set_window_title(title)
         plt.imshow(res_tmp, cmap=plt.cm.jet)
         plt.axis('off')
         plt.show()
     if save_img:
-        img = jtm_res_to_PIL_img(res)
+        img = Image.fromarray(res_tmp, 'RGB')
+        if resize:
+            img = img.resize(resize)
         img.save('{}.png'.format(title))
     plt.close()
 
