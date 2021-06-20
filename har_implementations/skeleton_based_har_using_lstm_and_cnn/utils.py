@@ -58,10 +58,10 @@ def draw_circle(img, x, y, rgb, image_width, image_height):
         img[y - 3, x + 1] = rgb
 
 
-def rotate(coordinates, phi, theta):
+def rotate(coordinates, rotate_y, rotate_x):
     x, y, z = coordinates
     transposed_coordinates = np.array([x, y, z, 1]).transpose()
-    return np.array(np.matmul(np.matmul(T_r_y(phi, z), T_r_x(theta, z)), transposed_coordinates)[:3])
+    return np.array(np.matmul(np.matmul(T_r_y(rotate_y, z), T_r_x(rotate_x, z)), transposed_coordinates)[:3])
 
 
 T_r_x = lambda phi, z: np.array(
