@@ -1,44 +1,9 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.spatial import distance
 import colorsys
 import os
-from PIL import Image
-
-
-def draw_circle(img, x, y, rgb, image_width, image_height):
-    for i in range(5):
-        x_c = int(x) - 2 + i
-        for j in range(5):
-            y_c = int(y) - 2 + j
-            if 0 < y_c < image_height and 0 < x_c < image_width:
-                img[y_c, x_c] = rgb
-
-    if 0 < y - 1 < image_height and 0 < x - 3 < image_width:
-        img[y - 1, x - 3] = rgb
-    if 0 < y < image_height and 0 < x - 3 < image_width:
-        img[y, x - 3] = rgb
-    if 0 < y + 1 < image_height and 0 < x - 3 < image_width:
-        img[y + 1, x - 3] = rgb
-    if 0 < y - 1 < image_height and 0 < x + 3 < image_width:
-        img[y - 1, x + 3] = rgb
-    if 0 < y < image_height and 0 < x + 3 < image_width:
-        img[y, x + 3] = rgb
-    if 0 < y + 1 < image_height and 0 < x + 3 < image_width:
-        img[y + 1, x + 3] = rgb
-
-    if 0 < y - 3 < image_height and 0 < x - 1 < image_width:
-        img[y - 3, x - 1] = rgb
-    if 0 < y - 3 < image_height and 0 < x < image_width:
-        img[y - 3, x] = rgb
-    if 0 < y - 3 < image_height and 0 < x + 1 < image_width:
-        img[y - 3, x + 1] = rgb
-    if 0 < y - 3 < image_height and 0 < x - 1 < image_width:
-        img[y - 3, x - 1] = rgb
-    if 0 < y - 3 < image_height and 0 < x < image_width:
-        img[y - 3, x] = rgb
-    if 0 < y - 3 < image_height and 0 < x + 1 < image_width:
-        img[y - 3, x + 1] = rgb
+import math
+from utils import draw_circle, show_results_jtm, rotate
 
 
 def jtm(positions_w, positions_h, image_width, image_height, L=1, s_min=0, s_max=1, b_min=0, b_max=1):
@@ -81,48 +46,40 @@ def jtm(positions_w, positions_h, image_width, image_height, L=1, s_min=0, s_max
     return img
 
 
-def show_results(res, title, save_img=False):
-    # eps = np.spacing(0.0)
-    # im1 = plt.pcolormesh(res, cmap=plt.cm.jet, vmin=eps)
-    # plt.imshow(res, cmap=plt.cm.jet, vmin=eps)
-    res_tmp = res.copy()
-    res_tmp[res_tmp == 0] = 1
-    plt.imshow(res_tmp, cmap=plt.cm.jet)
-    plt.axis('off')
-    fig = plt.gcf()
-    fig.canvas.set_window_title(title)
-    if save_img:
-        res_tmp *= 255
-        img = Image.fromarray(np.array(res_tmp, dtype=np.uint8), 'RGB')
-        img.save('{}.png'.format(title))
-    plt.show()
-    plt.close()
-
-
 def main():
     if not os.path.exists('results'):
         os.mkdir('results')
     p_path = '/home/kuba/workspace/human_action_recognition/HumanActionRecognition/datasets/berkeley_mhad/3d/s01/a05/r01/3d_coordinates.npy'
     image_width = 640
     image_height = 480
+    show_results = False
+    save_results = True
+    rotate_y = 30
+    rotate_x = 0
 
-    positions_1 = np.load(p_path)
+    positions_1 = np.array(
+        [np.array([rotate(k, math.radians(rotate_y), math.radians(rotate_x)) for k in f]) for f in np.load(p_path)])
     positions_x_1 = (positions_1[:, :, 0] + 1) * image_width / 2
     positions_y_1 = (positions_1[:, :, 1] + 1) * image_height / 2
     res1 = jtm(positions_x_1, positions_y_1, image_width, image_height)
-    show_results(res1, 'results/img_x_y', save_img=True)
+    if show_results or save_results:
+        show_results_jtm(res1, 'results/img_x_y', show_results=show_results, save_img=save_results)
 
-    positions_2 = np.load(p_path)
+    positions_2 = np.array(
+        [np.array([rotate(k, math.radians(rotate_y), math.radians(rotate_x)) for k in f]) for f in np.load(p_path)])
     positions_x_2 = (positions_2[:, :, 0] + 1) * image_width / 2
     positions_z_2 = (positions_2[:, :, 2] + 1) * image_height / 2
     res2 = jtm(positions_x_2, positions_z_2, image_width, image_height)
-    show_results(res2, 'results/img_x_z', save_img=True)
+    if show_results or save_results:
+        show_results_jtm(res2, 'results/img_x_z', show_results=show_results, save_img=save_results)
 
-    positions_3 = np.load(p_path)
+    positions_3 = np.array(
+        [np.array([rotate(k, math.radians(rotate_y), math.radians(rotate_x)) for k in f]) for f in np.load(p_path)])
     positions_y_3 = (positions_3[:, :, 1] + 1) * image_height / 2
     positions_z_3 = (positions_3[:, :, 2] + 1) * image_width / 2
     res3 = jtm(positions_z_3, positions_y_3, image_width, image_height)
-    show_results(res3, 'results/img_z_y', save_img=True)
+    if show_results or save_results:
+        show_results_jtm(res3, 'results/img_z_y', show_results=show_results, save_img=save_results)
 
 
 if __name__ == '__main__':
