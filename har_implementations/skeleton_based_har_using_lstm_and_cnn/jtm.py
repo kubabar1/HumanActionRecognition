@@ -4,6 +4,7 @@ import numpy as np
 from scipy.spatial import distance
 import colorsys
 import os
+import time
 import math
 from utils import draw_circle, show_results_jtm, rotate, jtm_res_to_PIL_img
 
@@ -17,10 +18,11 @@ def jtm(positions_w, positions_h, image_width, image_height, L=1, s_min=0, s_max
     all_analysed_kpts = analysed_kpts_left + analysed_kpts_right
     hue = np.zeros([frames_count])
     v = np.zeros([frames_count, kpts_count])
+    pos_tmp = np.stack([positions_w, positions_h], axis=2)
 
-    for frame_id, (kpt_x, kpt_y) in enumerate(zip(positions_w, positions_h)):
+    for frame_id, kpts in enumerate(pos_tmp):
         hue[frame_id] = (frame_id / (frames_count - 1)) * L
-        for kpt_id, _ in enumerate(zip(kpt_x, kpt_y)):
+        for kpt_id, _ in enumerate(kpts):
             if frame_id < frames_count - 1:
                 start = (positions_h[frame_id + 1][kpt_id], positions_w[frame_id + 1][kpt_id])
                 end = (positions_h[frame_id][kpt_id], positions_w[frame_id][kpt_id])
@@ -32,8 +34,8 @@ def jtm(positions_w, positions_h, image_width, image_height, L=1, s_min=0, s_max
     saturation = v / np.max(v) * (s_max - s_min) + s_min
     brightness = v / np.max(v) * (b_max - b_min) + b_min
 
-    for frame_id, (kpt_x, kpt_y) in enumerate(zip(positions_w, positions_h)):
-        for kpt_id, (x, y) in enumerate(zip(kpt_x, kpt_y)):
+    for frame_id, kpts in enumerate(pos_tmp):
+        for kpt_id, (x, y) in enumerate(kpts):
             s = saturation[frame_id][kpt_id]
             v = brightness[frame_id][kpt_id]
             if kpt_id in analysed_kpts_left:
@@ -43,8 +45,8 @@ def jtm(positions_w, positions_h, image_width, image_height, L=1, s_min=0, s_max
                 h = 1 - hue[frame_id]
             rgb = colorsys.hsv_to_rgb(h, s, v)
             if kpt_id in all_analysed_kpts:
-                # img[int(y), int(x)] = rgb
-                draw_circle(img, int(x), int(y), rgb, image_width, image_height)
+                img[int(y), int(x)] = rgb
+                # draw_circle(img, int(x), int(y), rgb, image_width, image_height)
     return img
 
 
@@ -93,6 +95,9 @@ def get_mini_batch(shilouetes_berkeley_path, classes, image_width, image_height,
     coordinates_file_name = '3d_coordinates.npy'
     rotations_degree_x = [0, 15, 30, 45]
     rotations_degree_y = [-45, -30, -15, 0, 15, 30, 45]
+    rotations_degree_x_len = len(rotations_degree_x)
+    rotations_degree_y_len = len(rotations_degree_y)
+
     data = []
     labels = []
     for i in range(samples_count):
@@ -103,11 +108,9 @@ def get_mini_batch(shilouetes_berkeley_path, classes, image_width, image_height,
                                         'a' + str(rand_action_id + 1).zfill(2),
                                         'r' + str(rand_repetition_id + 1).zfill(2),
                                         coordinates_file_name)
-        rotation_x = rotations_degree_x[randrange(len(rotations_degree_x))]
-        rotation_y = rotations_degree_y[randrange(len(rotations_degree_y))]
-        pos = np.array(
-            [np.array(
-                [rotate(k, math.radians(rotation_y), math.radians(rotation_x)) for k in f]) for f in np.load(coordinates_path)])
+        rotation_x = math.radians(rotations_degree_x[randrange(rotations_degree_x_len)])
+        rotation_y = math.radians(rotations_degree_y[randrange(rotations_degree_y_len)])
+        pos = np.array([np.array([rotate(k, rotation_y, rotation_x) for k in f]) for f in np.load(coordinates_path)])
         pos_x = (pos[:, :, 0] + 1) * image_width / 2
         pos_y = (pos[:, :, 1] + 1) * image_height / 2
         sample_img = jtm_res_to_PIL_img(jtm(pos_x, pos_y, image_width, image_height)).resize(sample_size)
@@ -119,23 +122,26 @@ def get_mini_batch(shilouetes_berkeley_path, classes, image_width, image_height,
 
 if __name__ == '__main__':
     main()
-    image_width = 640
-    image_height = 480
-
-    # Class labels
-    classes = [
-        "JUMPING_IN_PLACE",
-        "JUMPING_JACKS",
-        "BENDING_HANDS_UP_ALL_THE_WAY_DOWN",
-        "PUNCHING_BOXING",
-        "WAVING_TWO_HANDS",
-        "WAVING_ONE_HAND_RIGHT",
-        "CLAPPING_HANDS",
-        "THROWING_A_BALL",
-        "SIT_DOWN_THEN_STAND_UP",
-        "SIT_DOWN",
-        "STAND_UP"
-    ]
-
-    shilouetes_berkeley_path = '/home/kuba/workspace/human_action_recognition/HumanActionRecognition/datasets/berkeley_mhad/3d'
+    # image_width = 640
+    # image_height = 480
+    #
+    # # Class labels
+    # classes = [
+    #     "JUMPING_IN_PLACE",
+    #     "JUMPING_JACKS",
+    #     "BENDING_HANDS_UP_ALL_THE_WAY_DOWN",
+    #     "PUNCHING_BOXING",
+    #     "WAVING_TWO_HANDS",
+    #     "WAVING_ONE_HAND_RIGHT",
+    #     "CLAPPING_HANDS",
+    #     "THROWING_A_BALL",
+    #     "SIT_DOWN_THEN_STAND_UP",
+    #     "SIT_DOWN",
+    #     "STAND_UP"
+    # ]
+    #
+    # shilouetes_berkeley_path = '/home/kuba/workspace/human_action_recognition/HumanActionRecognition/datasets/berkeley_mhad/3d'
+    # t1 = time.time()
     # data, labels = get_mini_batch(shilouetes_berkeley_path, classes, image_width, image_height)
+    # t2 = time.time()
+    # print(t2 - t1)
