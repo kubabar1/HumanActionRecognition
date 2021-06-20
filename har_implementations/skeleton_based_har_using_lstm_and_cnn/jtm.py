@@ -52,7 +52,7 @@ def main():
     p_path = '/home/kuba/workspace/human_action_recognition/HumanActionRecognition/datasets/berkeley_mhad/3d/s01/a05/r01/3d_coordinates.npy'
     image_width = 640
     image_height = 480
-    show_results = False
+    show_results = True
     save_results = True
     rotate_y = 30
     rotate_x = 0

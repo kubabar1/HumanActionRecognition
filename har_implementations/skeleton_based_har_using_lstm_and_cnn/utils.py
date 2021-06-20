@@ -4,22 +4,28 @@ from math import cos, sin
 import numpy as np
 
 
+def jtm_res_to_PIL_img(res):
+    res_tmp = res.copy()
+    res_tmp[res_tmp == 0] = 1
+    res_tmp *= 255
+    return Image.fromarray(np.array(res_tmp, dtype=np.uint8), 'RGB')
+
+
 def show_results_jtm(res, title, show_results=True, save_img=False):
     # eps = np.spacing(0.0)
     # im1 = plt.pcolormesh(res, cmap=plt.cm.jet, vmin=eps)
     # plt.imshow(res, cmap=plt.cm.jet, vmin=eps)
     res_tmp = res.copy()
-    res_tmp[res_tmp == 0] = 1
-    plt.imshow(res_tmp, cmap=plt.cm.jet)
-    plt.axis('off')
-    fig = plt.gcf()
-    fig.canvas.set_window_title(title)
-    if save_img:
-        res_tmp *= 255
-        img = Image.fromarray(np.array(res_tmp, dtype=np.uint8), 'RGB')
-        img.save('{}.png'.format(title))
     if show_results:
+        res_tmp[res_tmp == 0] = 1
+        fig = plt.gcf()
+        fig.canvas.set_window_title(title)
+        plt.imshow(res_tmp, cmap=plt.cm.jet)
+        plt.axis('off')
         plt.show()
+    if save_img:
+        img = jtm_res_to_PIL_img(res)
+        img.save('{}.png'.format(title))
     plt.close()
 
 
