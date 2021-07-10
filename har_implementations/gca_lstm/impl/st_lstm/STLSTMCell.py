@@ -25,13 +25,6 @@ class STLSTMCell(jit.ScriptModule):
         Tensor, Tuple[Tensor, Tensor]]:
         h_temp_prev, h_spat_prev, c_temp_prev, c_spat_prev = state
 
-        # print('###################################')
-        # print(self.input_size)
-        # print(self.hidden_size)
-        # print(input.shape)
-        # print(self.weight_ih.t().shape)
-        # print(torch.mm(input, self.weight_ih.t()).shape)
-        # print('###################################')
         gates = (torch.mm(input, self.weight_ih.t())
                  + torch.mm(h_spat_prev, self.weight_hh0.t())
                  + torch.mm(h_temp_prev, self.weight_hh1.t()))

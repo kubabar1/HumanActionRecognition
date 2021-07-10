@@ -23,11 +23,3 @@ class GCACell(jit.ScriptModule):
         e += self.bias_e1
         return e
 
-    # @jit.script_method
-    def refine(self, F_a: Tensor, F_prev: Tensor, device) -> Tensor:
-        weight_F_a = Parameter(torch.randn(self.hidden_size, self.hidden_size)).to(device)
-        weight_F_prev = Parameter(torch.randn(self.hidden_size, self.hidden_size)).to(device)
-        bias_F_a = Parameter(torch.randn(self.hidden_size)).to(device)
-        bias_F_prev = Parameter(torch.randn(self.hidden_size)).to(device)
-        F_next = torch.mm(F_a, weight_F_a.t()) + torch.mm(F_prev, weight_F_prev.t()) + bias_F_a + bias_F_prev
-        return torch.relu_(F_next)
