@@ -1,71 +1,84 @@
+import math
+import time
+
 import numpy as np
 import torch
+import torch.nn as nn
+import torch.optim as optim
 
-from .st_lstm.STLSTMCell import STLSTMState, STLSTMCell
-from .utils import get_batch
+from .gca_loop import gca_loop
+from .utils import get_batch, classes
 
 
-def train(iterations=4, batch_size=5, hidden_size=128, sequence_len=140):
-    input_size = 3
+def train(print_every=100, plot_every=100):
+    dataset_path = '../../datasets/berkeley_mhad/3d'
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    iterations = 4
+    batch_size = 5
+    hidden_size = 128
+    sequence_len = 140
+    epoch_nb = 100
     analysed_kpts_left = [4, 5, 6, 11, 12, 13]
     analysed_kpts_right = [1, 2, 3, 14, 15, 16]
     all_analysed_kpts = analysed_kpts_left + analysed_kpts_right
-    joints_count = len(all_analysed_kpts)
-    dataset_path = '../../datasets/berkeley_mhad/3d'
+
+    learning_rate = 0.0015
+    decay_rate = 0.95
+    momentum = 0.9
+    dropout = 0.5
+
+    criterion = nn.NLLLoss()
+
+    optimizer = optim.SGD(lstm_rp.parameters(), lr=learning_rate, momentum=momentum)
+
+    current_loss = 0
+
+    all_losses = []
+
+    start = time.time()
+
+    for epoch in range(epoch_nb):
+        data, train_y = get_data(dataset_path, batch_size, sequence_len, all_analysed_kpts)
+        tensor_train_y = torch.from_numpy(train_y).to(device)
+
+        optimizer.zero_grad()
+
+        output = gca_loop(data, sequence_len, batch_size, hidden_size, iterations)
+
+        loss = criterion(output, tensor_train_y)
+
+        loss.backward()
+
+        optimizer.step()
+
+        current_loss += loss.item()
+
+        if epoch % print_every == 0 and epoch > 0:
+            category = classes[int(tensor_train_y[0])]
+
+            guess = classes[int(torch.argmax(torch.exp(output)[0]).item())]
+
+            correct = '✓' if guess == category else '✗ (%s)' % category
+
+            print(' %d %d%% (%s) %.4f  / %s %s' % (epoch, epoch / epoch_nb * 100, time_since(start), loss, guess, correct))
+
+        # Add current loss avg to list of losses
+        if epoch % plot_every == 0 and epoch > 0:
+            all_losses.append(current_loss / plot_every)
+            current_loss = 0
+
+    return lstm_rp
+
+
+def get_data(dataset_path, batch_size, sequence_len, analysed_kpts):
     data, labels = get_batch(dataset_path, sequence_len=sequence_len, batch_size=batch_size, training=True)
-    data = data[:, :, all_analysed_kpts, :]
-    data = np.transpose(data, (1, 2, 0, 3))  # [frame, joint, batch, channel]
+    data = data[:, :, analysed_kpts, :]
+    return np.transpose(data, (1, 2, 0, 3)), labels  # [frame, joint, batch, channel]
 
-    cell1 = STLSTMCell(input_size, hidden_size)
 
-    spatial_dim = joints_count
-    temporal_dim = sequence_len
-
-    cell1_out = torch.empty((temporal_dim, spatial_dim, batch_size, hidden_size), dtype=torch.float)
-
-    for j in range(spatial_dim):
-        for t in range(temporal_dim):
-            if j == 0:
-                h_spat_prev = torch.zeros(batch_size, hidden_size)
-                c_spat_prev = torch.zeros(batch_size, hidden_size)
-            else:
-                h_spat_prev = cell1_out[t][j - 1]
-                c_spat_prev = cell1_out[t][j - 1]
-            if t == 0:
-                h_temp_prev = torch.zeros(batch_size, hidden_size)
-                c_temp_prev = torch.zeros(batch_size, hidden_size)
-            else:
-                h_temp_prev = cell1_out[t - 1][j]
-                c_temp_prev = cell1_out[t - 1][j]
-            state = STLSTMState(h_temp_prev, h_spat_prev, c_temp_prev, c_spat_prev)
-            out, out_state = cell1(torch.tensor(data[t][j], dtype=torch.float), state)
-            cell1_out[t][j] = out
-
-    print(data.shape)
-    print(cell1_out.shape)
-    # print(cell1_out[t][j].shape)
-
-    print(torch.sum(cell1_out, dim=(0, 1)).shape)
-    print(torch.sum(cell1_out, dim=(0, 1)) / (spatial_dim * temporal_dim))
-
-    # cell1 = STLSTMCell(input_size, hidden_size)
-    # # cell2 = STLSTMCell(input_size, hidden_size)
-    # # gca_cells = [GCACell(lstm_size, it) for it in range(1, iterations + 1)]
-    #
-    # t_0 = data[0][0]
-    # j_0_t_0 = t_0[0]
-    #
-    # inp = torch.tensor([data[0][0][0]])  # , data[1][0][0], data[2][0][0], data[3][0][0]
-    #
-    # # inp = torch.randn(seq_len, batch, input_size)
-    # # print(inp.shape)
-    # # print(data[0].shape)
-    #
-    # out, out_state = cell1(inp, state)
-    #
-    # print(inp.shape)
-    # print(out.shape)
-    # print(len(data))
-    # print(data[0].shape)
-    # # print(out_state[0].shape)
-    # # print(out_state[1].shape)
+def time_since(since):
+    now = time.time()
+    s = now - since
+    m = math.floor(s / 60)
+    s -= m * 60
+    return '%dm %ds' % (m, s)

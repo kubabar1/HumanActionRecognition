@@ -34,14 +34,6 @@ class LSTMCell(jit.ScriptModule):
         cy = (forgetgate * cx) + (ingate * cellgate)
         hy = outgate * torch.tanh(cy)
 
-        # print('#################################################################')
-        # print(input.shape)
-        # print(hx.shape)
-        # print(cx.shape)
-        # print(hy.shape)
-        # print(cy.shape)
-        # print('#################################################################')
-
         return hy, (hy, cy)
 
 
@@ -53,17 +45,10 @@ class LSTMLayer(jit.ScriptModule):
     @jit.script_method
     def forward(self, input: Tensor, state: Tuple[Tensor, Tensor]) -> Tuple[Tensor, Tuple[Tensor, Tensor]]:
         inputs = input.unbind(0)
-        print(input.shape)
-        print(len(inputs))
-        print(inputs[0].shape)
         outputs = torch.jit.annotate(List[Tensor], [])
         for i in range(len(inputs)):
             out, state = self.cell(inputs[i], state)
             outputs += [out]
-        print(outputs[0].shape)
-        print(torch.stack(outputs).shape)
-        print(state[0].shape)
-        print(state[1].shape)
         return torch.stack(outputs), state
 
 
@@ -87,5 +72,4 @@ def test_script_rnn_layer(seq_len, batch, input_size, hidden_size):
     assert (out_state[0] - lstm_out_state[0]).abs().max() < 1e-5
     assert (out_state[1] - lstm_out_state[1]).abs().max() < 1e-5
 
-
-test_script_rnn_layer(5, 2, 3, 128)
+# test_script_rnn_layer(5, 2, 3, 128)
