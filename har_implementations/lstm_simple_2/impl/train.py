@@ -38,7 +38,6 @@ def train(epoch_nb=10000, batch_size=5, hidden_size=128, dataset_path='../../dat
 
     start = time.time()
 
-
     for epoch in range(epoch_nb):
         data, train_y = get_data(dataset_path, batch_size, all_analysed_kpts)
         tensor_train_y = torch.from_numpy(np.array(train_y)).to(device)
