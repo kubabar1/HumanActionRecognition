@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .LSTMCell import LSTMCell, LSTMState, LSTMCell3
+from .LSTMCell import LSTMCell, LSTMState
 
 
 class LSTMSimpleModel(nn.Module):
@@ -11,36 +11,38 @@ class LSTMSimpleModel(nn.Module):
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.batch_size = batch_size
-        self.lstm_cell_custom = LSTMCell3(input_size, hidden_size)
+        self.lstm_cell_custom = LSTMCell(input_size, hidden_size)
         self.lstm_cell = torch.nn.LSTMCell(input_size, hidden_size)
-        self.lstm = torch.nn.LSTM(input_size, hidden_size, 1, batch_first=True, dropout=0.5)
+        self.lstm = torch.nn.LSTM(input_size, hidden_size, 1, batch_first=True)  # , dropout=0.5
         self.fc = torch.nn.Linear(hidden_size, classes_count)
         self.dropout_l = nn.Dropout(dropout)
 
-    def forward2(self, inputs):
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        # out, out_state = self.rnn(input_joint, state)
-        # h_next = out
-        # c_next = out_state[1]
-        # return h_next, c_next, F.log_softmax(self.fc(out[-1, :, :]), dim=-1)
-        hn = torch.zeros(self.batch_size, self.hidden_size).to(device)
-        cn = torch.zeros(self.batch_size, self.hidden_size).to(device)
-        state = LSTMState(hn, cn)
-        outs = []
-        for seq in range(inputs.shape[1]):
-            hn, cn = self.lstm_cell_custom(inputs[:, seq, :], state)
-            outs.append(hn)
-        out = outs[-1].squeeze()
-        out = self.fc(out)
-        # out = self.dropout_l(out)
-        return F.log_softmax(out, dim=-1)
+    # def forward1(self, inputs):
+    #     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    #     # out, out_state = self.rnn(input_joint, state)
+    #     # h_next = out
+    #     # c_next = out_state[1]
+    #     # return h_next, c_next, F.log_softmax(self.fc(out[-1, :, :]), dim=-1)
+    #     hn = torch.zeros(self.batch_size, self.hidden_size).to(device)
+    #     cn = torch.zeros(self.batch_size, self.hidden_size).to(device)
+    #     state = LSTMState(hn, cn)
+    #     outs = []
+    #     for seq in range(inputs.shape[1]):
+    #         hn, cn = self.lstm_cell_custom(inputs[:, seq, :], state)
+    #         outs.append(hn)
+    #     out = outs[-1].squeeze()
+    #     out = self.fc(out)
+    #     # out = self.dropout_l(out)
+    #     return F.log_softmax(out, dim=-1)
+    #
+    # def forward2(self, inputs):
+    #     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    #     lstm_out, _ = self.lstm(inputs, (torch.zeros(1, self.batch_size, self.hidden_size).to(device),
+    #                                      torch.zeros(1, self.batch_size, self.hidden_size).to(device)))
+    #     out = F.log_softmax(self.fc(lstm_out[:, -1, :]), dim=1)
+    #     return out
 
     def forward(self, inputs):
-        lstm_out, _ = self.lstm(inputs)
-        out = F.log_softmax(self.fc(lstm_out[:, -1, :]), dim=1)
-        return out
-
-    def forward3(self, inputs):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         # out, out_state = self.rnn(input_joint, state)
         # h_next = out
@@ -48,10 +50,9 @@ class LSTMSimpleModel(nn.Module):
         # return h_next, c_next, F.log_softmax(self.fc(out[-1, :, :]), dim=-1)
         hn = torch.zeros(self.batch_size, self.hidden_size).to(device)
         cn = torch.zeros(self.batch_size, self.hidden_size).to(device)
-        state = LSTMState(hn, cn)
         outs = []
         for seq in range(inputs.shape[1]):
-            hn, cn = self.lstm_cell(inputs[:, seq, :], state)
+            hn, cn = self.lstm_cell(inputs[:, seq, :], (hn, cn))
             outs.append(hn)
         out = outs[-1].squeeze()
         out = self.fc(out)
