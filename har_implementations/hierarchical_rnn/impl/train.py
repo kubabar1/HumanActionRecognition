@@ -79,7 +79,7 @@ def train(epoch_nb=1000, batch_size=32, hidden_size=64, dataset_path='../../data
 
 
 def get_data(dataset_path, batch_size):
-    data, labels = get_batch(dataset_path, batch_size=batch_size, training=True)
+    data, labels = get_batch2(dataset_path, batch_size=batch_size, training=True)
     right_wrists = data[:, :, video_pose_3d_kpts['right_wrist'], :]
     left_wrists = data[:, :, video_pose_3d_kpts['left_wrist'], :]
     right_elbows = data[:, :, video_pose_3d_kpts['right_elbow'], :]
