@@ -38,15 +38,18 @@ def main():
     input_filter = lambda filtered_string, filter_str: filter_str in filtered_string
 
     for root, dirs, files in os.walk(dataset_path):
-        if not dirs and input_filter(root, filter_string):
+        if not dirs:
             input_rel_path = os.path.relpath(root, dataset_path)
             output_path = os.path.join(output_directory, input_rel_path)
             if is_video:
                 for input_video in files:
-                    estimate_pose(det_config, det_checkpoint, pose_config, pose_checkpoint, os.path.join(root, input_video),
-                                  output_path, is_video=is_video)
+                    if input_filter(input_video, filter_string):
+                        estimate_pose(det_config, det_checkpoint, pose_config, pose_checkpoint, os.path.join(root, input_video),
+                                      output_path, is_video=is_video, save_out_video=False)
             else:
-                estimate_pose(det_config, det_checkpoint, pose_config, pose_checkpoint, root, output_path, is_video=is_video)
+                if input_filter(root, filter_string):
+                    estimate_pose(det_config, det_checkpoint, pose_config, pose_checkpoint, root, output_path, is_video=is_video,
+                                  save_out_video=False)
 
 
 if __name__ == '__main__':

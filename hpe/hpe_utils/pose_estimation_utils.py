@@ -51,9 +51,9 @@ def process_mmdet_results(mmdet_results, cat_id=0):
 
 def create_output_directories(output_path, model_name, save_out_video, save_keypoints, save_bounding_boxes):
     out_root = os.path.join(output_path, model_name)
-    out_video_root = os.path.join(out_root, 'videos')
-    output_keypoints_root = os.path.join(out_root, 'csv', 'pose_results')
-    output_bbox_root = os.path.join(out_root, 'csv', 'bbox')
+    out_video_root = os.path.join(out_root, 'videos') if save_out_video else None
+    output_keypoints_root = os.path.join(out_root, 'csv', 'pose_results') if save_keypoints else None
+    output_bbox_root = os.path.join(out_root, 'csv', 'bbox') if save_bounding_boxes else None
 
     # if os.path.exists(out_root) and os.path.isdir(out_root):
     #     shutil.rmtree(out_root)
