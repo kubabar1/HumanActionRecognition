@@ -13,6 +13,7 @@ def main():
     parser.add_argument('--output-directory', help='Path to generated results output directory', type=str, default='./results/')
     parser.add_argument('--dataset-path', help='Path to input dataset', required=True)
     parser.add_argument('--video', default=False, action='store_true')
+    parser.add_argument('--filter', help='Filter input dataset', type=str, default='')
 
     args = parser.parse_args()
     mmpose_path = args.mmpose_path
@@ -20,6 +21,7 @@ def main():
     output_directory = args.output_directory
     dataset_path = args.dataset_path
     is_video = args.video
+    filter_string = args.filter
 
     if mmpose_path is None:
         config = ConfigParser()
@@ -32,8 +34,6 @@ def main():
     p_config = top_down_configs(mmpose_path)[hpe_method]
     pose_config = p_config[0]
     pose_checkpoint = p_config[1]
-
-    filter_string = ''
 
     input_filter = lambda filtered_string, filter_str: filter_str in filtered_string
 
