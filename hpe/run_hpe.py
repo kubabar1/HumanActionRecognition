@@ -33,7 +33,7 @@ def main():
     pose_config = p_config[0]
     pose_checkpoint = p_config[1]
 
-    filter_string = '/S01/'
+    filter_string = ''
 
     input_filter = lambda filtered_string, filter_str: filter_str in filtered_string
 
