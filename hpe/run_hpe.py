@@ -33,8 +33,12 @@ def main():
     pose_config = p_config[0]
     pose_checkpoint = p_config[1]
 
+    filter_string = '/S01/'
+
+    input_filter = lambda filtered_string, filter_str: filter_str in filtered_string
+
     for root, dirs, files in os.walk(dataset_path):
-        if not dirs:
+        if not dirs and input_filter(root, filter_string):
             input_rel_path = os.path.relpath(root, dataset_path)
             output_path = os.path.join(output_directory, input_rel_path)
             if is_video:
