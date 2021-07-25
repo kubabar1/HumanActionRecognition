@@ -2,6 +2,7 @@ import os
 import time
 
 import cv2
+from PIL import Image
 from mmdet.apis import init_detector, inference_detector
 from mmpose.apis import (init_pose_model, inference_top_down_pose_model, inference_bottom_up_pose_model, vis_pose_result)
 
@@ -83,10 +84,14 @@ def estimate_pose_images_sequence(images_sequence_array, det_model, pose_model, 
     all_frames_count = len(images_sequence_array)
 
     for img_path in images_sequence_array:
-        estimate_pose_common(cv2.imread(img_path), det_model, pose_model, video_writer, frame, start_time, input_name, dataset,
-                             output_video_root, output_keypoints_root, output_bbox_root, all_frames_count, bbox_thr,
-                             return_heatmap,
-                             output_layer_names, kpt_thr, model_type)
+        try:
+            img = Image.open(img_path)
+            img.verify()
+            estimate_pose_common(cv2.imread(img_path), det_model, pose_model, video_writer, frame, start_time, input_name,
+                                 dataset, output_video_root, output_keypoints_root, output_bbox_root, all_frames_count, bbox_thr,
+                                 return_heatmap, output_layer_names, kpt_thr, model_type)
+        except (IOError, SyntaxError):
+            print('Bad file:', img_path)
         frame += 1
 
 
