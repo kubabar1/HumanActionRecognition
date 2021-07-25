@@ -41,16 +41,16 @@ def estimate_pose(det_config, det_checkpoint, pose_config, pose_checkpoint, inpu
     else:
         inputs_paths = sorted([os.path.join(input_path, f) for f in os.listdir(input_path) if
                                os.path.isfile(os.path.join(input_path, f))])
+        input_name = os.path.splitext(inputs_paths[0].split(os.path.sep)[-1])[0]
         if save_out_video and out_video_root is not None:
             fps = 20
             size = cv2.imread(inputs_paths[0]).shape[:2]
             size = (size[1], size[0])
-            input_name = os.path.splitext(inputs_paths[0].split(os.path.sep)[-1])[0]
             output_video_name = input_name + '.mp4'
             video_writer = cv2.VideoWriter(os.path.join(out_video_root, output_video_name), fourcc, fps, size)
-            estimate_pose_images_sequence(inputs_paths, det_model, pose_model, video_writer, dataset, input_name, out_video_root,
-                                          output_keypoints_root, output_bbox_root, kpt_thr, bbox_thr, return_heatmap, model_type,
-                                          output_layer_names)
+        estimate_pose_images_sequence(inputs_paths, det_model, pose_model, video_writer, dataset, input_name, out_video_root,
+                                      output_keypoints_root, output_bbox_root, kpt_thr, bbox_thr, return_heatmap, model_type,
+                                      output_layer_names)
 
     if is_video and cap is not None:
         cap.release()
