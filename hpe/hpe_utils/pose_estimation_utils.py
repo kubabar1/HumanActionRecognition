@@ -1,6 +1,7 @@
 import csv
 import datetime
 import os
+import re
 import time
 
 import cv2
@@ -127,3 +128,9 @@ def save_bounding_box_csv(bboxes, output_csv_root, frame, input_name):
         with open(output_csv_bbox, 'a') as myfile:
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
             wr.writerow(bboxes_array_tmp)
+
+
+def purge_files(dir, pattern):
+    for f in os.listdir(dir):
+        if re.search(pattern, f):
+            os.remove(os.path.join(dir, f))

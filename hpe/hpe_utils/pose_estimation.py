@@ -7,7 +7,7 @@ from mmdet.apis import init_detector, inference_detector
 from mmpose.apis import (init_pose_model, inference_top_down_pose_model, inference_bottom_up_pose_model, vis_pose_result)
 
 from .pose_estimation_utils import create_output_directories, process_mmdet_results, save_keypoints_csv, save_bounding_box_csv, \
-    print_progress
+    print_progress, purge_files
 
 
 def estimate_pose(det_config, det_checkpoint, pose_config, pose_checkpoint, input_path, output_path, is_video=True,
@@ -30,6 +30,14 @@ def estimate_pose(det_config, det_checkpoint, pose_config, pose_checkpoint, inpu
     dataset = pose_model.cfg.data['test']['type']
 
     if is_video:
+        input_name = os.path.splitext(os.path.basename(input_path))[0]
+        if save_keypoints:
+            purge_files(output_keypoints_root, input_name)
+        if save_bounding_boxes:
+            purge_files(output_bbox_root, input_name)
+        if save_out_video:
+            purge_files(out_video_root, input_name)
+
         cap = cv2.VideoCapture(input_path)
         if save_out_video and out_video_root is not None:
             fps = cap.get(cv2.CAP_PROP_FPS)
@@ -43,6 +51,14 @@ def estimate_pose(det_config, det_checkpoint, pose_config, pose_checkpoint, inpu
         inputs_paths = sorted([os.path.join(input_path, f) for f in os.listdir(input_path) if
                                os.path.isfile(os.path.join(input_path, f))])
         input_name = os.path.splitext(inputs_paths[0].split(os.path.sep)[-1])[0]
+
+        if save_keypoints:
+            purge_files(output_keypoints_root, input_name)
+        if save_bounding_boxes:
+            purge_files(output_bbox_root, input_name)
+        if save_out_video:
+            purge_files(out_video_root, input_name)
+
         if save_out_video and out_video_root is not None:
             fps = 20
             size = cv2.imread(inputs_paths[0]).shape[:2]
@@ -59,7 +75,7 @@ def estimate_pose(det_config, det_checkpoint, pose_config, pose_checkpoint, inpu
         video_writer.release()
 
 
-def estimate_pose_movie(cap, video_path, det_model, pose_model, video_writer, dataset, output_video_root, output_keypoints_root,
+def estimate_pose_movie(cap, input_name, det_model, pose_model, video_writer, dataset, output_video_root, output_keypoints_root,
                         output_bbox_root, kpt_thr, bbox_thr, return_heatmap, model_type, output_layer_names):
     frame = 0
     start_time = time.time()
@@ -69,7 +85,6 @@ def estimate_pose_movie(cap, video_path, det_model, pose_model, video_writer, da
         flag, img = cap.read()
         if not flag:
             break
-        input_name = os.path.splitext(os.path.basename(video_path))[0]
         estimate_pose_common(img, det_model, pose_model, video_writer, frame, start_time, input_name, dataset, output_video_root,
                              output_keypoints_root, output_bbox_root, all_frames_count, bbox_thr, return_heatmap,
                              output_layer_names, kpt_thr, model_type)
