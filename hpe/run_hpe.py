@@ -14,6 +14,7 @@ def main():
     parser.add_argument('--output-directory', help='Path to generated results output directory', type=str, default='./results/')
     parser.add_argument('--dataset-path', help='Path to input dataset', required=True)
     parser.add_argument('--video', default=False, action='store_true')
+    parser.add_argument('--generate-video', default=False, action='store_true')
     parser.add_argument('--filter', help='Filter input dataset', type=str, default='')
 
     args = parser.parse_args()
@@ -22,7 +23,7 @@ def main():
     output_directory = args.output_directory
     dataset_path = args.dataset_path
     is_video = args.video
-    filter_regex = re.compile(args.filter)
+    generate_video = args.generate_video
 
     if mmpose_path is None:
         config = ConfigParser()
@@ -45,12 +46,12 @@ def main():
                     if re.search(args.filter, os.path.join(root, input_video)):
                         print(input_video)
                         estimate_pose(det_config, det_checkpoint, pose_config, pose_checkpoint, os.path.join(root, input_video),
-                                      output_path, is_video=is_video, save_out_video=False)
+                                      output_path, is_video=is_video, save_out_video=generate_video)
             else:
                 if re.search(args.filter, root):
                     print(root)
                     estimate_pose(det_config, det_checkpoint, pose_config, pose_checkpoint, root, output_path, is_video=is_video,
-                                  save_out_video=False)
+                                  save_out_video=generate_video)
 
 
 if __name__ == '__main__':
