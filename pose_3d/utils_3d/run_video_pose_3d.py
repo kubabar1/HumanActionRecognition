@@ -1,12 +1,11 @@
 import os
 
 from common.camera import *
-from common.model import *
-from common.loss import *
-from common.generators import UnchunkedGenerator
-from common.utils import deterministic_random
 from common.custom_dataset import CustomDataset
-from common.h36m_dataset import h36m_skeleton
+from common.generators import UnchunkedGenerator
+from common.loss import *
+from common.model import *
+from common.utils import deterministic_random
 
 
 def process_custom_2d_to_3d_npz(keypoints_npz_path, video_pose_path, viz_subject, viz_action, viz_video=None,

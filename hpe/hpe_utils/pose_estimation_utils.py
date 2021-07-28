@@ -111,8 +111,11 @@ def save_keypoints_csv(pose_results, output_csv_root, frame, input_name):
         keypoint_array_tmp = [frame]
         for keypoint in pose_results[pose_idx]['keypoints']:
             keypoint_array_tmp.extend(keypoint)
-        filename = input_name.split(os.path.sep)[-1] + '_pose_' + str(pose_idx) + '.csv'
-        output_csv = os.path.join(output_csv_root, filename)
+        fn_no_ext = input_name.split(os.path.sep)[-1].split('.')[0]
+        filename = fn_no_ext + '_pose_' + str(pose_idx) + '.csv'
+        if not os.path.exists(os.path.join(output_csv_root, fn_no_ext)):
+            os.mkdir(os.path.join(output_csv_root, fn_no_ext))
+        output_csv = os.path.join(output_csv_root, fn_no_ext, filename)
         with open(output_csv, 'a') as myfile:
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
             wr.writerow(keypoint_array_tmp)
@@ -123,8 +126,11 @@ def save_bounding_box_csv(bboxes, output_csv_root, frame, input_name):
     for pose_idx in range(predicted_poses):
         bboxes_array_tmp = [frame]
         bboxes_array_tmp.extend(bboxes[pose_idx]['bbox'])
-        filename_bbox = input_name.split(os.path.sep)[-1] + '_pose_bounding_box_' + str(pose_idx) + '.csv'
-        output_csv_bbox = os.path.join(output_csv_root, filename_bbox)
+        fn_no_ext = input_name.split(os.path.sep)[-1].split('.')[0]
+        filename_bbox = fn_no_ext + '_pose_bounding_box_' + str(pose_idx) + '.csv'
+        output_csv_bbox = os.path.join(output_csv_root, fn_no_ext, filename_bbox)
+        if not os.path.exists(os.path.join(output_csv_root, fn_no_ext)):
+            os.mkdir(os.path.join(output_csv_root, fn_no_ext))
         with open(output_csv_bbox, 'a') as myfile:
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
             wr.writerow(bboxes_array_tmp)
