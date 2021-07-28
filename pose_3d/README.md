@@ -36,13 +36,10 @@ Example structure of input dataset to process:
 ```
 dataset/
 ├─ ntu_rgbd/
-│  ├─  video_002
-│  |  ├─  video_002_bounding_box_0.csv
-│  |  ├─  video_002_bounding_box_1.csv
 │  ├─  video_001
 │  |  ├─  video_001_pose_0.csv
 │  |  ├─  video_001_pose_1.csv
-│  ├─  video_002
 │  |  ├─  video_002_pose_0.csv
+│  |  ├─  video_002_pose_1.csv
 │  |  ├─  video_002_pose_1.csv
 ```
