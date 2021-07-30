@@ -8,7 +8,7 @@ from hpe_utils.top_down_configs import top_down_configs
 
 
 def main():
-    parser = argparse.ArgumentParser('simple_example')
+    parser = argparse.ArgumentParser()
     parser.add_argument('--mmpose-path', help='Absolute path to MMPose')
     parser.add_argument('--hpe-method', help='MMPose method to estimate human pose', type=str, default='res152_coco_384x288')
     parser.add_argument('--output-directory', help='Path to generated results output directory', type=str, default='./results/')
@@ -31,7 +31,8 @@ def main():
         mmpose_path = config.get('main', 'MMPOSE_PATH')
 
     det_config = os.path.join(mmpose_path, 'demo/mmdetection_cfg/faster_rcnn_r50_fpn_1x_coco.py')
-    det_checkpoint = 'http://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50_fpn_1x_coco/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth'
+    det_checkpoint = 'http://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50_fpn_1x_coco' \
+                     '/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth'
 
     p_config = top_down_configs(mmpose_path)[hpe_method]
     pose_config = p_config[0]
