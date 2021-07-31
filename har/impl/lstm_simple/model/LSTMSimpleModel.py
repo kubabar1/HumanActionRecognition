@@ -7,11 +7,11 @@ import torch.nn.functional as F
 
 
 class LSTMSimpleModel(nn.Module):
-    def __init__(self, input_size, hidden_size, batch_size, classes_count):
+    def __init__(self, input_size, hidden_size, classes_count):
         super(LSTMSimpleModel, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
-        self.batch_size = batch_size
+        # self.batch_size = batch_size
         self.lstm = torch.nn.LSTM(input_size, hidden_size, 3, batch_first=True, dropout=0.5)
         self.fc = torch.nn.Linear(hidden_size, classes_count)
         # self.lstm_cell = torch.nn.LSTMCell(input_size, hidden_size)

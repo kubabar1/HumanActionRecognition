@@ -4,30 +4,29 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from .model.LSTMSimpleModel import LSTMSimpleModel
+from .model.HierarchicalRNNModel import HierarchicalRNNModel
 from ...utils.training_utils import save_model_common, save_diagram_common, generate_model_name, print_train_results, \
     Optimizer, save_loss_common, test_model
 
 
-def train(classes, get_batch, dataset_path, epoch_nb=5000, batch_size=128, hidden_size=128, learning_rate=0.00005,
+def train(classes, get_batch, dataset_path, epoch_nb=3000, batch_size=128, hidden_size=128, learning_rate=0.000005,
           print_train_every=50, print_test_every=50, weight_decay=0, momentum=0.9, train_every=10, test_every=5, save_loss=True,
           save_diagram=True, results_path='results', optimizer_type=Optimizer.RMSPROP, save_model=True,
           save_model_for_inference=False):
-    method_name = 'lstm_simple'
+    method_name = 'hierarchical_rnn'
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    input_size = 3 * 12
-
-    st_lstm_model = LSTMSimpleModel(input_size, hidden_size, len(classes)).to(device)
+    hierarchical_rnn_model = HierarchicalRNNModel(hidden_size, len(classes)).to(device)
 
     criterion = nn.NLLLoss()
 
     if optimizer_type == Optimizer.RMSPROP:
-        optimizer = optim.RMSprop(st_lstm_model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
+        optimizer = optim.RMSprop(hierarchical_rnn_model.parameters(), lr=learning_rate, momentum=momentum,
+                                  weight_decay=weight_decay)
     elif optimizer_type == Optimizer.SGD:
-        optimizer = optim.SGD(st_lstm_model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
+        optimizer = optim.SGD(hierarchical_rnn_model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
     elif optimizer_type == Optimizer.ADAM:
-        optimizer = optim.Adam(st_lstm_model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+        optimizer = optim.Adam(hierarchical_rnn_model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     else:
         raise Exception('Unknown optimizer')
 
@@ -44,9 +43,19 @@ def train(classes, get_batch, dataset_path, epoch_nb=5000, batch_size=128, hidde
 
         optimizer.zero_grad()
 
-        tensor_train_x = torch.tensor(data.reshape((data.shape[0], data.shape[1], -1)), dtype=torch.float, device=device)
+        left_arms = data[0]
+        right_arms = data[1]
+        left_legs = data[2]
+        right_legs = data[3]
 
-        output = st_lstm_model(tensor_train_x)
+        tensor_left_arms = torch.tensor(left_arms, dtype=torch.float, device=device)
+        tensor_right_arms = torch.tensor(right_arms, dtype=torch.float, device=device)
+        tensor_left_legs = torch.tensor(left_legs, dtype=torch.float, device=device)
+        tensor_right_legs = torch.tensor(right_legs, dtype=torch.float, device=device)
+
+        tensor_train_x = [tensor_left_arms, tensor_right_arms, tensor_left_legs, tensor_right_legs]
+
+        output = hierarchical_rnn_model(tensor_train_x)
 
         loss = criterion(output, tensor_train_y)
 
@@ -63,9 +72,20 @@ def train(classes, get_batch, dataset_path, epoch_nb=5000, batch_size=128, hidde
             with torch.no_grad():
                 data_test, test_y = get_batch(dataset_path, batch_size, is_training=False)
                 tensor_test_y = torch.from_numpy(test_y).to(device)
-                tensor_test_x = torch.tensor(data_test.reshape((data_test.shape[0], data_test.shape[1], -1)), dtype=torch.float,
-                                             device=device)
-                output_test = st_lstm_model(tensor_test_x)
+
+                left_arms_test = data_test[0]
+                right_arms_test = data_test[1]
+                left_legs_test = data_test[2]
+                right_legs_test = data_test[3]
+
+                tensor_left_arms_test = torch.tensor(left_arms_test, dtype=torch.float, device=device)
+                tensor_right_arms_test = torch.tensor(right_arms_test, dtype=torch.float, device=device)
+                tensor_left_legs_test = torch.tensor(left_legs_test, dtype=torch.float, device=device)
+                tensor_right_legs_test = torch.tensor(right_legs_test, dtype=torch.float, device=device)
+
+                tensor_test_x = [tensor_left_arms_test, tensor_right_arms_test, tensor_left_legs_test, tensor_right_legs_test]
+
+                output_test = hierarchical_rnn_model(tensor_test_x)
                 loss_test = criterion(output_test, tensor_test_y)
                 test_loss = test_model(tensor_test_y, output_test, classes, epoch, epoch_nb, print_test_every, start_time,
                                        batch_size, loss_test)
@@ -81,10 +101,10 @@ def train(classes, get_batch, dataset_path, epoch_nb=5000, batch_size=128, hidde
         save_diagram_common(all_train_losses, all_test_losses, model_name, train_every, test_every, epoch_nb, results_path)
 
     if save_model:
-        save_model_common(st_lstm_model, optimizer, epoch, train_every, test_every, all_train_losses, all_test_losses,
+        save_model_common(hierarchical_rnn_model, optimizer, epoch, train_every, test_every, all_train_losses, all_test_losses,
                           save_model_for_inference, results_path, model_name)
 
     if save_loss:
         save_loss_common(all_train_losses, all_test_losses, model_name, results_path)
 
-    return st_lstm_model
+    return hierarchical_rnn_model
