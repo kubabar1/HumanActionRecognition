@@ -15,30 +15,21 @@ class Optimizer(Enum):
     ADAM = auto()
 
 
-def test_model(model, criterion, classes, get_batch, dataset_path, batch_size, device, epoch, epoch_nb, print_test_every,
-               all_test_losses, start_time):
-    with torch.no_grad():
-        data_test, test_y = get_batch(dataset_path, batch_size, is_training=False)
-        tensor_test_y = torch.from_numpy(test_y).to(device)
-        tensor_test_x = torch.tensor(data_test.reshape((data_test.shape[0], data_test.shape[1], -1)), dtype=torch.float,
-                                     device=device)
-        output_test = model(tensor_test_x)
-        loss_test = criterion(output_test, tensor_test_y)
+def test_model(tensor_test_y, output_test, classes, epoch, epoch_nb, print_test_every, start_time, batch_size, loss_test):
+    ctgs_test = [classes[int(tty)] for tty in tensor_test_y]
+    gss_test = [classes[int(torch.argmax(torch.exp(o)).item())] for o in output_test]
+    correct_pred_in_batch_test = len([1 for c, g in zip(ctgs_test, gss_test) if c == g])
 
-        ctgs_test = [classes[int(tty)] for tty in tensor_test_y]
-        gss_test = [classes[int(torch.argmax(torch.exp(o)).item())] for o in output_test]
-        correct_pred_in_batch_test = len([1 for c, g in zip(ctgs_test, gss_test) if c == g])
+    category_test = classes[int(tensor_test_y[0])]
+    guess_test = classes[int(torch.argmax(torch.exp(output_test)[0]).item())]
 
-        category_test = classes[int(tensor_test_y[0])]
-        guess_test = classes[int(torch.argmax(torch.exp(output_test)[0]).item())]
+    correct_test = '✓' if guess_test == category_test else '✗ (%s)' % category_test
 
-        correct_test = '✓' if guess_test == category_test else '✗ (%s)' % category_test
-
-        if epoch % print_test_every == 0:
-            print('TEST: %d %d%% (%s) %.4f  / %s %s [%d/%d -> %.2f%%]' % (
-                epoch, epoch / epoch_nb * 100, time_since(start_time), loss_test, guess_test, correct_test,
-                correct_pred_in_batch_test, batch_size, correct_pred_in_batch_test / batch_size * 100))
-        all_test_losses.append(loss_test.cpu().detach())
+    if epoch % print_test_every == 0:
+        print('TEST: %d %d%% (%s) %.4f  / %s %s [%d/%d -> %.2f%%]' % (
+            epoch, epoch / epoch_nb * 100, time_since(start_time), loss_test, guess_test, correct_test,
+            correct_pred_in_batch_test, batch_size, correct_pred_in_batch_test / batch_size * 100))
+    return loss_test.cpu().detach()
 
 
 def print_train_results(classes, output, tensor_train_y, epoch, epoch_nb, start_time, loss, batch_size):
