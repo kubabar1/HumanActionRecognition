@@ -15,36 +15,29 @@ class Optimizer(Enum):
     ADAM = auto()
 
 
-def test_model(tensor_test_y, output_test, classes, epoch, epoch_nb, print_test_every, start_time, batch_size, loss_test):
+def test_model(tensor_test_y, output_test, classes, epoch, epoch_nb, print_every, start_time, batch_size, loss_test):
     ctgs_test = [classes[int(tty)] for tty in tensor_test_y]
     gss_test = [classes[int(torch.argmax(torch.exp(o)).item())] for o in output_test]
     correct_pred_in_batch_test = len([1 for c, g in zip(ctgs_test, gss_test) if c == g])
+    batch_acc = correct_pred_in_batch_test / batch_size
 
-    category_test = classes[int(tensor_test_y[0])]
-    guess_test = classes[int(torch.argmax(torch.exp(output_test)[0]).item())]
-
-    correct_test = '✓' if guess_test == category_test else '✗ (%s)' % category_test
-
-    if epoch % print_test_every == 0:
-        print('TEST: %d %d%% (%s) %.4f  / %s %s [%d/%d -> %.2f%%]' % (
-            epoch, epoch / epoch_nb * 100, time_since(start_time), loss_test, guess_test, correct_test,
-            correct_pred_in_batch_test, batch_size, correct_pred_in_batch_test / batch_size * 100))
-    return loss_test.cpu().detach()
+    if epoch % print_every == 0:
+        print('TEST: %d %d%% (%s) %.4f [%d/%d -> %.2f%%]' % (
+            epoch, epoch / epoch_nb * 100, time_since(start_time), loss_test, correct_pred_in_batch_test, batch_size,
+            batch_acc * 100))
+    return loss_test.cpu().detach(), batch_acc
 
 
-def print_train_results(classes, output, tensor_train_y, epoch, epoch_nb, start_time, loss, batch_size):
+def print_train_results(classes, output, tensor_train_y, epoch, epoch_nb, start_time, loss, batch_size, print_every):
     ctgs = [classes[int(tty)] for tty in tensor_train_y]
     gss = [classes[int(torch.argmax(torch.exp(o)).item())] for o in output]
     correct_pred_in_batch = len([1 for c, g in zip(ctgs, gss) if c == g])
+    batch_accuracy = correct_pred_in_batch / batch_size
 
-    category = classes[int(tensor_train_y[0])]
-    guess = classes[int(torch.argmax(torch.exp(output)[0]).item())]
-
-    correct = '✓' if guess == category else '✗ (%s)' % category
-
-    print('TRAIN: %d %d%% (%s) %.4f  / %s %s [%d/%d -> %.2f%%]' % (
-        epoch, epoch / epoch_nb * 100, time_since(start_time), loss, guess, correct, correct_pred_in_batch, batch_size,
-        correct_pred_in_batch / batch_size * 100))
+    if epoch % print_every == 0:
+        print('TRAIN: %d %d%% (%s) %.4f [%d/%d -> %.2f%%]' % (
+            epoch, epoch / epoch_nb * 100, time_since(start_time), loss, correct_pred_in_batch, batch_size, batch_accuracy * 100))
+    return batch_accuracy
 
 
 def save_model_common(model, optimizer, epoch, train_every, test_every, all_train_losses, all_test_losses,
@@ -66,13 +59,22 @@ def save_model_common(model, optimizer, epoch, train_every, test_every, all_trai
         torch.save(model.state_dict(), model_output_path)
 
 
-def save_diagram_common(all_train_losses, all_test_losses, model_name, train_every, test_every, epoch_nb, results_path):
+def save_diagram_common(all_train_losses, all_test_losses, model_name, test_every, epoch_nb, results_path,
+                        all_batch_training_accuracies, all_batch_test_accuracies):
     if not os.path.exists(results_path):
         pathlib.Path(results_path).mkdir(parents=True)
-    diagram_name = model_name + '.png'
+    diagram_name = model_name + '_loss.png'
     plt.figure()
-    plt.plot(list(range(train_every, epoch_nb, train_every)), all_train_losses, label='train')
+    plt.plot(list(range(epoch_nb)), all_train_losses, label='train')
     plt.plot(list(range(test_every, epoch_nb, test_every)), all_test_losses, label='test')
+    plt.savefig(os.path.join(results_path, diagram_name))
+    plt.legend(loc="upper right")
+    plt.show()
+
+    diagram_name = model_name + '_acc.png'
+    plt.figure()
+    plt.plot(list(range(test_every, epoch_nb, test_every)), all_batch_training_accuracies, label='train')
+    plt.plot(list(range(test_every, epoch_nb, test_every)), all_batch_test_accuracies, label='test')
     plt.savefig(os.path.join(results_path, diagram_name))
     plt.legend(loc="upper right")
     plt.show()

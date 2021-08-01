@@ -44,3 +44,47 @@ def get_batch_ntu_rgbd(dataset_path, batch_size=128, steps=16, is_training=True,
             if len(data_arr) >= batch_size:
                 break
     return np.array(data_arr), np.array(labels_arr)
+
+
+def get_batch_berkeley_mhad(dataset_path, batch_size=128, steps=16, is_training=True, data_npy_file_name='3d_coordinates.npy'):
+    clusters_count = 1  # 4
+    cameras_count = 1
+    persons_count = 10  # 12
+    actions_count = 11
+    repetitions_count = 5
+
+    data_arr = []
+    labels_arr = []
+
+    analysed_kpts_left = [4, 5, 6, 11, 12, 13]
+    analysed_kpts_right = [1, 2, 3, 14, 15, 16]
+    all_analysed_kpts = analysed_kpts_left + analysed_kpts_right
+
+    while len(data_arr) < batch_size:
+        cluster_id = randrange(clusters_count) + 1
+        cam_id = cameras_count
+        person_id = randrange(8) + 1 if is_training else randrange(8, persons_count) + 1
+        action_id = randrange(actions_count) + 1
+        repetition_id = randrange(repetitions_count) + 1
+
+        data_path = os.path.join(dataset_path,
+                                 'Cluster{}'.format(str(cluster_id).zfill(2)),
+                                 'Cam{}'.format(str(cam_id).zfill(2)),
+                                 'S{}'.format(str(person_id).zfill(2)),
+                                 'A{}'.format(str(action_id).zfill(2)),
+                                 'R{}'.format(str(repetition_id).zfill(2)),
+                                 data_npy_file_name)
+
+        if not os.path.exists(data_path):
+            continue
+
+        data = np.array(np.load(data_path))
+        label = action_id - 1
+        parts = int(data.shape[0] / steps)
+
+        for i in range(parts):
+            data_arr.append(data[i * steps: i * steps + steps, all_analysed_kpts, :])
+            labels_arr.append(label)
+            if len(data_arr) >= batch_size:
+                break
+    return np.array(data_arr), np.array(labels_arr)
