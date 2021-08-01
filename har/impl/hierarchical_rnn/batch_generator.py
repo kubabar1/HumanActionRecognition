@@ -45,7 +45,7 @@ def get_batch_ntu_rgbd(dataset_path, batch_size=128, steps=32, is_training=True,
                                                     str(repetition_id).zfill(3), str(all_actions[action_id]).zfill(3))
         data_path = os.path.join(dataset_path, selected_dir, data_npy_file_name)
         data = np.array(np.load(data_path))
-        label = all_actions[action_id]
+        label = all_actions[action_id] - 1
         parts = int(data.shape[0] / steps)
 
         for i in range(parts):
@@ -118,7 +118,7 @@ def get_batch_berkeley_mhad(dataset_path, batch_size=128, split=8, is_training=T
             continue
 
         data = np.array(np.load(data_path))
-        label = action_id
+        label = action_id - 1
 
         right_wrists.append(np.array(
             [a[randrange(len(a))] for a in np.array_split(data[:, video_pose_3d_kpts['right_wrist'], :], split)]))

@@ -9,7 +9,7 @@ from ...utils.training_utils import save_model_common, save_diagram_common, gene
     Optimizer, save_loss_common, test_model
 
 
-def train(classes, get_batch, dataset_path, epoch_nb=3000, batch_size=128, hidden_size=128, learning_rate=0.000005,
+def train(classes, get_batch, dataset_path, epoch_nb=2000, batch_size=128, hidden_size=256, learning_rate=0.00001,
           print_every=50, weight_decay=0, momentum=0.9, train_every=10, test_every=5, save_loss=True,
           save_diagram=True, results_path='results', optimizer_type=Optimizer.RMSPROP, save_model=True,
           save_model_for_inference=False):

@@ -8,6 +8,7 @@ from har.utils.dataset_utils import ntu_rgbd_classes, berkeley_mhad_classes
 
 
 def main():
+    # train(ntu_rgbd_classes, get_batch_ntu_rgbd, dataset_path='./datasets/nturgbd/3D', save_model=False, save_loss=True)
     train(berkeley_mhad_classes, get_batch_berkeley_mhad, dataset_path='./datasets/BerkeleyMHAD/3D', save_model=False,
           save_loss=True)
 
