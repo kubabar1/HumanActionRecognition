@@ -136,4 +136,5 @@ results
 results_*
 tmp
 batch_cache
+dataset_cache
 datasets_unprocessed
