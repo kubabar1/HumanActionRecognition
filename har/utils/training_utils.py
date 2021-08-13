@@ -80,11 +80,13 @@ def save_diagram_common(all_train_losses, all_test_losses, model_name, test_ever
     plt.show()
 
 
-def save_loss_common(all_train_losses, all_test_losses, model_name, results_path):
+def save_loss_common(all_train_losses, all_test_losses, model_name, results_path, all_train_acc, all_test_acc):
     if not os.path.exists(results_path):
         pathlib.Path(results_path).mkdir(parents=True)
     np.save(os.path.join(results_path, model_name + '_train_loss'), all_train_losses)
     np.save(os.path.join(results_path, model_name + '_test_loss'), all_test_losses)
+    np.save(os.path.join(results_path, model_name + '_train_acc'), all_train_acc)
+    np.save(os.path.join(results_path, model_name + '_test_acc'), all_test_acc)
 
 
 def generate_model_name(method_name, epoch_nb, batch_size, hidden_size, learning_rate, optimizer_name):

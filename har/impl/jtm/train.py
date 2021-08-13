@@ -7,7 +7,7 @@ import torch.optim as optim
 import torchvision.models as models
 import torchvision.transforms as transforms
 
-from .dataset.JTMDataset import JTMDataset
+from .utils.JTMDataset import JTMDataset
 from ...utils.training_utils import save_model_common, save_diagram_common, generate_model_name, print_train_results, \
     Optimizer, save_loss_common, test_model, time_since
 
