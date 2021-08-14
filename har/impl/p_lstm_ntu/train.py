@@ -5,11 +5,13 @@ import torch.nn as nn
 import torch.optim as optim
 
 from .model.PLSTMModel import PLSTMModel
+from .utils.PLSTMDataset import PLSTMDataset
 from ...utils.training_utils import save_model_common, save_diagram_common, generate_model_name, print_train_results, \
-    Optimizer, save_loss_common, test_model
+    Optimizer, save_loss_common, validate_model
 
 
-def train(classes, get_batch, dataset_path, epoch_nb=2000, batch_size=128, hidden_size=128, learning_rate=0.00001,
+def train(classes, training_data, training_labels, validation_data, validation_labels,
+          epoch_nb=2000, batch_size=128, hidden_size=128, learning_rate=0.00001,
           print_every=50, weight_decay=0, momentum=0.9, train_every=10, test_every=5, save_loss=True,
           save_diagram=True, results_path='results', optimizer_type=Optimizer.RMSPROP, save_model=True,
           save_model_for_inference=False):
@@ -41,8 +43,11 @@ def train(classes, get_batch, dataset_path, epoch_nb=2000, batch_size=128, hidde
     start_time = time.time()
     epoch = 0
 
+    train_data_loader = PLSTMDataset(training_data, training_labels, batch_size)
+    validation_data_loader = PLSTMDataset(validation_data, validation_labels, batch_size)
+
     for epoch in range(epoch_nb):
-        data, train_y = get_batch(dataset_path, batch_size)
+        data, train_y = next(iter(train_data_loader))
         tensor_train_y = torch.from_numpy(train_y).to(device)
 
         optimizer.zero_grad()
@@ -64,17 +69,17 @@ def train(classes, get_batch, dataset_path, epoch_nb=2000, batch_size=128, hidde
                                                  print_every)
             all_batch_training_accuracies.append(train_accuracy)
             with torch.no_grad():
-                data_test, test_y = get_batch(dataset_path, batch_size, is_training=False)
-                tensor_test_y = torch.from_numpy(test_y).to(device)
-                tensor_test_x = torch.tensor(data_test, dtype=torch.float, device=device)
+                data_val, val_y = next(iter(validation_data_loader))
+                tensor_test_y = torch.from_numpy(val_y).to(device)
+                tensor_test_x = torch.tensor(data_val, dtype=torch.float, device=device)
                 output_test = p_lstm_model(tensor_test_x)
                 loss_test = criterion(output_test, tensor_test_y)
-                test_loss, batch_acc = test_model(tensor_test_y, output_test, classes, epoch, epoch_nb, print_every,
-                                                  start_time, batch_size, loss_test)
+                test_loss, batch_acc = validate_model(tensor_test_y, output_test, classes, epoch, epoch_nb, print_every,
+                                                      start_time, batch_size, loss_test)
                 all_test_losses.append(test_loss)
                 all_batch_test_accuracies.append(batch_acc)
 
-    model_name = generate_model_name(method_name, epoch_nb, batch_size, hidden_size, learning_rate, optimizer_type.name)
+    model_name = generate_model_name(method_name, epoch_nb, batch_size, learning_rate, optimizer_type.name, hidden_size)
 
     if save_diagram:
         save_diagram_common(all_train_losses, all_test_losses, model_name, test_every, epoch_nb, results_path,

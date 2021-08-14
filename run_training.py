@@ -1,4 +1,5 @@
 # from har.impl.jtm.train import train
+# from har.impl.lstm_simple.train import train
 from har.impl.lstm_simple.train import train
 from har.utils.dataset_util import get_berkeley_dataset_3d, SetType, berkeley_mhad_classes
 
