@@ -3,20 +3,21 @@ This solution uses method described in article "Action recognition based on join
 
 Example use of train method:
 ```
-from dataset_util import get_berkeley_dataset_3d, SetType, berkeley_mhad_classes, berkeley_frame_width, berkeley_frame_height, \
-    get_analysed_keypoints
 from har.impl.jtm.train import train
+from har.utils.dataset_util import get_berkeley_dataset_3d, SetType, berkeley_mhad_classes, berkeley_frame_width, \
+    berkeley_frame_height, get_analysed_keypoints
+
+def main():
+    training_data, training_labels = get_berkeley_dataset_3d('datasets/BerkeleyMHAD/3D', set_type=SetType.TRAINING)
+    validation_data, validation_labels = get_berkeley_dataset_3d('datasets/BerkeleyMHAD/3D', set_type=SetType.VALIDATION)
+
+    train(berkeley_mhad_classes, training_data, training_labels, validation_data, validation_labels, berkeley_frame_width,
+          berkeley_frame_height)
 
 
-training_data, training_labels = get_berkeley_dataset_3d('datasets/BerkeleyMHAD/3D', set_type=SetType.TRAINING)
-validation_data, validation_labels = get_berkeley_dataset_3d('datasets/BerkeleyMHAD/3D', set_type=SetType.VALIDATION)
+if __name__ == '__main__':
+    main()
 
-analysed_kpts_left, analysed_kpts_right = get_analysed_keypoints()
-
-train(berkeley_mhad_classes, training_data, training_labels, 
-    validation_data, validation_labels, 
-    berkeley_frame_width, berkeley_frame_height, 
-    analysed_kpts_left, analysed_kpts_right)
 ```
 
 Article:
