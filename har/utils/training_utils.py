@@ -15,7 +15,7 @@ class Optimizer(Enum):
     ADAM = auto()
 
 
-def test_model(tensor_test_y, output_test, classes, epoch, epoch_nb, print_every, start_time, batch_size, loss_test):
+def validate_model(tensor_test_y, output_test, classes, epoch, epoch_nb, print_every, start_time, batch_size, loss_test):
     ctgs_test = [classes[int(tty)] for tty in tensor_test_y]
     gss_test = [classes[int(torch.argmax(torch.exp(o)).item())] for o in output_test]
     correct_pred_in_batch_test = len([1 for c, g in zip(ctgs_test, gss_test) if c == g])
@@ -40,7 +40,7 @@ def print_train_results(classes, output, tensor_train_y, epoch, epoch_nb, start_
     return batch_accuracy
 
 
-def save_model_common(model, optimizer, epoch, train_every, test_every, all_train_losses, all_test_losses,
+def save_model_common(model, optimizer, epoch, train_every, validate_every, all_train_losses, all_val_losses,
                       save_model_for_inference, results_path, model_name):
     if not os.path.exists(results_path):
         pathlib.Path(results_path).mkdir(parents=True)
@@ -51,46 +51,49 @@ def save_model_common(model, optimizer, epoch, train_every, test_every, all_trai
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
             'loss': all_train_losses,
-            'all_test_losses': all_test_losses,
+            'all_val_losses': all_val_losses,
             'train_every': train_every,
-            'test_every': test_every
+            'validate_every': validate_every
         }, model_output_path)
     else:
         torch.save(model.state_dict(), model_output_path)
 
 
-def save_diagram_common(all_train_losses, all_test_losses, model_name, test_every, epoch_nb, results_path,
-                        all_batch_training_accuracies, all_batch_test_accuracies):
+def save_diagram_common(all_train_losses, all_val_losses, model_name, validate_every, epoch_nb, results_path,
+                        all_batch_training_accuracies, all_batch_val_accuracies):
     if not os.path.exists(results_path):
         pathlib.Path(results_path).mkdir(parents=True)
     diagram_name = model_name + '_loss.png'
     plt.figure()
     plt.plot(list(range(epoch_nb)), all_train_losses, label='train')
-    plt.plot(list(range(test_every, epoch_nb, test_every)), all_test_losses, label='test')
+    plt.plot(list(range(validate_every, epoch_nb, validate_every)), all_val_losses, label='val')
     plt.savefig(os.path.join(results_path, diagram_name))
     plt.legend(loc="upper right")
     plt.show()
 
     diagram_name = model_name + '_acc.png'
     plt.figure()
-    plt.plot(list(range(test_every, epoch_nb, test_every)), all_batch_training_accuracies, label='train')
-    plt.plot(list(range(test_every, epoch_nb, test_every)), all_batch_test_accuracies, label='test')
+    plt.plot(list(range(validate_every, epoch_nb, validate_every)), all_batch_training_accuracies, label='train')
+    plt.plot(list(range(validate_every, epoch_nb, validate_every)), all_batch_val_accuracies, label='val')
     plt.savefig(os.path.join(results_path, diagram_name))
     plt.legend(loc="upper right")
     plt.show()
 
 
-def save_loss_common(all_train_losses, all_test_losses, model_name, results_path, all_train_acc, all_test_acc):
+def save_loss_common(all_train_losses, all_val_losses, model_name, results_path, all_train_acc, all_val_acc):
     if not os.path.exists(results_path):
         pathlib.Path(results_path).mkdir(parents=True)
     np.save(os.path.join(results_path, model_name + '_train_loss'), all_train_losses)
-    np.save(os.path.join(results_path, model_name + '_test_loss'), all_test_losses)
+    np.save(os.path.join(results_path, model_name + '_val_loss'), all_val_losses)
     np.save(os.path.join(results_path, model_name + '_train_acc'), all_train_acc)
-    np.save(os.path.join(results_path, model_name + '_test_acc'), all_test_acc)
+    np.save(os.path.join(results_path, model_name + '_val_acc'), all_val_acc)
 
 
-def generate_model_name(method_name, epoch_nb, batch_size, hidden_size, learning_rate, optimizer_name):
-    return '{}_ep_{}_b_{}_h_{}_lr_{}_{}'.format(method_name, epoch_nb, batch_size, hidden_size, learning_rate, optimizer_name)
+def generate_model_name(method_name, epoch_nb, batch_size, learning_rate, optimizer_name, hidden_size=None):
+    if hidden_size:
+        return '{}_ep_{}_b_{}_h_{}_lr_{}_{}'.format(method_name, epoch_nb, batch_size, hidden_size, learning_rate, optimizer_name)
+    else:
+        return '{}_ep_{}_b_{}_lr_{}_{}'.format(method_name, epoch_nb, batch_size, learning_rate, optimizer_name)
 
 
 def time_since(since):
