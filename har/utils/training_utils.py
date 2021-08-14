@@ -15,17 +15,17 @@ class Optimizer(Enum):
     ADAM = auto()
 
 
-def validate_model(tensor_test_y, output_test, classes, epoch, epoch_nb, print_every, start_time, batch_size, loss_test):
-    ctgs_test = [classes[int(tty)] for tty in tensor_test_y]
-    gss_test = [classes[int(torch.argmax(torch.exp(o)).item())] for o in output_test]
-    correct_pred_in_batch_test = len([1 for c, g in zip(ctgs_test, gss_test) if c == g])
-    batch_acc = correct_pred_in_batch_test / batch_size
+def validate_model(tensor_val_y, output_val, classes, epoch, epoch_nb, print_every, start_time, batch_size, loss_val):
+    ctgs_val = [classes[int(tty)] for tty in tensor_val_y]
+    gss_val = [classes[int(torch.argmax(torch.exp(o)).item())] for o in output_val]
+    correct_pred_in_batch_val = len([1 for c, g in zip(ctgs_val, gss_val) if c == g])
+    batch_acc = correct_pred_in_batch_val / batch_size
 
     if epoch % print_every == 0:
-        print('TEST: %d %d%% (%s) %.4f [%d/%d -> %.2f%%]' % (
-            epoch, epoch / epoch_nb * 100, time_since(start_time), loss_test, correct_pred_in_batch_test, batch_size,
+        print('VALIDATE: %d %d%% (%s) %.4f [%d/%d -> %.2f%%]' % (
+            epoch, epoch / epoch_nb * 100, time_since(start_time), loss_val, correct_pred_in_batch_val, batch_size,
             batch_acc * 100))
-    return loss_test.cpu().detach(), batch_acc
+    return loss_val.cpu().detach(), batch_acc
 
 
 def print_train_results(classes, output, tensor_train_y, epoch, epoch_nb, start_time, loss, batch_size, print_every):

@@ -2,7 +2,22 @@
 
 This implementation basis on article **"Hierarchical Recurrent Neural Network for Skeleton Based Action Recognition"**.
 
-https://www.cv-foundation.org/openaccess/content_cvpr_2015/papers/Du_Hierarchical_Recurrent_Neural_2015_CVPR_paper.pdf
+Example use of train method:
+```
+from har.impl.hierarchical_rnn.train import train
+from har.utils.dataset_util import get_berkeley_dataset_3d, SetType, berkeley_mhad_classes
+
+def main():
+    training_data, training_labels = get_berkeley_dataset_3d('datasets/BerkeleyMHAD/3D', set_type=SetType.TRAINING)
+    validation_data, validation_labels = get_berkeley_dataset_3d('datasets/BerkeleyMHAD/3D', set_type=SetType.VALIDATION)
+
+    train(berkeley_mhad_classes, training_data, training_labels, validation_data, validation_labels)
+
+if __name__ == '__main__':
+    main()
+```
+
+Article:
 ```
 @inproceedings{du2015hierarchical,
   title={Hierarchical recurrent neural network for skeleton based action recognition},
@@ -11,10 +26,4 @@ https://www.cv-foundation.org/openaccess/content_cvpr_2015/papers/Du_Hierarchica
   pages={1110--1118},
   year={2015}
 }
-```
-
-
-Example use of train method:
-```
-train(ntu_rgbd_classes, get_batch_ntu_rgbd, dataset_path='./datasets/nturgbd/3D')
 ```

@@ -6,6 +6,7 @@ import numpy as np
 import tqdm
 from torch.utils.data import Dataset
 
+from har.utils.dataset_util import get_analysed_keypoints
 from .jtm import rotate, jtm_res_to_pil_img, jtm
 
 
@@ -80,9 +81,12 @@ def generate_jtm_images_dataset(data, labels, image_width, image_height, analyse
 
             pos = np.array([np.array([rotate(k, rotation_y, rotation_x) for k in f]) for f in ar])
 
-            pos_x = (pos[:, :, 0] + 1) * image_width / 2
-            pos_y = (pos[:, :, 1] + 1) * image_height / 2
-            pos_z = (pos[:, :, 2] + 1) * image_height / 2
+            analysed_kpts_left, analysed_kpts_right = get_analysed_keypoints()
+            all_analysed_kpts = analysed_kpts_left + analysed_kpts_right
+
+            pos_x = (pos[:, all_analysed_kpts, 0] + 1) * image_width / 2
+            pos_y = (pos[:, all_analysed_kpts, 1] + 1) * image_height / 2
+            pos_z = (pos[:, all_analysed_kpts, 2] + 1) * image_height / 2
 
             smpl_img_front = jtm_res_to_pil_img(
                 jtm(pos_x, pos_y, image_width, image_height, analysed_kpts_left, analysed_kpts_right))

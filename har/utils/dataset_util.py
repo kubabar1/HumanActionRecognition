@@ -165,10 +165,7 @@ def get_berkeley_dataset_3d(dataset_path, train_test_val_ratio=(0.8, 0.15, 0.05)
     else:
         raise ValueError('Unknown set type')
 
-    analysed_kpts_left, analysed_kpts_right = get_analysed_keypoints()
-    all_analysed_kpts = analysed_kpts_left + analysed_kpts_right
-
-    data_list = [np.load(i)[:, all_analysed_kpts, :] for i in data_paths]
+    data_list = [np.load(i)[:, :, :] for i in data_paths]
     label_list = [int(i.split(os.path.sep)[-3][1:]) - 1 for i in data_paths]
 
     return data_list, label_list

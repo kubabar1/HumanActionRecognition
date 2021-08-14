@@ -3,6 +3,8 @@ from random import randrange
 import numpy as np
 from torch.utils.data import Dataset
 
+from har.utils.dataset_util import get_analysed_keypoints
+
 
 class LSTMSimpleDataset(Dataset):
     def __init__(self, data, labels, batch_size, steps=32):
@@ -24,8 +26,11 @@ class LSTMSimpleDataset(Dataset):
             label_el = self.labels[random_data_idx]
             parts = int(data_el.shape[0] / self.steps)
 
+            analysed_kpts_left, analysed_kpts_right = get_analysed_keypoints()
+            all_analysed_kpts = analysed_kpts_left + analysed_kpts_right
+
             for i in range(parts):
-                data_arr.append(data_el[i * self.steps: i * self.steps + self.steps, :, :])
+                data_arr.append(data_el[i * self.steps: i * self.steps + self.steps, all_analysed_kpts, :])
                 labels_arr.append(label_el)
                 if len(data_arr) >= self.batch_size:
                     break
