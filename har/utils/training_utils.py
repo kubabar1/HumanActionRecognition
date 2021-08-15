@@ -15,32 +15,35 @@ class Optimizer(Enum):
     ADAM = auto()
 
 
-def validate_model(tensor_val_y, output_val, classes, epoch, epoch_nb, print_every, start_time, batch_size, loss_val):
+def validate_model(tensor_val_y, output_val, classes, epoch, epoch_nb, print_every, start_time, batch_size, loss_val,
+                   custom_text='RES'):
     ctgs_val = [classes[int(tty)] for tty in tensor_val_y]
     gss_val = [classes[int(torch.argmax(torch.exp(o)).item())] for o in output_val]
     correct_pred_in_batch_val = len([1 for c, g in zip(ctgs_val, gss_val) if c == g])
     batch_acc = correct_pred_in_batch_val / batch_size
 
     if epoch % print_every == 0:
-        print('VALIDATE: %d %d%% (%s) %.4f [%d/%d -> %.2f%%]' % (
-            epoch, epoch / epoch_nb * 100, time_since(start_time), loss_val, correct_pred_in_batch_val, batch_size,
-            batch_acc * 100))
+        print('VALIDATE_%s: %d %d%% (%s) %.4f [%d/%d -> %.2f%%]' % (
+            custom_text, epoch, epoch / epoch_nb * 100, time_since(start_time), loss_val, correct_pred_in_batch_val,
+            batch_size, batch_acc * 100))
     return loss_val.cpu().detach(), batch_acc
 
 
-def print_train_results(classes, output, tensor_train_y, epoch, epoch_nb, start_time, loss, batch_size, print_every):
+def print_train_results(classes, output, tensor_train_y, epoch, epoch_nb, start_time, loss, batch_size, print_every,
+                        custom_text='RES'):
     ctgs = [classes[int(tty)] for tty in tensor_train_y]
     gss = [classes[int(torch.argmax(torch.exp(o)).item())] for o in output]
     correct_pred_in_batch = len([1 for c, g in zip(ctgs, gss) if c == g])
     batch_accuracy = correct_pred_in_batch / batch_size
 
     if epoch % print_every == 0:
-        print('TRAIN: %d %d%% (%s) %.4f [%d/%d -> %.2f%%]' % (
-            epoch, epoch / epoch_nb * 100, time_since(start_time), loss, correct_pred_in_batch, batch_size, batch_accuracy * 100))
+        print('TRAIN_%s: %d %d%% (%s) %.4f [%d/%d -> %.2f%%]' % (
+            custom_text, epoch, epoch / epoch_nb * 100, time_since(start_time), loss, correct_pred_in_batch, batch_size,
+            batch_accuracy * 100))
     return batch_accuracy
 
 
-def save_model_common(model, optimizer, epoch, train_every, validate_every, all_train_losses, all_val_losses,
+def save_model_common(model, optimizer, epoch, validate_every, all_train_losses, all_val_losses,
                       save_model_for_inference, results_path, model_name):
     if not os.path.exists(results_path):
         pathlib.Path(results_path).mkdir(parents=True)
@@ -52,7 +55,6 @@ def save_model_common(model, optimizer, epoch, train_every, validate_every, all_
             'optimizer_state_dict': optimizer.state_dict(),
             'loss': all_train_losses,
             'all_val_losses': all_val_losses,
-            'train_every': train_every,
             'validate_every': validate_every
         }, model_output_path)
     else:

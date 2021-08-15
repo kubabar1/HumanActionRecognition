@@ -12,7 +12,7 @@ from ...utils.training_utils import save_model_common, save_diagram_common, gene
 
 def train(classes, training_data, training_labels, validation_data, validation_labels,
           epoch_nb=10000, batch_size=128, hidden_size=256, learning_rate=0.00001,
-          print_every=50, weight_decay=0, momentum=0.9, train_every=10, val_every=5, save_loss=True,
+          print_every=50, weight_decay=0, momentum=0.9, val_every=5, save_loss=True,
           save_diagram=True, results_path='results', optimizer_type=Optimizer.RMSPROP, save_model=True,
           save_model_for_inference=False):
     method_name = 'lstm_simple'
@@ -86,7 +86,7 @@ def train(classes, training_data, training_labels, validation_data, validation_l
                             all_batch_training_accuracies, all_batch_val_accuracies)
 
     if save_model:
-        save_model_common(lstm_model, optimizer, epoch, train_every, val_every, all_train_losses, all_val_losses,
+        save_model_common(lstm_model, optimizer, epoch, val_every, all_train_losses, all_val_losses,
                           save_model_for_inference, results_path, model_name)
 
     if save_loss:

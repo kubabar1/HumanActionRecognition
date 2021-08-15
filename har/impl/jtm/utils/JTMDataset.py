@@ -6,16 +6,17 @@ import numpy as np
 import tqdm
 from torch.utils.data import Dataset
 
-from har.utils.dataset_util import get_analysed_keypoints
+from har.utils.dataset_util import get_analysed_keypoints, SetType
 from .jtm import rotate, jtm_res_to_pil_img, jtm
 
 
 class JTMDataset(Dataset):
-    def __init__(self, data, labels, image_width, image_height, analysed_kpts_left, analysed_kpts_right, action_repetitions,
-                 batch_size):
-        self.data, self.labels = generate_jtm_images_dataset(data, labels, image_width, image_height,
-                                                             analysed_kpts_left, analysed_kpts_right, action_repetitions)
+    def __init__(self, data, labels, image_width, image_height, action_repetitions, batch_size, set_type: SetType,
+                 use_cache=True):
+        self.data, self.labels = generate_jtm_images_dataset(data, labels, image_width, image_height, action_repetitions,
+                                                             set_type, use_cache)
         self.batch_size = batch_size
+        self.use_cache = use_cache
 
     def __len__(self):
         return len(self.data)
@@ -34,15 +35,14 @@ class JTMDataset(Dataset):
         return data_arr, labels_arr
 
 
-def generate_jtm_images_dataset(data, labels, image_width, image_height, analysed_kpts_left, analysed_kpts_right,
-                                action_repetitions):
+def generate_jtm_images_dataset(data, labels, image_width, image_height, action_repetitions, set_type, use_cache):
     data_base_name = 'data'
     data_root_dir = 'images_cache'
-    dataset_cache_dir = os.path.join('dataset_cache', 'jtm')
+    dataset_cache_dir = os.path.join('dataset_cache', 'jtm', set_type.name)
     data_arr_cache_path = os.path.join(dataset_cache_dir, 'data_arr_cache')
     labels_arr_cache_path = os.path.join(dataset_cache_dir, 'labels_arr_cache')
 
-    if os.path.exists(data_arr_cache_path + '.npy') and os.path.exists(labels_arr_cache_path + '.npy'):
+    if use_cache and os.path.exists(data_arr_cache_path + '.npy') and os.path.exists(labels_arr_cache_path + '.npy'):
         # print('Loading dataset from cache ...')
         return np.load(data_arr_cache_path + '.npy', allow_pickle=True), np.load(labels_arr_cache_path + '.npy',
                                                                                  allow_pickle=True)

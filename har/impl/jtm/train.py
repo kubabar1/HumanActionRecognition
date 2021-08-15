@@ -8,16 +8,16 @@ import torchvision.models as models
 import torchvision.transforms as transforms
 
 from .utils.JTMDataset import JTMDataset
-from ...utils.dataset_util import get_analysed_keypoints
+from ...utils.dataset_util import get_analysed_keypoints, SetType
 from ...utils.training_utils import save_model_common, save_diagram_common, generate_model_name, Optimizer, save_loss_common, \
     time_since
 
 
 def train(classes, training_data, training_labels, validation_data, validation_labels, image_width, image_height,
-          epoch_nb=10, batch_size=64, action_repetitions=100,
-          learning_rate=0.00001, print_every=2, weight_decay=0.0005, momentum=0.9, step_size=30, gamma=0.1, train_every=10,
-          validate_every=2, save_loss=True, save_diagram=True, results_path='results', optimizer_type=Optimizer.RMSPROP,
-          save_model=True, save_model_for_inference=False):
+          epoch_nb=200, batch_size=64, action_repetitions=100,
+          learning_rate=0.00001, print_every=2, weight_decay=0.0005, momentum=0.9, step_size=30, gamma=0.1, validate_every=5,
+          save_loss=True, save_diagram=True, results_path='results', optimizer_type=Optimizer.RMSPROP,
+          save_model=True, save_model_for_inference=False, use_cache=True):
     method_name = 'jtm'
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     analysed_kpts_left, analysed_kpts_right = get_analysed_keypoints()
@@ -62,11 +62,10 @@ def train(classes, training_data, training_labels, validation_data, validation_l
     scheduler_top = optim.lr_scheduler.StepLR(optimizer_top, step_size=step_size, gamma=gamma)
     scheduler_side = optim.lr_scheduler.StepLR(optimizer_side, step_size=step_size, gamma=gamma)
 
-    train_data_loader = JTMDataset(training_data, training_labels, image_width, image_height, analysed_kpts_left,
-                                   analysed_kpts_right, action_repetitions, batch_size)
-
-    validation_data_loader = JTMDataset(validation_data, validation_labels, image_width, image_height, analysed_kpts_left,
-                                        analysed_kpts_right, action_repetitions, batch_size)
+    train_data_loader = JTMDataset(training_data, training_labels, image_width, image_height, action_repetitions, batch_size,
+                                   SetType.TRAINING, use_cache)
+    val_data_loader = JTMDataset(validation_data, validation_labels, image_width, image_height, action_repetitions, batch_size,
+                                 SetType.VALIDATION, use_cache)
 
     all_train_losses_front = []
     all_train_losses_top = []
@@ -158,7 +157,7 @@ def train(classes, training_data, training_labels, validation_data, validation_l
                     epoch, epoch / epoch_nb * 100, time_since(start_time), loss_side, train_acc_side, batch_size,
                     train_acc_side / batch_size * 100))
             with torch.no_grad():
-                data_valid, labels_valid = next(iter(validation_data_loader))
+                data_valid, labels_valid = next(iter(val_data_loader))
 
                 all_val_losses_front_tmp = []
                 all_val_losses_top_tmp = []
@@ -230,11 +229,11 @@ def train(classes, training_data, training_labels, validation_data, validation_l
                             results_path, all_batch_training_accuracies_side, all_batch_val_accuracies_side)
 
     if save_model:
-        save_model_common(model_alexnet_front, optimizer_front, epoch, train_every, validate_every, all_train_losses_front,
+        save_model_common(model_alexnet_front, optimizer_front, epoch, validate_every, all_train_losses_front,
                           all_val_losses_front, save_model_for_inference, results_path, model_name + '_front')
-        save_model_common(model_alexnet_top, optimizer_top, epoch, train_every, validate_every, all_train_losses_top,
+        save_model_common(model_alexnet_top, optimizer_top, epoch, validate_every, all_train_losses_top,
                           all_val_losses_top, save_model_for_inference, results_path, model_name + '_top')
-        save_model_common(model_alexnet_side, optimizer_side, epoch, train_every, validate_every, all_train_losses_side,
+        save_model_common(model_alexnet_side, optimizer_side, epoch, validate_every, all_train_losses_side,
                           all_val_losses_side, save_model_for_inference, results_path, model_name + '_side')
 
     if save_loss:

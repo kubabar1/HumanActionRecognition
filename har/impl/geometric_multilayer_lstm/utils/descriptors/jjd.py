@@ -2,7 +2,7 @@ import numpy as np
 from scipy.spatial import distance
 
 
-def create_jjd_batch(keypoints_sequence, analysed_kpts):
+def calculate_jjd(keypoints_sequence, analysed_kpts):
     keypoints_sequence = keypoints_sequence[:, analysed_kpts, :]
     jjd_batch = []
     for frame in keypoints_sequence:
@@ -15,10 +15,8 @@ def create_jjd_batch(keypoints_sequence, analysed_kpts):
     return np.array(jjd_batch)
 
 
-def batch_test():
-    kpts_sequence = np.random.rand(150, 17, 3)
-    analysed_kpts = [16, 15, 14, 11, 12, 13, 1, 2, 3, 4, 5, 6]
-    rp_batch_tmp = create_jjd_batch(kpts_sequence, analysed_kpts)
-    print(rp_batch_tmp.shape)
-
-# batch_test()
+# def batch_test():
+#     kpts_sequence = np.random.rand(150, 17, 3)
+#     analysed_kpts = [16, 15, 14, 11, 12, 13, 1, 2, 3, 4, 5, 6]
+#     rp_batch_tmp = calculate_jjd(kpts_sequence, analysed_kpts)
+#     print(rp_batch_tmp.shape)
