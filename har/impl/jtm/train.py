@@ -15,7 +15,7 @@ from ...utils.training_utils import save_model_common, save_diagram_common, gene
 
 def train(classes, training_data, training_labels, validation_data, validation_labels, image_width, image_height,
           epoch_nb=200, batch_size=64, action_repetitions=100,
-          learning_rate=0.00001, print_every=2, weight_decay=0.0005, momentum=0.9, step_size=30, gamma=0.1, validate_every=5,
+          learning_rate=0.00001, print_every=2, weight_decay=0.0005, momentum=0.9, step_size=30, gamma=0.1, validate_every=2,
           save_loss=True, save_diagram=True, results_path='results', optimizer_type=Optimizer.RMSPROP,
           save_model=True, save_model_for_inference=False, use_cache=True):
     method_name = 'jtm'

@@ -1,4 +1,5 @@
 import os
+from hashlib import sha1
 from random import randrange
 
 import numpy as np
@@ -69,7 +70,7 @@ def generate_geometric_multilayer_lstm(data, labels, split, set_type, use_cache=
         data_el = data[it]
         label_el = labels[it]
 
-        data_el_split = np.array([a[randrange(len(a))] for a in np.array_split(data_el[:, :, :], split)])
+        data_el_split = np.array([a[randrange(len(a))] for a in np.array_split(data_el, split)])
 
         data_rp = calculate_rp(data_el_split, all_analysed_kpts)
         data_jjd = calculate_jjd(data_el_split, all_analysed_kpts)

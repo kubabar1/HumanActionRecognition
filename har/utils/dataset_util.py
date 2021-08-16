@@ -135,7 +135,7 @@ def get_analysed_keypoints(is_3d=True):
 
 def get_berkeley_dataset_3d(dataset_path, train_test_val_ratio=(0.8, 0.15, 0.05), set_type=SetType.TRAINING,
                             data_npy_file_name='3d_coordinates.npy'):
-    if not sum(train_test_val_ratio) == 1.0:
+    if not round(sum(train_test_val_ratio), 3) == 1.0:
         raise ValueError('Train/Test/Val ratio must sum to 1')
     training_ratio, test_ratio, validation_ratio = train_test_val_ratio
 
