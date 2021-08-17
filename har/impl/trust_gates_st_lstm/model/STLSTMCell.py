@@ -14,6 +14,7 @@ class STLSTMCell(RNNCellBase):
         super(STLSTMCell, self).__init__(input_size, hidden_size, bias, num_chunks=5)
         self.input_size = input_size
         self.hidden_size = hidden_size
+
         self.w_ih = Parameter(torch.randn(5 * hidden_size, input_size))
         self.w_hh0 = Parameter(torch.randn(5 * hidden_size, hidden_size))
         self.w_hh1 = Parameter(torch.randn(5 * hidden_size, hidden_size))
@@ -21,10 +22,22 @@ class STLSTMCell(RNNCellBase):
         self.b_hh0 = Parameter(torch.randn(5 * hidden_size))
         self.b_hh1 = Parameter(torch.randn(5 * hidden_size))
 
-    # def reset_parameters(self):
-    #     stdv = 1.0 / math.sqrt(self.hidden_size)
-    #     for weight in self.parameters():
-    #         init.uniform_(weight, -stdv, stdv)
+        self.w_mx = Parameter(torch.randn(hidden_size, input_size))
+        self.b_mx = Parameter(torch.randn(hidden_size))
+        self.w_mp1 = Parameter(torch.randn(hidden_size, hidden_size))
+        self.w_mp2 = Parameter(torch.randn(hidden_size, hidden_size))
+        self.b_mp1 = Parameter(torch.randn(hidden_size))
+        self.b_mp2 = Parameter(torch.randn(hidden_size))
+
+        self.lbd = 0.5
+        self.use_tau = True
+
+        self.reset_parameters()
+
+    def reset_parameters(self) -> None:
+        stdv = 1.0 / math.sqrt(self.hidden_size)
+        for weight in self.parameters():
+            init.uniform_(weight, -stdv, stdv)
 
     def forward(self, input: Tensor, state: Optional[Tuple[Tensor, Tensor, Tensor, Tensor]]) -> Tuple[Tensor, Tensor]:
         self.check_forward_input(input)
@@ -54,7 +67,19 @@ class STLSTMCell(RNNCellBase):
         out_gate = torch.sigmoid(out_gate)
         u_gate = torch.tanh(u_gate)
 
-        cy = (in_gate * u_gate) + (forget_gate_s * c_spat_prev) + (forget_gate_t * c_temp_prev)
+        if self.use_tau:
+            p = torch.mm(h_spat_prev, self.w_mp1.t()) + torch.mm(h_temp_prev, self.w_mp2.t()) + self.b_mp1 + self.b_mp2
+            p = torch.tanh(p)
+
+            x_prim = torch.tanh(torch.mm(input.clone(), self.w_mx.t())) + self.b_mx
+            tau = self.G(x_prim - p, self.lbd)
+
+            cy = (tau * in_gate * u_gate) + ((1 - tau) * forget_gate_s * c_spat_prev) + ((1 - tau) * forget_gate_t * c_temp_prev)
+        else:
+            cy = (in_gate * u_gate) + (forget_gate_s * c_spat_prev) + (forget_gate_t * c_temp_prev)
         hy = out_gate * torch.tanh(cy)
 
         return hy, cy
+
+    def G(self, z, lbd):
+        return torch.exp(-1 * lbd * z * z)

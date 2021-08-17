@@ -19,6 +19,6 @@ class TrustGatesSTLSTMModel(nn.Module):
     def forward(self, input, state):
         h_next, c_next = self.st_lstm_cell_1(input, state)
         h_next = self.dropout_l(h_next)
-        out, c_next = self.st_lstm_cell_2(h_next, state)
-        out = self.fc(out)
+        h_next, c_next = self.st_lstm_cell_2(h_next, state)
+        out = self.fc(h_next)
         return h_next, c_next, F.log_softmax(out, dim=-1)
