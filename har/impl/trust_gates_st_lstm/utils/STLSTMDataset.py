@@ -24,7 +24,6 @@ class STLSTMDataset(Dataset):
             random_data_idx = randrange(self.__len__())
             data_el = self.data[random_data_idx]
             label_el = self.labels[random_data_idx]
-            # print( .shape)
             analysed_kpts_left, analysed_kpts_right = get_analysed_keypoints()
             all_analysed_kpts = analysed_kpts_left + analysed_kpts_right
 

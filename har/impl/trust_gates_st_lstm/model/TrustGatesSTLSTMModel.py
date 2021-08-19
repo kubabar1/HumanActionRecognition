@@ -17,11 +17,11 @@ class TrustGatesSTLSTMModel(nn.Module):
         self.spatial_dim = spatial_dim
         self.temporal_dim = temporal_dim
 
-        self.lstm_cell = nn.LSTMCell(36, hidden_size)
-        self.st_lstm_cell_1 = STLSTMCell(input_size, hidden_size)
-        # self.st_lstm_cell_2 = STLSTMCell(hidden_size, hidden_size)
+        self.st_lstm_cell_list_1 = nn.ModuleList([STLSTMCell(input_size, hidden_size) for _ in range(spatial_dim)])
+        self.st_lstm_cell_list_2 = nn.ModuleList([STLSTMCell(input_size, hidden_size) for _ in range(spatial_dim)])
+        self.dropout_l = nn.Dropout(dropout)
+
         self.fc = torch.nn.Linear(hidden_size, classes_count)
-        # self.dropout_l = nn.Dropout(dropout)
 
     def forward(self, input, tensor_train_y):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -33,21 +33,17 @@ class TrustGatesSTLSTMModel(nn.Module):
         output_arr = []
         losses_arr = []
 
-        # for t in range(input.shape[1]):
-        #     hn_next, cn_next = self.lstm_cell(input[:, t, :, :].reshape(128, 36), (hn_next, cn_next))
-        #     out = F.log_softmax(self.fc(hn_next), dim=-1)
-
         for j in range(input.shape[2]):
             model_input = input[:, :, j, :]
 
             for t in range(model_input.shape[1]):
-                hn_next, cn_next = self.st_lstm_cell_1(model_input[:, t, :], (hn_next, cn_next, hn_spat_arr[t], cn_spat_arr[t]))
+                hn_next, cn_next = self.st_lstm_cell_list_1[j](model_input[:, t, :], (hn_next, cn_next, hn_spat_arr[t], cn_spat_arr[t]))
+                hn_next = self.dropout_l(hn_next)
+                hn_next, cn_next = self.st_lstm_cell_list_2[j](model_input[:, t, :], (hn_next, cn_next, hn_spat_arr[t], cn_spat_arr[t]))
                 out = F.log_softmax(self.fc(hn_next), dim=-1)
                 losses_arr.append(self.criterion(out, tensor_train_y))
                 output_arr.append(out)
                 hn_spat_arr[t] = hn_next
                 cn_spat_arr[t] = cn_next
-
-        #return out, self.criterion(out, tensor_train_y)
 
         return torch.mean(torch.stack(output_arr), dim=0), torch.mean(torch.stack(losses_arr))

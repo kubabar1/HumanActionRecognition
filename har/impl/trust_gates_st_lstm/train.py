@@ -4,7 +4,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from .model.STLSTMCell import STLSTMState
 from .model.TrustGatesSTLSTMModel import TrustGatesSTLSTMModel
 from .utils.STLSTMDataset import STLSTMDataset
 from ...utils.training_utils import Optimizer, print_train_results, validate_model, generate_model_name, save_diagram_common, \
@@ -12,7 +11,7 @@ from ...utils.training_utils import Optimizer, print_train_results, validate_mod
 
 
 def train(classes, training_data, training_labels, validation_data, validation_labels,
-          epoch_nb=2000, batch_size=128, hidden_size=256, learning_rate=0.0002,
+          epoch_nb=2000, batch_size=128, hidden_size=256, learning_rate=0.00001,
           print_every=10, weight_decay=0, momentum=0.9, dropout=0.5, test_every=5, split_data=20,
           save_loss=True, save_diagram=True, results_path='results', optimizer_type=Optimizer.RMSPROP, save_model=True,
           save_model_for_inference=False):
@@ -69,55 +68,15 @@ def train(classes, training_data, training_labels, validation_data, validation_l
             train_accuracy = print_train_results(classes, output, tensor_train_y, epoch, epoch_nb, start_time, loss, batch_size,
                                                  print_every)
             all_batch_training_accuracies.append(train_accuracy)
-            # with torch.no_grad():
-            #     data_val, val_y = next(iter(validation_data_loader))
-            #     tensor_val_y = torch.from_numpy(val_y).to(device)
-            #     tensor_val_x = torch.tensor(data_val, dtype=torch.float, device=device)
-            #
-            #     joints_count_val = tensor_val_x.shape[2]
-            #     spatial_dim_val = joints_count_val
-            #     temporal_dim_val = tensor_val_x.shape[1]
-            #
-            #     cell1_out_val = [[[None, None] for _ in range(spatial_dim)] for _ in range(temporal_dim)]
-            #
-            #     losses_arr_val = []
-            #
-            #     for t in range(temporal_dim_val):
-            #         for j in range(spatial_dim_val):
-            #             if j == 0:
-            #                 h_spat_prev_val = torch.zeros(batch_size, hidden_size).to(device)
-            #                 c_spat_prev_val = torch.zeros(batch_size, hidden_size).to(device)
-            #             else:
-            #                 h_spat_prev_val = cell1_out_val[t][j - 1][0]
-            #                 c_spat_prev_val = cell1_out_val[t][j - 1][1]
-            #             if t == 0:
-            #                 h_temp_prev_val = torch.zeros(batch_size, hidden_size).to(device)
-            #                 c_temp_prev_val = torch.zeros(batch_size, hidden_size).to(device)
-            #             else:
-            #                 h_temp_prev_val = cell1_out_val[t - 1][j][0]
-            #                 c_temp_prev_val = cell1_out_val[t - 1][j][1]
-            #             state_val = STLSTMState(h_temp_prev_val, c_temp_prev_val, h_spat_prev_val, c_spat_prev_val)
-            #             input_val = data_val[:, t, j, :]
-            #             h_next_val, c_next_val, output_val = st_lstm_model(
-            #                 torch.tensor(input_val, dtype=torch.float, device=device), state_val)
-            #
-            #             cell1_out_val[t][j][0] = h_next_val
-            #             cell1_out_val[t][j][1] = c_next_val
-            #
-            #             losses_arr_val.append(criterion(output_val, tensor_val_y))
-            #
-            #     loss_val = 0
-            #
-            #     for l in losses_arr_val:
-            #         loss_val += l
-            #
-            #     loss_val /= (spatial_dim_val * temporal_dim_val)
-            #
-            #     loss_val = criterion(output_val, tensor_val_y)
-            #     test_loss_val, batch_acc_val = validate_model(tensor_val_y, output_val, classes, epoch, epoch_nb, print_every,
-            #                                                   start_time, batch_size, loss_val)
-            #     all_val_losses.append(test_loss_val)
-            #     all_batch_val_accuracies.append(batch_acc_val)
+            with torch.no_grad():
+                data_val, val_y = next(iter(validation_data_loader))
+                tensor_val_y = torch.from_numpy(val_y).to(device)
+                tensor_val_x = torch.tensor(data_val, dtype=torch.float, device=device)
+                output_val, loss_val = st_lstm_model(tensor_val_x, tensor_val_y)
+                val_loss, batch_acc = validate_model(tensor_val_y, output_val, classes, epoch, epoch_nb, print_every,
+                                                     start_time, batch_size, loss_val)
+                all_val_losses.append(val_loss)
+                all_batch_val_accuracies.append(batch_acc)
 
     model_name = generate_model_name(method_name, epoch_nb, batch_size, learning_rate, optimizer_type.name, hidden_size)
 
