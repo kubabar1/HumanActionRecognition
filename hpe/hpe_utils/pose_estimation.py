@@ -131,6 +131,11 @@ def estimate_pose_common(img, det_model, pose_model, video_writer, frame, start_
             dataset=dataset,
             return_heatmap=return_heatmap,
             outputs=output_layer_names)
+
+        # heatmaps_person_0 = returned_outputs[0]['heatmap'][0]
+        # analysed_kpts = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+        # kpts_person_0 = pose_results[0]['keypoints']
+        # generate_heatmap_and_kpts_single_person(heatmaps_person_0[analysed_kpts], kpts_person_0[analysed_kpts], img)
     else:
         pose_results, returned_outputs = inference_bottom_up_pose_model(
             pose_model,

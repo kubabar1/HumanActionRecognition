@@ -1,4 +1,5 @@
 import os
+import textwrap
 from enum import Enum, auto
 
 import numpy as np
@@ -169,3 +170,45 @@ def get_berkeley_dataset_3d(dataset_path, train_test_val_ratio=(0.8, 0.15, 0.05)
     label_list = [int(i.split(os.path.sep)[-3][1:]) - 1 for i in data_paths]
 
     return data_list, label_list
+
+
+def get_ntu_rgbd_dataset_3d(dataset_path, train_test_val_ratio=(0.8, 0.15, 0.05), set_type=SetType.TRAINING,
+                            data_npy_file_name='3d_coordinates.npy'):
+    if not round(sum(train_test_val_ratio), 3) == 1.0:
+        raise ValueError('Train/Test/Val ratio must sum to 1')
+    training_ratio, test_ratio, validation_ratio = train_test_val_ratio
+
+    data_paths = []
+
+    for root, dirs, files in os.walk(dataset_path):
+        if not dirs:
+            action_id = int(textwrap.wrap(root.split('/')[-1].split('_')[0], 4)[-1][1:])
+            if action_id < 50:
+                data_path = os.path.join(root, data_npy_file_name)
+                data_paths.append(data_path)
+
+    dataset_size = len(data_paths)
+    training_nb = int(training_ratio * dataset_size)
+    test_nb = int(test_ratio * dataset_size)
+    validation_nb = int(dataset_size - training_nb - test_nb)
+
+    if training_nb <= 0 or test_nb <= 0 or validation_nb <= 0:
+        raise ValueError('Train, test and validation set size must be bigger than 0')
+
+    data_paths = sorted(data_paths)
+
+    if set_type == SetType.TRAINING:
+        data_paths = data_paths[:training_nb]
+    elif set_type == SetType.TEST:
+        data_paths = data_paths[training_nb:training_nb + test_nb]
+    elif set_type == SetType.VALIDATION:
+        data_paths = data_paths[training_nb + test_nb:]
+    else:
+        raise ValueError('Unknown set type')
+
+    data_list = [np.load(i)[:, :, :] for i in data_paths]
+    label_list = [int(textwrap.wrap(i.split('/')[-2].split('_')[0], 4)[-1][1:]) - 1 for i in data_paths]
+
+    return data_list, label_list
+
+

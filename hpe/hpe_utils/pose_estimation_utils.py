@@ -2,10 +2,12 @@ import csv
 import datetime
 import os
 import re
+import shutil
 import time
 
 import cv2
 import numpy as np
+from matplotlib import pyplot as plt
 
 keypoint_names = [
     "nose",
@@ -105,6 +107,27 @@ def draw_keypoints_on_video(image, pose_results):
     return vis_img_copy
 
 
+def generate_heatmap_and_kpts_single_person(heatmap, kpts, img):
+    heatmap_mean = np.mean(heatmap, axis=0)
+    fig = plt.figure(facecolor='w')
+    ax1 = fig.add_subplot(1, 2, 1)
+    ax1.imshow(heatmap_mean, interpolation='nearest', cmap=plt.cm.jet)
+    ax1.set_title('2D')
+
+    ax2 = fig.add_subplot(1, 2, 2, projection='3d')
+    x, y = np.mgrid[:heatmap_mean.shape[0], :heatmap_mean.shape[1]]
+    ax2.plot_surface(x, y, heatmap_mean, cmap=plt.cm.jet, rstride=1, cstride=1, linewidth=0., antialiased=False)
+    ax2.set_title('3D')
+    plt.savefig('heatmap_single_person.png')
+
+    img_tmp = img.copy()
+
+    for kpt in kpts:
+        cv2.circle(img_tmp, (int(kpt[0]), int(kpt[1])), 1, (0, 0, 255), 5)
+
+    cv2.imwrite('keypoints_single_person.png', img_tmp)
+
+
 def save_keypoints_csv(pose_results, output_csv_root, frame, input_name):
     predicted_poses = len(pose_results)
     for pose_idx in range(predicted_poses):
@@ -139,4 +162,4 @@ def save_bounding_box_csv(bboxes, output_csv_root, frame, input_name):
 def purge_files(dir, pattern):
     for f in os.listdir(dir):
         if re.search(pattern, f):
-            os.remove(os.path.join(dir, f))
+            shutil.rmtree(os.path.join(dir, f))
