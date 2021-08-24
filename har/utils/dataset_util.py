@@ -134,7 +134,7 @@ def get_analysed_keypoints(is_3d=True):
     return analysed_kpts_left, analysed_kpts_right
 
 
-def get_berkeley_dataset_3d(dataset_path, train_test_val_ratio=(0.8, 0.15, 0.05), set_type=SetType.TRAINING,
+def get_berkeley_dataset_3d(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), set_type=SetType.TRAINING,
                             data_npy_file_name='3d_coordinates.npy'):
     if not round(sum(train_test_val_ratio), 3) == 1.0:
         raise ValueError('Train/Test/Val ratio must sum to 1')
@@ -172,7 +172,7 @@ def get_berkeley_dataset_3d(dataset_path, train_test_val_ratio=(0.8, 0.15, 0.05)
     return data_list, label_list
 
 
-def get_ntu_rgbd_dataset_3d(dataset_path, train_test_val_ratio=(0.8, 0.15, 0.05), set_type=SetType.TRAINING,
+def get_ntu_rgbd_dataset_3d(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), set_type=SetType.TRAINING,
                             data_npy_file_name='3d_coordinates.npy'):
     if not round(sum(train_test_val_ratio), 3) == 1.0:
         raise ValueError('Train/Test/Val ratio must sum to 1')
