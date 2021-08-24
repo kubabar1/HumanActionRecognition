@@ -141,4 +141,3 @@ datasets_unprocessed
 
 har/impl/gca_lstm
 har/impl/end_to_end_st_lstm
-visualisation
