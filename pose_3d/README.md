@@ -20,11 +20,11 @@ VideoPose3D installation and configuration process is described here https://git
 Example command:
 
 ```
-python process_data.py 
-    --input-directory unprocessed/ntu_rgbd/ 
-    --output-directory dataset
-    --frame-width 1920 
-    --frame-height 1080 
+python process_data.py \
+    --input-directory unprocessed/ntu_rgbd/ \
+    --output-directory dataset \
+    --frame-width 1920 \
+    --frame-height 1080 \
     --generate-2D
 ```
 
