@@ -5,8 +5,20 @@ import shutil
 import sys
 
 import numpy as np
+import tqdm
 
 from .mmpose_results_utils import get_keypoints_for_all_frames
+
+
+def get_best_pose_for_frame(poses):
+    tmp = []
+    best_acc = 0
+    for pose in poses:
+        acc = np.sum(pose[2::3])
+        if acc > best_acc:
+            best_acc = acc
+            tmp = pose
+    return tmp
 
 
 def process_to_2d_single_person(input_data_path, output_directory):
@@ -24,7 +36,8 @@ def process_to_2d_single_person(input_data_path, output_directory):
 
             if not os.path.exists(os.path.dirname(output_path)):
                 pathlib.Path(os.path.dirname(output_path)).mkdir(parents=True)
-            final_pose = [poses[0] if len(poses) else [] for poses in get_keypoints_for_all_frames(input_file)]
+            final_pose = [get_best_pose_for_frame(poses) if len(poses) else [] for poses in
+                          get_keypoints_for_all_frames(input_file)]
             with open(output_path, "w+") as my_csv:
                 csvWriter = csv.writer(my_csv, delimiter=',')
                 csvWriter.writerows(final_pose)
@@ -81,6 +94,14 @@ def process_to_3d_single_person(input_data_path, output_directory, frame_width, 
     sys.path.append(video_pose_3d_path)
     from .run_video_pose_3d import process_custom_2d_to_3d_npz
 
+    count = 0
+
+    for root, dirs, files in os.walk(tmp_3d_results_path):
+        if not dirs:
+            count += 1
+
+    progress_bar = tqdm.tqdm(total=count)
+
     for root, dirs, files in os.walk(tmp_3d_results_path):
         if not dirs:
             pose_2d_npz_path = os.path.join(root, files[0])
@@ -91,6 +112,8 @@ def process_to_3d_single_person(input_data_path, output_directory, frame_width, 
                 pathlib.Path(os.path.dirname(output_path)).mkdir(parents=True)
 
             process_custom_2d_to_3d_npz(pose_2d_npz_path, video_pose_3d_path, viz_subject, viz_action, viz_export=output_path)
+            progress_bar.update(1)
 
+    progress_bar.close()
     if os.path.exists(tmp_3d_results_path):
         shutil.rmtree(tmp_3d_results_path)
