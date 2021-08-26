@@ -212,3 +212,11 @@ def get_ntu_rgbd_dataset_3d(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), 
     return data_list, label_list
 
 
+def normalize_screen_coordinates(X, w, h):
+    assert X.shape[-1] == 2
+    return X / w * 2 - [1, h / w]
+
+
+def normalise_2d_data(keypoints, video_width, video_height, analysed_kpts_description=video_pose_3d_kpts):
+    keypoints = keypoints[:, list(analysed_kpts_description.values()), :2]
+    return normalize_screen_coordinates(keypoints[..., :2], w=video_width, h=video_height)
