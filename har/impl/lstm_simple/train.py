@@ -6,19 +6,19 @@ import torch.optim as optim
 
 from .model.LSTMSimpleModel import LSTMSimpleModel
 from .utils.LSTMSimpleDataset import LSTMSimpleDataset
+from ...utils.dataset_util import DatasetInputType
 from ...utils.training_utils import save_model_common, save_diagram_common, generate_model_name, print_train_results, \
     Optimizer, save_loss_common, validate_model
 
 
 def train(classes, training_data, training_labels, validation_data, validation_labels,
-          epoch_nb=10000, batch_size=128, hidden_size=128, learning_rate=0.00001,
-          print_every=50, weight_decay=0, momentum=0.9, val_every=5, save_loss=True,
+          analysed_kpts_description, input_size=36,
+          epoch_nb=5000, batch_size=128, hidden_size=192, learning_rate=0.000001,
+          print_every=50, weight_decay=0, momentum=0.9, val_every=5, input_type=DatasetInputType.STEP, save_loss=True,
           save_diagram=True, results_path='results', optimizer_type=Optimizer.RMSPROP, save_model=True,
           save_model_for_inference=False):
     method_name = 'lstm_simple'
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-    input_size = 3 * 12
 
     lstm_model = LSTMSimpleModel(input_size, hidden_size, len(classes)).to(device)
 
@@ -42,8 +42,9 @@ def train(classes, training_data, training_labels, validation_data, validation_l
     start_time = time.time()
     epoch = 0
 
-    train_data_loader = LSTMSimpleDataset(training_data, training_labels, batch_size)
-    validation_data_loader = LSTMSimpleDataset(validation_data, validation_labels, batch_size)
+    train_data_loader = LSTMSimpleDataset(training_data, training_labels, batch_size, analysed_kpts_description, input_type)
+    validation_data_loader = LSTMSimpleDataset(validation_data, validation_labels, batch_size, analysed_kpts_description,
+                                               input_type)
 
     for epoch in range(epoch_nb):
         data, train_y = next(iter(train_data_loader))

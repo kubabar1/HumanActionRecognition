@@ -6,10 +6,8 @@ from ...utils.dataset_util import get_analysed_keypoints
 from ...utils.evaluation_utils import draw_confusion_matrix
 
 
-def evaluate_tests(classes, test_data, test_labels, model_path, hidden_size=128):
+def evaluate_tests(classes, test_data, test_labels, model_path, hidden_size=128, input_size=36):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-    input_size = 3 * 12
 
     lstm_model = LSTMSimpleModel(input_size, hidden_size, len(classes)).to(device)
     lstm_model.load_state_dict(torch.load(model_path))
@@ -39,10 +37,8 @@ def evaluate_tests(classes, test_data, test_labels, model_path, hidden_size=128)
     draw_confusion_matrix(correct_arr, predicted_arr, classes)
 
 
-def fit(classes, data, model_path, hidden_size=128):
+def fit(classes, data, model_path, hidden_size=128, input_size = 36):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-    input_size = 3 * 12
 
     lstm_model = LSTMSimpleModel(input_size, hidden_size, len(classes)).to(device)
     lstm_model.load_state_dict(torch.load(model_path))

@@ -121,6 +121,11 @@ class SetType(Enum):
     VALIDATION = auto()
 
 
+class DatasetInputType(Enum):
+    STEP = auto()
+    SPLIT = auto()
+
+
 def get_analysed_keypoints(is_3d=True):
     keypoints = video_pose_3d_kpts if is_3d else mmpose_kpts
     analysed_kpts_left = [
