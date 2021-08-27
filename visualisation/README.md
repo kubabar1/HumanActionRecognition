@@ -4,16 +4,24 @@
 Draw chart of accuracy or loss values for train an validation basis on *.npy files generated during Human Action Recognition NN training.
 
 ##### Parameters:
-* **train-path** - absolute path to *.npy file with train results
-* **test-path** - absolute path to *.npy file with test results
+* **train-path** - list of absolute paths to *.npy files with train results
+* **test-path** - list of absolute paths to *.npy files with test results
 * **step** - step size
+* **legends** - array of names
+* **hide-train** - hide train plots
+* **hide-test** - hide test plots
 
 ##### Example:
 ```
 python draw_chart.py \
     --train-path '../results/lstm_simple_ep_10000_b_128_h_128_lr_1e-05_RMSPROP_train_acc.npy' \
     --test-path '../results/lstm_simple_ep_10000_b_128_h_128_lr_1e-05_RMSPROP_val_acc.npy' \
-    --step 50
+    --train-path '../results/lstm_simple_ep_10000_b_64_h_128_lr_1e-05_RMSPROP_train_acc.npy' \
+    --test-path '../results/lstm_simple_ep_10000_b_64_h_128_lr_1e-05_RMSPROP_val_acc.npy' \
+    --legend accuracy_batch_128 \
+    --legend accuracy_batch_64 \
+    --step 50 \
+    --hide-test
 ```
 
 ### Drawing pose
