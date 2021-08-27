@@ -42,8 +42,8 @@ if __name__ == '__main__':
 * **input_size** - (default 36) size of input vector data (e.g. 12 coordinates (x, y, z) -> 36)
 * **epoch_nb** - (default 10000) count of training iterations
 * **batch_size** - (default 128) size of input data batch
-* **hidden_size** - (default 128) size of LSTM hidden layer
-* **learning_rate** - (default 0.00001) learning rate
+* **hidden_size** - (default 192) size of LSTM hidden layer
+* **learning_rate** - (default 0.000001) learning rate
 * **print_every** - (default 50) print results every iterations rate
 * **weight_decay** - (default 0) optimizer weight decay parameter
 * **momentum** - (default 0.9) optimizer momentum parameter

@@ -13,7 +13,7 @@ from ...utils.training_utils import save_model_common, save_diagram_common, gene
 
 def train(classes, training_data, training_labels, validation_data, validation_labels,
           analysed_kpts_description, input_size=36,
-          epoch_nb=5000, batch_size=128, hidden_size=192, learning_rate=0.000001,
+          epoch_nb=10000, batch_size=128, hidden_size=192, learning_rate=0.000001,
           print_every=50, weight_decay=0, momentum=0.9, val_every=5, input_type=DatasetInputType.STEP, save_loss=True,
           save_diagram=True, results_path='results', optimizer_type=Optimizer.RMSPROP, save_model=True,
           save_model_for_inference=False):
