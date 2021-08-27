@@ -34,5 +34,4 @@ def draw_confusion_matrix(correct_arr, predicted_arr, classes, save_fig=True, re
         fig.savefig(result_path)
 
     mng = plt.get_current_fig_manager()
-    mng.full_screen_toggle()
     plt.show()

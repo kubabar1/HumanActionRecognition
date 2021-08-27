@@ -6,18 +6,19 @@ from ...utils.dataset_util import get_analysed_keypoints
 from ...utils.evaluation_utils import draw_confusion_matrix
 
 
-def evaluate_tests(classes, test_data, test_labels, model_path, hidden_size=128, input_size=36):
+def evaluate_tests(classes, test_data, test_labels, model_path, analysed_kpts_description, hidden_size=128, input_size=36):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     lstm_model = LSTMSimpleModel(input_size, hidden_size, len(classes)).to(device)
     lstm_model.load_state_dict(torch.load(model_path))
     lstm_model.eval()
 
-    analysed_kpts_left, analysed_kpts_right = get_analysed_keypoints()
-    all_analysed_kpts = analysed_kpts_left + analysed_kpts_right
+    all_analysed_kpts = list(analysed_kpts_description.values())
 
     correct_arr = []
     predicted_arr = []
+
+    accuracy = 0
 
     for data, label in zip(test_data, test_labels):
         label = np.array(label).reshape(1)
@@ -34,10 +35,15 @@ def evaluate_tests(classes, test_data, test_labels, model_path, hidden_size=128,
         correct_arr.append(correct)
         predicted_arr.append(predicted)
 
+        if correct == predicted:
+            accuracy += 1
+
     draw_confusion_matrix(correct_arr, predicted_arr, classes)
 
+    return accuracy / len(correct_arr)
 
-def fit(classes, data, model_path, hidden_size=128, input_size = 36):
+
+def fit(classes, data, model_path, hidden_size=128, input_size=36):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     lstm_model = LSTMSimpleModel(input_size, hidden_size, len(classes)).to(device)
