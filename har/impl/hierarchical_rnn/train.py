@@ -10,8 +10,8 @@ from ...utils.training_utils import save_model_common, save_diagram_common, gene
     Optimizer, save_loss_common, validate_model
 
 
-def train(classes, training_data, training_labels, validation_data, validation_labels,
-          epoch_nb=2000, batch_size=128, hidden_size=256, learning_rate=0.00001,
+def train(classes, training_data, training_labels, validation_data, validation_labels, analysed_kpts_description,
+          epoch_nb=5000, batch_size=128, hidden_size=256, learning_rate=0.00001,
           print_every=50, weight_decay=0, momentum=0.9, test_every=5, save_loss=True,
           save_diagram=True, results_path='results', optimizer_type=Optimizer.RMSPROP, save_model=True,
           save_model_for_inference=False):

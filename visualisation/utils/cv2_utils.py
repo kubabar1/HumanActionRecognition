@@ -3,6 +3,7 @@ import time
 
 import cv2
 import numpy as np
+import scipy.spatial
 from matplotlib import pyplot as plt
 
 
@@ -205,6 +206,8 @@ def draw_3d_pose(data_3d):
     ax.set_zlim3d(-1, 1)
 
     for f in range(1, len(data_3d)):
+        # data_3d = rotate(data_3d, 0, 0, f)
+
         # for i in video_pose_3d_kpts.values():
         #     ax.scatter(q[f][i][0], q[f][i][1], q[f][i][2])
         line0.set_data(np.array([data_3d[f][15][0], data_3d[f][16][0]]), np.array([data_3d[f][15][1], data_3d[f][16][1]]))
@@ -245,3 +248,26 @@ def draw_3d_pose(data_3d):
 
         plt.draw()
         plt.pause(0.1)
+
+
+def rotate(data_3d, rotate_x=0, rotate_y=0, rotate_z=0):
+    rotation_radians_x = np.radians(rotate_x)
+    rotation_radians_y = np.radians(rotate_y)
+    rotation_radians_z = np.radians(rotate_z)
+
+    if rotate_x != 0:
+        rotation_vector = rotation_radians_x * np.array([0, 0, 1])
+        rotation = scipy.spatial.transform.Rotation.from_rotvec(rotation_vector)
+        data_3d = np.array([np.array([rotation.apply(vec) for vec in fr]) for fr in data_3d])
+
+    if rotate_y != 0:
+        rotation_vector = rotation_radians_y * np.array([0, 1, 0])
+        rotation = scipy.spatial.transform.Rotation.from_rotvec(rotation_vector)
+        data_3d = np.array([np.array([rotation.apply(vec) for vec in fr]) for fr in data_3d])
+
+    if rotate_z != 0:
+        rotation_vector = rotation_radians_z * np.array([1, 0, 0])
+        rotation = scipy.spatial.transform.Rotation.from_rotvec(rotation_vector)
+        data_3d = np.array([np.array([rotation.apply(vec) for vec in fr]) for fr in data_3d])
+
+    return data_3d

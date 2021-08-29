@@ -4,6 +4,36 @@ from enum import Enum, auto
 
 import numpy as np
 
+utd_mhad_classes = [
+    'RIGHT_ARM_SWIPE_TO_THE_LEFT',
+    'RIGHT_ARM_SWIPE_TO_THE_RIGHT',
+    'RIGHT_HAND_WAVE',
+    'TWO_HAND_FRONT_CLAP',
+    'RIGHT_ARM_THROW',
+    'CROSS_ARMS_IN_THE_CHEST',
+    'BASKETBALL_SHOOT',
+    'RIGHT_HAND_DRAW_X',
+    'RIGHT_HAND_DRAW_CIRCLE_CLOCKWISE',
+    'RIGHT_HAND_DRAW_CIRCLE_COUNTER_CLOCKWISE',
+    'DRAW_TRIANGLE',
+    'BOWLING_RIGHT_HAND',
+    'FRONT_BOXING',
+    'BASEBALL_SWING_FROM_RIGHT',
+    'TENNIS_RIGHT_HAND_FOREHAND_SWING',
+    'ARM_CURL_TWO_ARMS',
+    'TENNIS_SERVE',
+    'TWO_HAND_PUSH',
+    'RIGHT_HAND_KNOCK_ON_DOOR',
+    'RIGHT_HAND_CATCH_AN_OBJECT',
+    'RIGHT_HAND_PICK_UP_AND_THROW',
+    'JOGGING_IN_PLACE',
+    'WALKING_IN_PLACE',
+    'SIT_TO_STAND',
+    'STAND_TO_SIT',
+    'FORWARD_LUNGE_LEFT_FOOT_FORWARD',
+    'SQUAT_TWO_ARMS_STRETCH_OUT'
+]
+
 ntu_rgbd_classes = [
     'DRINK_WATER',
     'EAT_MEAL',
@@ -137,6 +167,47 @@ def get_analysed_keypoints(is_3d=True):
         keypoints['right_shoulder'], keypoints['right_elbow'], keypoints['right_wrist']
     ]
     return analysed_kpts_left, analysed_kpts_right
+
+
+def get_utd_mhad_dataset_3d(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), set_type=SetType.TRAINING,
+                            data_npy_file_name='3d_coordinates.npy'):
+    if not round(sum(train_test_val_ratio), 3) == 1.0:
+        raise ValueError('Train/Test/Val ratio must sum to 1')
+    training_ratio, test_ratio, validation_ratio = train_test_val_ratio
+
+    data_paths = []
+
+    for root, dirs, files in os.walk(dataset_path):
+        if not dirs:
+            data_path = os.path.join(root, data_npy_file_name)
+            data_paths.append(data_path)
+
+    data_paths = sorted(data_paths)
+
+    data_paths_res = []
+
+    for i in np.array_split(data_paths, 11):
+        dataset_size = len(i)
+        training_nb = int(training_ratio * dataset_size)
+        test_nb = int(test_ratio * dataset_size)
+        validation_nb = int(dataset_size - training_nb - test_nb)
+
+        if training_nb <= 0 or test_nb <= 0 or validation_nb <= 0:
+            raise ValueError('Train, test and validation set size must be bigger than 0')
+
+        if set_type == SetType.TRAINING:
+            data_paths_res.extend(i[:training_nb])
+        elif set_type == SetType.TEST:
+            data_paths_res.extend(i[training_nb:training_nb + test_nb])
+        elif set_type == SetType.VALIDATION:
+            data_paths_res.extend(i[training_nb + test_nb:])
+        else:
+            raise ValueError('Unknown set type')
+
+    data_list = [np.load(i)[:, :, :] for i in data_paths_res]
+    label_list = [int(i.split(os.path.sep)[-4][1:]) - 1 for i in data_paths_res]
+
+    return data_list, label_list
 
 
 def get_berkeley_dataset_3d(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), set_type=SetType.TRAINING,

@@ -5,7 +5,7 @@ Draw chart of accuracy or loss values for train an validation basis on *.npy fil
 
 ##### Parameters:
 * **train-path** - list of absolute paths to *.npy files with train results
-* **test-path** - list of absolute paths to *.npy files with test results
+* **validation-path** - list of absolute paths to *.npy files with test results
 * **step** - step size
 * **legends** - array of names
 * **hide-train** - hide train plots
@@ -15,9 +15,9 @@ Draw chart of accuracy or loss values for train an validation basis on *.npy fil
 ```
 python draw_chart.py \
     --train-path '../results/lstm_simple_ep_10000_b_128_h_128_lr_1e-05_RMSPROP_train_acc.npy' \
-    --test-path '../results/lstm_simple_ep_10000_b_128_h_128_lr_1e-05_RMSPROP_val_acc.npy' \
+    --validation-path '../results/lstm_simple_ep_10000_b_128_h_128_lr_1e-05_RMSPROP_val_acc.npy' \
     --train-path '../results/lstm_simple_ep_10000_b_64_h_128_lr_1e-05_RMSPROP_train_acc.npy' \
-    --test-path '../results/lstm_simple_ep_10000_b_64_h_128_lr_1e-05_RMSPROP_val_acc.npy' \
+    --validation-path '../results/lstm_simple_ep_10000_b_64_h_128_lr_1e-05_RMSPROP_val_acc.npy' \
     --legend accuracy_batch_128 \
     --legend accuracy_batch_64 \
     --step 50 \
