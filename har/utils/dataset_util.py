@@ -184,25 +184,36 @@ def get_utd_mhad_dataset_3d(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), 
 
     data_paths = sorted(data_paths)
 
-    data_paths_res = []
+    actions = []
 
-    for i in np.array_split(data_paths, 11):
-        dataset_size = len(i)
-        training_nb = int(training_ratio * dataset_size)
-        test_nb = int(test_ratio * dataset_size)
-        validation_nb = int(dataset_size - training_nb - test_nb)
+    for a in np.array_split(data_paths, 27):
+        actions += [np.concatenate([a[range(it, len(a), 4)] for it in range(4)])]
 
-        if training_nb <= 0 or test_nb <= 0 or validation_nb <= 0:
-            raise ValueError('Train, test and validation set size must be bigger than 0')
+    tmp = []
 
-        if set_type == SetType.TRAINING:
-            data_paths_res.extend(i[:training_nb])
-        elif set_type == SetType.TEST:
-            data_paths_res.extend(i[training_nb:training_nb + test_nb])
-        elif set_type == SetType.VALIDATION:
-            data_paths_res.extend(i[training_nb + test_nb:])
-        else:
-            raise ValueError('Unknown set type')
+    max_arr = np.max([len(i) for i in actions])
+
+    for i in range(max_arr):
+        for a in actions:
+            if i < len(a):
+                tmp.append(a[i])
+
+    dataset_size = len(tmp)
+    training_nb = int(training_ratio * dataset_size)
+    test_nb = int(test_ratio * dataset_size)
+    validation_nb = int(dataset_size - training_nb - test_nb)
+
+    if training_nb <= 0 or test_nb <= 0 or validation_nb <= 0:
+        raise ValueError('Train, test and validation set size must be bigger than 0')
+
+    if set_type == SetType.TRAINING:
+        data_paths_res = tmp[:training_nb]
+    elif set_type == SetType.TEST:
+        data_paths_res = tmp[training_nb:training_nb + test_nb]
+    elif set_type == SetType.VALIDATION:
+        data_paths_res = tmp[training_nb + test_nb:]
+    else:
+        raise ValueError('Unknown set type')
 
     data_list = [np.load(i)[:, :, :] for i in data_paths_res]
     label_list = [int(i.split(os.path.sep)[-4][1:]) - 1 for i in data_paths_res]
