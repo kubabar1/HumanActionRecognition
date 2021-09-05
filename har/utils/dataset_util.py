@@ -1,8 +1,11 @@
+import csv
 import os
 import textwrap
 from enum import Enum, auto
+from random import randrange
 
 import numpy as np
+import scipy.spatial
 
 utd_mhad_classes = [
     'RIGHT_ARM_SWIPE_TO_THE_LEFT',
@@ -169,8 +172,8 @@ def get_analysed_keypoints(is_3d=True):
     return analysed_kpts_left, analysed_kpts_right
 
 
-def get_utd_mhad_dataset_3d(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), set_type=SetType.TRAINING,
-                            data_npy_file_name='3d_coordinates.npy'):
+def get_utd_mhad_dataset(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), set_type=SetType.TRAINING,
+                         data_npy_file_name='3d_coordinates.npy'):
     if not round(sum(train_test_val_ratio), 3) == 1.0:
         raise ValueError('Train/Test/Val ratio must sum to 1')
     training_ratio, test_ratio, validation_ratio = train_test_val_ratio
@@ -221,8 +224,21 @@ def get_utd_mhad_dataset_3d(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), 
     return data_list, label_list
 
 
-def get_berkeley_dataset_3d(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), set_type=SetType.TRAINING,
-                            data_npy_file_name='3d_coordinates.npy'):
+def get_csv_data(data_path):
+    with open(data_path, 'r') as file:
+        reader = csv.reader(file, delimiter=',')
+        arr = np.array([np.array(row if len(row) else np.zeros(51), dtype='float') for row in reader])
+    return arr.reshape((-1, 17, 3))
+
+
+def get_berkeley_dataset(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), set_type=SetType.TRAINING,
+                         data_file_name=None, use_3d=True):
+    if data_file_name is None:
+        if use_3d:
+            data_file_name = '3d_coordinates.npy'
+        else:
+            data_file_name = 'x.csv'
+
     if not round(sum(train_test_val_ratio), 3) == 1.0:
         raise ValueError('Train/Test/Val ratio must sum to 1')
     training_ratio, test_ratio, validation_ratio = train_test_val_ratio
@@ -231,7 +247,7 @@ def get_berkeley_dataset_3d(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), 
 
     for root, dirs, files in os.walk(dataset_path):
         if not dirs:
-            data_path = os.path.join(root, data_npy_file_name)
+            data_path = os.path.join(root, data_file_name)
             data_paths.append(data_path)
 
     data_paths = sorted(data_paths)
@@ -255,14 +271,23 @@ def get_berkeley_dataset_3d(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), 
         else:
             raise ValueError('Unknown set type')
 
-    data_list = [np.load(i)[:, :, :] for i in data_paths_res]
+    if use_3d:
+        data_list = [np.load(i)[:, :, :] for i in data_paths_res]
+    else:
+        data_list = [normalize_screen_coordinates(get_csv_data(i)[:, :, :2], berkeley_frame_width, berkeley_frame_height) for i in
+                     data_paths_res]
     label_list = [int(i.split(os.path.sep)[-3][1:]) - 1 for i in data_paths_res]
 
     return data_list, label_list
 
 
-def get_ntu_rgbd_dataset_3d(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), set_type=SetType.TRAINING,
-                            data_npy_file_name='3d_coordinates.npy'):
+def get_ntu_rgbd_dataset(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), set_type=SetType.TRAINING,
+                         data_file_name=None, use_3d=True):
+    if data_file_name is None:
+        if use_3d:
+            data_file_name = '3d_coordinates.npy'
+        else:
+            data_file_name = 'x.csv'
     if not round(sum(train_test_val_ratio), 3) == 1.0:
         raise ValueError('Train/Test/Val ratio must sum to 1')
     training_ratio, test_ratio, validation_ratio = train_test_val_ratio
@@ -273,30 +298,36 @@ def get_ntu_rgbd_dataset_3d(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), 
         if not dirs:
             action_id = int(textwrap.wrap(root.split('/')[-1].split('_')[0], 4)[-1][1:])
             if action_id < 50:
-                data_path = os.path.join(root, data_npy_file_name)
+                data_path = os.path.join(root, data_file_name)
                 data_paths.append(data_path)
 
-    dataset_size = len(data_paths)
-    training_nb = int(training_ratio * dataset_size)
-    test_nb = int(test_ratio * dataset_size)
-    validation_nb = int(dataset_size - training_nb - test_nb)
-
-    if training_nb <= 0 or test_nb <= 0 or validation_nb <= 0:
-        raise ValueError('Train, test and validation set size must be bigger than 0')
-
     data_paths = sorted(data_paths)
+    data_paths_res = []
 
-    if set_type == SetType.TRAINING:
-        data_paths = data_paths[:training_nb]
-    elif set_type == SetType.TEST:
-        data_paths = data_paths[training_nb:training_nb + test_nb]
-    elif set_type == SetType.VALIDATION:
-        data_paths = data_paths[training_nb + test_nb:]
+    for i in np.array_split(data_paths, 3):
+        dataset_size = len(i)
+        training_nb = int(training_ratio * dataset_size)
+        test_nb = int(test_ratio * dataset_size)
+        validation_nb = int(dataset_size - training_nb - test_nb)
+
+        if training_nb <= 0 or test_nb <= 0 or validation_nb <= 0:
+            raise ValueError('Train, test and validation set size must be bigger than 0')
+
+        if set_type == SetType.TRAINING:
+            data_paths_res.extend(i[:training_nb])
+        elif set_type == SetType.TEST:
+            data_paths_res.extend(i[training_nb:training_nb + test_nb])
+        elif set_type == SetType.VALIDATION:
+            data_paths_res.extend(i[training_nb + test_nb:])
+        else:
+            raise ValueError('Unknown set type')
+
+    if use_3d:
+        data_list = [np.load(i)[:, :, :] for i in data_paths_res]
     else:
-        raise ValueError('Unknown set type')
-
-    data_list = [np.load(i)[:, :, :] for i in data_paths]
-    label_list = [int(textwrap.wrap(i.split('/')[-2].split('_')[0], 4)[-1][1:]) - 1 for i in data_paths]
+        data_list = [normalize_screen_coordinates(get_csv_data(i)[:, :, :2], berkeley_frame_width, berkeley_frame_height) for i in
+                     data_paths_res]
+    label_list = [int(textwrap.wrap(i.split('/')[-2].split('_')[0], 4)[-1][1:]) - 1 for i in data_paths_res]
 
     return data_list, label_list
 
@@ -309,3 +340,10 @@ def normalize_screen_coordinates(X, w, h):
 def normalise_2d_data(keypoints, video_width, video_height, analysed_kpts_description=video_pose_3d_kpts):
     keypoints = keypoints[:, list(analysed_kpts_description.values()), :2]
     return normalize_screen_coordinates(keypoints[..., :2], w=video_width, h=video_height)
+
+
+def random_rotate_y(data_3d, rotation=None):
+    if rotation is None:
+        rotation = [np.radians(i) for i in [45, 90, 135, 180, 225, 270, 315]]
+    rot_vector = scipy.spatial.transform.Rotation.from_rotvec(rotation[randrange(len(rotation))] * np.array([0, 1, 0]))
+    return np.array([np.array([rot_vector.apply(f) for f in b]) for b in data_3d])

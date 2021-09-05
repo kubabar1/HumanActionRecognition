@@ -3,10 +3,8 @@ import os
 import pathlib
 import time
 from enum import Enum, auto
-from random import randrange
 
 import numpy as np
-import scipy.spatial
 import torch
 from matplotlib import pyplot as plt
 
@@ -94,10 +92,14 @@ def save_loss_common(all_train_losses, all_val_losses, model_name, results_path,
 
 
 def generate_model_name(method_name, epoch_nb, batch_size, learning_rate, optimizer_name, hidden_size=None, input_type=None,
-                        momentum=None, weight_decay=None, hidden_layers=None, dropout=None):
-    return '{}_ep_{}_b_{}_h_{}_lr_{}_opt_{}_inp_{}_mm_{}_wd_{}_hl_{}_dr_{}'.format(method_name, epoch_nb, batch_size, hidden_size,
-                                                                                   learning_rate, optimizer_name, input_type,
-                                                                                   momentum, weight_decay, hidden_layers, dropout)
+                        momentum=None, weight_decay=None, hidden_layers=None, dropout=None, split=None, steps=None):
+    return '{}_ep_{}_b_{}_h_{}_lr_{}_opt_{}_inp_{}_mm_{}_wd_{}_hl_{}_dr_{}_split_{}_steps_{}'.format(method_name, epoch_nb,
+                                                                                                     batch_size, hidden_size,
+                                                                                                     learning_rate,
+                                                                                                     optimizer_name, input_type,
+                                                                                                     momentum, weight_decay,
+                                                                                                     hidden_layers, dropout,
+                                                                                                     split, steps)
 
 
 def time_since(since):
@@ -106,9 +108,3 @@ def time_since(since):
     m = math.floor(s / 60)
     s -= m * 60
     return '%dm %ds' % (m, s)
-
-
-def random_rotate_y(data_3d):
-    r = [np.radians(i) for i in [45, 90, 135, 180, 225, 270, 315]]
-    rotvec = scipy.spatial.transform.Rotation.from_rotvec(r[randrange(len(r))] * np.array([0, 1, 0]))
-    return np.array([np.array([rotvec.apply(f) for f in b]) for b in data_3d])
