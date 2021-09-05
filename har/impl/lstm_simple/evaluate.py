@@ -1,15 +1,18 @@
+from random import randrange
+
 import numpy as np
 import torch
 
 from .model.LSTMSimpleModel import LSTMSimpleModel
-from ...utils.dataset_util import get_analysed_keypoints
+from ...utils.dataset_util import DatasetInputType
 from ...utils.evaluation_utils import draw_confusion_matrix
 
 
-def evaluate_tests(classes, test_data, test_labels, model_path, analysed_kpts_description, hidden_size=128, input_size=36):
+def evaluate_tests(classes, test_data, test_labels, model_path, analysed_kpts_description, hidden_size=128, input_size=36,
+                   hidden_layers=3, input_type=DatasetInputType.SPLIT, split=20):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    lstm_model = LSTMSimpleModel(input_size, hidden_size, len(classes)).to(device)
+    lstm_model = LSTMSimpleModel(input_size, hidden_size, hidden_layers, len(classes)).to(device)
     lstm_model.load_state_dict(torch.load(model_path))
     lstm_model.eval()
 
@@ -23,6 +26,10 @@ def evaluate_tests(classes, test_data, test_labels, model_path, analysed_kpts_de
     for data, label in zip(test_data, test_labels):
         label = np.array(label).reshape(1)
         data = data[:, all_analysed_kpts, :].reshape((1, -1, input_size))
+
+        if input_type == DatasetInputType.SPLIT:
+            data = np.array([a[:, randrange(len(a)), :] for a in np.array_split(data, split, axis=1)])
+            data = data.reshape((1, -1, input_size))
 
         tensor_val_x = torch.tensor(data, dtype=torch.float, device=device)
         tensor_val_y = torch.from_numpy(label).to(device)
@@ -43,17 +50,22 @@ def evaluate_tests(classes, test_data, test_labels, model_path, analysed_kpts_de
     return accuracy / len(correct_arr)
 
 
-def fit(classes, data, model_path, hidden_size=128, input_size=36):
+def fit(classes, data, model_path, analysed_kpts_description, hidden_size=128, input_size=36, input_type=DatasetInputType.SPLIT,
+        split=20):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     lstm_model = LSTMSimpleModel(input_size, hidden_size, len(classes)).to(device)
     lstm_model.load_state_dict(torch.load(model_path))
     lstm_model.eval()
 
-    analysed_kpts_left, analysed_kpts_right = get_analysed_keypoints()
-    all_analysed_kpts = analysed_kpts_left + analysed_kpts_right
+    all_analysed_kpts = list(analysed_kpts_description.values())
 
     data = data[:, all_analysed_kpts, :].reshape((1, -1, input_size))
+
+    if input_type == DatasetInputType.SPLIT:
+        data = np.array([a[:, randrange(len(a)), :] for a in np.array_split(data, split, axis=1)])
+        data = data.reshape((1, -1, input_size))
+
     tensor_val_x = torch.tensor(data, dtype=torch.float, device=device)
     output_val = lstm_model(tensor_val_x)
 

@@ -3,11 +3,12 @@ from random import randrange
 import numpy as np
 from torch.utils.data import Dataset
 
-from ....utils.dataset_util import DatasetInputType
+from ....utils.dataset_util import DatasetInputType, random_rotate_y
 
 
 class LSTMSimpleDataset(Dataset):
-    def __init__(self, data, labels, batch_size, analysed_kpts_description, input_type=DatasetInputType.STEP, steps=32, split=20):
+    def __init__(self, data, labels, batch_size, analysed_kpts_description, input_type=DatasetInputType.STEP, steps=32, split=20,
+                 add_random_rotation_y=False):
         self.data = data
         self.labels = labels
         self.analysed_kpts_description = analysed_kpts_description
@@ -15,6 +16,7 @@ class LSTMSimpleDataset(Dataset):
         self.steps = steps
         self.split = split
         self.input_type = input_type
+        self.add_random_rotation_y = add_random_rotation_y
 
     def __len__(self):
         return len(self.data)
@@ -44,4 +46,10 @@ class LSTMSimpleDataset(Dataset):
             else:
                 raise ValueError('Invalid or unimplemented input type')
 
-        return np.array(data_arr), np.array(labels_arr)
+        np_data = np.array(data_arr)
+        np_label = np.array(labels_arr)
+
+        if self.add_random_rotation_y:
+            np_data = random_rotate_y(np_data)
+
+        return np_data, np_label
