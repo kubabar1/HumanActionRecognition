@@ -153,6 +153,14 @@ def draw_points_multiple_poses(true_video_path, predicted_poses, min_acc=0.0, pa
     cv2.destroyAllWindows()
 
 
+close = False
+
+
+def close_window(event):
+    global close
+    close = True
+
+
 def draw_3d_pose(data_3d):
     fig = plt.figure(figsize=(4, 4))
     ax = fig.add_subplot(111, projection='3d')
@@ -248,6 +256,10 @@ def draw_3d_pose(data_3d):
 
         plt.draw()
         plt.pause(0.1)
+        fig.canvas.mpl_connect('close_event', close_window)
+        if close:
+            plt.close('all')
+            break
 
 
 def rotate(data_3d, rotate_x=0, rotate_y=0, rotate_z=0):
