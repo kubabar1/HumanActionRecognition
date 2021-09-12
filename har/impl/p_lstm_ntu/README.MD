@@ -29,22 +29,22 @@ if __name__ == '__main__':
 * **validation_data** - list of validation data sequences e.g. list containing 100 sequences of size (125, 17, 3)
 * **validation_labels** - list containing action labels for each validation sequence 
 * **analysed_kpts_description** - object describing keypoints meaning in training and validation data list, e.g:
-    ```
-    {
-        'right_wrist': 16, 
-        'left_wrist': 13, 
-        'right_elbow': 15, 
-        'left_elbow': 12, 
-        'right_shoulder': 14, 
-        'left_shoulder': 11, 
-        'right_hip': 1, 
-        'left_hip': 4, 
-        'right_knee': 2, 
-        'left_knee': 5, 
-        'right_ankle': 3, 
-        'left_ankle': 6
-    }
-    ```
+```
+{
+    'right_wrist': 16, 
+    'left_wrist': 13, 
+    'right_elbow': 15, 
+    'left_elbow': 12, 
+    'right_shoulder': 14, 
+    'left_shoulder': 11, 
+    'right_hip': 1, 
+    'left_hip': 4, 
+    'right_knee': 2, 
+    'left_knee': 5, 
+    'right_ankle': 3, 
+    'left_ankle': 6
+}
+```
 * **input_size** - (default 9) size of input vector data for every part (part param is described below) (e.g. 4 parts, each containing 3 keypoints, each described by coordinates (x, y, z) -> 4 parts x 9)
 * **dropout** - (default 0.5) applied dropout between LSTM layers
 * **parts** - (default 4) count of parts in P-LSTM cell (corresponding to body part, e.g. right wrist, right elbow, right shoulder -> right arm)
@@ -97,22 +97,22 @@ if __name__ == '__main__':
 * **test_labels** - list containing action labels for each test sequence 
 * **model_path** - path to generated model
 * **analysed_kpts_description** - object describing keypoints meaning in training and validation data list, e.g:
-    ```
-    {
-        'right_wrist': 16, 
-        'left_wrist': 13, 
-        'right_elbow': 15, 
-        'left_elbow': 12, 
-        'right_shoulder': 14, 
-        'left_shoulder': 11, 
-        'right_hip': 1, 
-        'left_hip': 4, 
-        'right_knee': 2, 
-        'left_knee': 5, 
-        'right_ankle': 3, 
-        'left_ankle': 6
-    }
-    ```
+```
+{
+    'right_wrist': 16, 
+    'left_wrist': 13, 
+    'right_elbow': 15, 
+    'left_elbow': 12, 
+    'right_shoulder': 14, 
+    'left_shoulder': 11, 
+    'right_hip': 1, 
+    'left_hip': 4, 
+    'right_knee': 2, 
+    'left_knee': 5, 
+    'right_ankle': 3, 
+    'left_ankle': 6
+}
+```
 * **parts** - (default 4) count of parts in P-LSTM cell used during training (corresponding to body part, e.g. right wrist, right elbow, right shoulder -> right arm)
 * **input_size** - (default 9) size of input vector data for every part used during training (part param is described below) (e.g. 4 parts, each containing 3 keypoints, each described by coordinates (x, y, z) -> 4 parts x 9)
 * **input_type** - (default DatasetInputType.SPLIT) object defining type of input data used during training (STEP or SPLIT); input using enum defined in DatasetInputType from utils.dataset_util
@@ -154,22 +154,22 @@ if __name__ == '__main__':
 * **data** - input sequence of shape (sequence_length, keypoints_count, kpt_coordinates_count), e.g. (190, 17, 3)
 * **model_path** - path to generated model
 * **analysed_kpts_description** - object describing keypoints meaning in training and validation data list, e.g:
-    ```
-    {
-        'right_wrist': 16, 
-        'left_wrist': 13, 
-        'right_elbow': 15, 
-        'left_elbow': 12, 
-        'right_shoulder': 14, 
-        'left_shoulder': 11, 
-        'right_hip': 1, 
-        'left_hip': 4, 
-        'right_knee': 2, 
-        'left_knee': 5, 
-        'right_ankle': 3, 
-        'left_ankle': 6
-    }
-    ```
+```
+{
+    'right_wrist': 16, 
+    'left_wrist': 13, 
+    'right_elbow': 15, 
+    'left_elbow': 12, 
+    'right_shoulder': 14, 
+    'left_shoulder': 11, 
+    'right_hip': 1, 
+    'left_hip': 4, 
+    'right_knee': 2, 
+    'left_knee': 5, 
+    'right_ankle': 3, 
+    'left_ankle': 6
+}
+```
 * **parts** - (default 4) count of parts in P-LSTM cell used during training (corresponding to body part, e.g. right wrist, right elbow, right shoulder -> right arm)
 * **input_size** - (default 9) size of input vector data for every part used during training (part param is described below) (e.g. 4 parts, each containing 3 keypoints, each described by coordinates (x, y, z) -> 4 parts x 9)
 * **input_type** - (default DatasetInputType.SPLIT) object defining type of input data used during training (STEP or SPLIT); input using enum defined in DatasetInputType from utils.dataset_util

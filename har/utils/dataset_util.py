@@ -347,3 +347,78 @@ def random_rotate_y(data_3d, rotation=None):
         rotation = [np.radians(i) for i in [45, 90, 135, 180, 225, 270, 315]]
     rot_vector = scipy.spatial.transform.Rotation.from_rotvec(rotation[randrange(len(rotation))] * np.array([0, 1, 0]))
     return np.array([np.array([rot_vector.apply(f) for f in b]) for b in data_3d])
+
+
+def get_all_body_parts_steps(data, analysed_body_parts, analysed_kpts_description, begin, end):
+    body_parts = [body_part_steps(data, analysed_kpts_description[bp], begin, end) for bp in analysed_body_parts]
+    return dict(zip(analysed_body_parts, body_parts))
+
+
+def get_all_body_parts_splits(data, analysed_body_parts, analysed_kpts_description, split):
+    body_parts = [body_part_splits(data, analysed_kpts_description[bp], split) for bp in analysed_body_parts]
+    return dict(zip(analysed_body_parts, body_parts))
+
+
+def body_part_steps(data, analysed_kpt_id, begin, end):
+    return data[begin:end, analysed_kpt_id, :]
+
+
+def body_part_splits(data, analysed_kpt_id, split):
+    return np.array([a[randrange(len(a))] for a in np.array_split(data[:, analysed_kpt_id, :], split)])
+
+
+def prepare_body_part_data(data, analysed_body_parts, analysed_kpts_description, input_type, steps, split):
+    right_wrists = []
+    left_wrists = []
+    right_elbows = []
+    left_elbows = []
+    right_shoulders = []
+    left_shoulders = []
+    right_hips = []
+    left_hips = []
+    right_knees = []
+    left_knees = []
+    right_ankles = []
+    left_ankles = []
+
+    if input_type == DatasetInputType.STEP:
+        parts = int(data.shape[0] / steps)
+        for i in range(parts):
+            begin = i * steps
+            end = i * steps + steps
+            body_el = get_all_body_parts_steps(data, analysed_body_parts, analysed_kpts_description, begin, end)
+            right_wrists.append(body_el['right_wrist'])
+            left_wrists.append(body_el['left_wrist'])
+            right_elbows.append(body_el['right_elbow'])
+            left_elbows.append(body_el['left_elbow'])
+            right_shoulders.append(body_el['right_shoulder'])
+            left_shoulders.append(body_el['left_shoulder'])
+            right_hips.append(body_el['right_hip'])
+            left_hips.append(body_el['left_hip'])
+            right_knees.append(body_el['right_knee'])
+            left_knees.append(body_el['left_knee'])
+            right_ankles.append(body_el['right_ankle'])
+            left_ankles.append(body_el['left_ankle'])
+    elif input_type == DatasetInputType.SPLIT:
+        body_el = get_all_body_parts_splits(data, analysed_body_parts, analysed_kpts_description, split)
+        right_wrists.append(body_el['right_wrist'])
+        left_wrists.append(body_el['left_wrist'])
+        right_elbows.append(body_el['right_elbow'])
+        left_elbows.append(body_el['left_elbow'])
+        right_shoulders.append(body_el['right_shoulder'])
+        left_shoulders.append(body_el['left_shoulder'])
+        right_hips.append(body_el['right_hip'])
+        left_hips.append(body_el['left_hip'])
+        right_knees.append(body_el['right_knee'])
+        left_knees.append(body_el['left_knee'])
+        right_ankles.append(body_el['right_ankle'])
+        left_ankles.append(body_el['left_ankle'])
+    else:
+        raise ValueError('Invalid or unimplemented input type')
+
+    left_arms = np.concatenate((left_wrists, left_elbows, left_shoulders), axis=2)
+    right_arms = np.concatenate((right_wrists, right_elbows, right_shoulders), axis=2)
+    left_legs = np.concatenate((left_hips, left_knees, left_ankles), axis=2)
+    right_legs = np.concatenate((right_hips, right_knees, right_ankles), axis=2)
+
+    return [left_arms, right_arms, left_legs, right_legs]

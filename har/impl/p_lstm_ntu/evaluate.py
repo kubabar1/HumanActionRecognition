@@ -5,8 +5,7 @@ import torch
 
 from .model.PLSTMModel import PLSTMModel
 from .utils.PLSTMDataset import PLSTMDataset
-from .utils.dataset_utils import get_all_body_parts_steps, get_all_body_parts_splits
-from ...utils.dataset_util import DatasetInputType
+from ...utils.dataset_util import DatasetInputType, get_all_body_parts_splits, get_all_body_parts_steps
 from ...utils.evaluation_utils import draw_confusion_matrix
 
 
@@ -105,6 +104,8 @@ def prepare_data(data, analysed_body_parts, analysed_kpts_description, input_typ
         left_knees.append(body_el['left_knee'])
         right_ankles.append(body_el['right_ankle'])
         left_ankles.append(body_el['left_ankle'])
+    else:
+        raise ValueError('Invalid or unimplemented input type')
 
     left_arms = np.concatenate((left_wrists, left_elbows, left_shoulders), axis=2)
     right_arms = np.concatenate((right_wrists, right_elbows, right_shoulders), axis=2)

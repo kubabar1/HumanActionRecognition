@@ -8,7 +8,8 @@ from ....utils.dataset_util import DatasetInputType, random_rotate_y
 
 class LSTMSimpleDataset(Dataset):
     def __init__(self, data, labels, batch_size, analysed_kpts_description, input_type=DatasetInputType.STEP, steps=32, split=20,
-                 add_random_rotation_y=False):
+                 add_random_rotation_y=False, is_test=False):
+        self.is_test = is_test
         self.data = data
         self.labels = labels
         self.analysed_kpts_description = analysed_kpts_description
@@ -25,11 +26,17 @@ class LSTMSimpleDataset(Dataset):
         data_arr = []
         labels_arr = []
         all_analysed_kpts = list(self.analysed_kpts_description.values())
+        data_len = len(self.data)
+        it = 0
 
-        while len(data_arr) < self.batch_size:
-            random_data_idx = randrange(self.__len__())
-            data_el = self.data[random_data_idx]
-            label_el = self.labels[random_data_idx]
+        while it < self.batch_size:
+            if self.is_test:
+                data_el = self.data[it % data_len]
+                label_el = self.labels[it % data_len]
+            else:
+                random_data_idx = randrange(self.__len__())
+                data_el = self.data[random_data_idx]
+                label_el = self.labels[random_data_idx]
 
             if self.input_type == DatasetInputType.STEP:
                 parts = int(data_el.shape[0] / self.steps)
@@ -45,6 +52,7 @@ class LSTMSimpleDataset(Dataset):
                 labels_arr.append(label_el)
             else:
                 raise ValueError('Invalid or unimplemented input type')
+            it += 1
 
         np_data = np.array(data_arr)
         np_label = np.array(labels_arr)

@@ -65,10 +65,12 @@ def train(classes, training_data, training_labels, validation_data, validation_l
 
         all_train_losses.append(loss.item())
 
-        if epoch % val_every == 0 and epoch > 0:
+        if epoch % print_every == 0 and epoch > 0:
             train_accuracy = print_train_results(classes, output, tensor_train_y, epoch, epoch_nb, start_time, loss, batch_size,
                                                  print_every)
             all_batch_training_accuracies.append(train_accuracy)
+
+        if epoch % val_every == 0 and epoch > 0:
             with torch.no_grad():
                 data_val, val_y = next(iter(validation_data_loader))
                 tensor_val_y = torch.from_numpy(val_y).to(device)

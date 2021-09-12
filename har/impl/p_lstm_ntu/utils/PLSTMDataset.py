@@ -3,8 +3,7 @@ from random import randrange
 import numpy as np
 from torch.utils.data import Dataset
 
-from .dataset_utils import get_all_body_parts_splits, get_all_body_parts_steps
-from ....utils.dataset_util import DatasetInputType, random_rotate_y
+from ....utils.dataset_util import DatasetInputType, random_rotate_y, get_all_body_parts_steps, get_all_body_parts_splits
 
 
 class PLSTMDataset(Dataset):
@@ -88,6 +87,8 @@ class PLSTMDataset(Dataset):
                 left_knees.append(body_el['left_knee'])
                 right_ankles.append(body_el['right_ankle'])
                 left_ankles.append(body_el['left_ankle'])
+            else:
+                raise ValueError('Invalid or unimplemented input type')
 
             labels_arr.append(label_el)
             if len(labels_arr) >= self.batch_size:

@@ -4,14 +4,15 @@ import torch.nn.functional as F
 
 
 class HierarchicalRNNModel(nn.Module):
-    def __init__(self, hidden_size, classes_count):
+    def __init__(self, input_size, hidden_size, classes_count):
         super(HierarchicalRNNModel, self).__init__()
         self.hidden_size = hidden_size
+        self.input_size = input_size
 
-        self.bl1_left_arm = torch.nn.RNN(3 * 3, hidden_size, bidirectional=True, batch_first=True)
-        self.bl1_right_arm = torch.nn.RNN(3 * 3, hidden_size, bidirectional=True, batch_first=True)
-        self.bl1_left_leg = torch.nn.RNN(3 * 3, hidden_size, bidirectional=True, batch_first=True)
-        self.bl1_right_leg = torch.nn.RNN(3 * 3, hidden_size, bidirectional=True, batch_first=True)
+        self.bl1_left_arm = torch.nn.RNN(input_size, hidden_size, bidirectional=True, batch_first=True)
+        self.bl1_right_arm = torch.nn.RNN(input_size, hidden_size, bidirectional=True, batch_first=True)
+        self.bl1_left_leg = torch.nn.RNN(input_size, hidden_size, bidirectional=True, batch_first=True)
+        self.bl1_right_leg = torch.nn.RNN(input_size, hidden_size, bidirectional=True, batch_first=True)
 
         self.bl2_arm = torch.nn.RNN(4 * hidden_size, hidden_size, bidirectional=True, batch_first=True)
         self.bl2_leg = torch.nn.RNN(4 * hidden_size, hidden_size, bidirectional=True, batch_first=True)
