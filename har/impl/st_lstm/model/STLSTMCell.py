@@ -10,7 +10,7 @@ STLSTMState = namedtuple('STLSTMState', ['h_temp_prev', 'c_temp_prev', 'h_spat_p
 
 
 class STLSTMCell(Module):
-    def __init__(self, input_size: int, hidden_size: int, bias: bool = True, num_chunks=5, use_tau=False) -> None:
+    def __init__(self, input_size: int, hidden_size: int, use_tau=False, bias: bool = True, lbd=0.5, num_chunks=5) -> None:
         super(STLSTMCell, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
@@ -31,7 +31,7 @@ class STLSTMCell(Module):
         self.b_mp1 = Parameter(torch.Tensor(hidden_size))
         self.b_mp2 = Parameter(torch.Tensor(hidden_size))
 
-        self.lbd = 0.5
+        self.lbd = lbd
         self.use_tau = use_tau
 
         self.reset_parameters()
@@ -86,10 +86,16 @@ class STLSTMCell(Module):
         u_gate = torch.tanh(u_gate)
 
         if self.use_tau:
-            p = torch.mm(h_spat_prev, self.w_mp1.t()) + torch.mm(h_temp_prev, self.w_mp2.t()) + self.b_mp1 + self.b_mp2
+            p = torch.mm(h_spat_prev, self.w_mp1.t()) + torch.mm(h_temp_prev, self.w_mp2.t())
+            if self.bias:
+                p += self.b_mp1 + self.b_mp2
             p = torch.tanh(p)
 
-            x_prim = torch.tanh(torch.mm(input.clone(), self.w_mx.t())) + self.b_mx
+            x_prim = torch.mm(input, self.w_mx.t())
+            if self.bias:
+                x_prim += self.b_mx
+            x_prim = torch.tanh(x_prim)
+
             tau = self.G(x_prim - p, self.lbd)
 
             cy = (tau * in_gate * u_gate) + ((1 - tau) * forget_gate_s * c_spat_prev) + ((1 - tau) * forget_gate_t * c_temp_prev)
