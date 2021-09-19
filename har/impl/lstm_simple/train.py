@@ -5,8 +5,8 @@ import torch.nn as nn
 import torch.optim as optim
 
 from .model.LSTMSimpleModel import LSTMSimpleModel
-from .utils.LSTMSimpleDataset import LSTMSimpleDataset, get_analysed_lines_ids
-from ...utils.dataset_util import DatasetInputType, GeometricFeature, SetType
+from .utils.LSTMSimpleDataset import LSTMSimpleDataset
+from ...utils.dataset_util import DatasetInputType, GeometricFeature, SetType, get_analysed_lines_ids
 from ...utils.training_utils import save_model_common, save_diagram_common, generate_model_name, print_train_results, \
     Optimizer, save_loss_common, validate_model, get_training_batch_accuracy
 

@@ -5,7 +5,7 @@ import torch
 
 from .model.LSTMSimpleModel import LSTMSimpleModel
 from .utils.LSTMSimpleDataset import LSTMSimpleDataset
-from ...utils.dataset_util import DatasetInputType
+from ...utils.dataset_util import DatasetInputType, SetType
 from ...utils.evaluation_utils import draw_confusion_matrix
 
 
@@ -18,7 +18,7 @@ def evaluate_tests(classes, test_data, test_labels, model_path, analysed_kpts_de
     lstm_model.eval()
 
     test_data_loader = LSTMSimpleDataset(test_data, test_labels, len(test_data), analysed_kpts_description, steps=steps,
-                                         split=split, input_type=input_type, is_test=True)
+                                         split=split, input_type=input_type, is_test=True, set_type=SetType.TEST)
 
     test_x, test_y = next(iter(test_data_loader))
 

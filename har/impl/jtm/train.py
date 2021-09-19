@@ -13,29 +13,25 @@ from ...utils.training_utils import save_model_common, save_diagram_common, gene
     time_since
 
 
-def train(classes, training_data, training_labels, validation_data, validation_labels, analysed_kpts_description,
-          input_size=36, dropout=0.5, epoch_nb=10000, batch_size=128, hidden_size=128, learning_rate=0.0001,
-          print_every=50, weight_decay=0, momentum=0.9, val_every=5, save_loss=True,
-          save_diagram=True, results_path='results', optimizer_type=Optimizer.RMSPROP, save_model=True,
-          save_model_for_inference=False, add_random_rotation_y=False, steps=32, split=20):
+def train(classes, training_data, training_labels, validation_data, validation_labels,
+          analysed_kpts_description, image_width, image_height,
+          epoch_nb=20, batch_size=32, learning_rate=0.0001, gamma_step_lr=0.1, step_size_lr=30,
+          print_every=2, weight_decay=0, momentum=0.9, val_every=2, save_loss=True,
+          save_diagram=True, results_path='results', optimizer_type=Optimizer.SGD, save_model=True,
+          save_model_for_inference=False, action_repetitions=100, use_cache=False):
     method_name = 'jtm'
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    analysed_kpts_left, analysed_kpts_right = get_analysed_keypoints()
 
-    # Load AlexNet torch.hub.load('pytorch/vision:v0.6.0', 'alexnet', pretrained=True)
-    model_alexnet_front = models.alexnet(pretrained=True)
-    model_alexnet_top = models.alexnet(pretrained=True)
-    model_alexnet_side = models.alexnet(pretrained=True)
-
-    # Define transform
     transform = transforms.Compose([
         transforms.Resize(256),
         transforms.CenterCrop(224),
         transforms.ToTensor()
     ])
 
-    # Model description
-    # print(model_alexnet_front.eval())
+    # Load AlexNet torch.hub.load('pytorch/vision:v0.6.0', 'alexnet', pretrained=True)
+    model_alexnet_front = models.alexnet(pretrained=True)
+    model_alexnet_top = models.alexnet(pretrained=True)
+    model_alexnet_side = models.alexnet(pretrained=True)
 
     # Updating the third and the last classifier that is the output layer of the network.
     model_alexnet_front.classifier[6] = nn.Linear(4096, len(classes))
@@ -47,25 +43,37 @@ def train(classes, training_data, training_labels, validation_data, validation_l
     model_alexnet_top.to(device)
     model_alexnet_side.to(device)
 
-    # Loss
+    # Model description
+    # print(model_alexnet_front.eval())
+
+    if optimizer_type == Optimizer.RMSPROP:
+        optimizer_front = optim.RMSprop(model_alexnet_front.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
+        optimizer_top = optim.RMSprop(model_alexnet_top.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
+        optimizer_side = optim.RMSprop(model_alexnet_side.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
+    elif optimizer_type == Optimizer.SGD:
+        optimizer_front = optim.SGD(model_alexnet_front.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
+        optimizer_top = optim.SGD(model_alexnet_top.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
+        optimizer_side = optim.SGD(model_alexnet_side.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
+    elif optimizer_type == Optimizer.ADAM:
+        optimizer_front = optim.Adam(model_alexnet_front.parameters(), lr=learning_rate, weight_decay=weight_decay)
+        optimizer_top = optim.Adam(model_alexnet_top.parameters(), lr=learning_rate, weight_decay=weight_decay)
+        optimizer_side = optim.Adam(model_alexnet_side.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    else:
+        raise Exception('Unknown optimizer')
+
     criterion_front = nn.CrossEntropyLoss()
     criterion_top = nn.CrossEntropyLoss()
     criterion_side = nn.CrossEntropyLoss()
 
-    # Optimizer(SGD)
-    optimizer_front = optim.SGD(model_alexnet_front.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
-    optimizer_top = optim.SGD(model_alexnet_top.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
-    optimizer_side = optim.SGD(model_alexnet_side.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
-
     # Scheduler to change learning rate depends on epoch number
-    scheduler_front = optim.lr_scheduler.StepLR(optimizer_front, step_size=step_size, gamma=gamma)
-    scheduler_top = optim.lr_scheduler.StepLR(optimizer_top, step_size=step_size, gamma=gamma)
-    scheduler_side = optim.lr_scheduler.StepLR(optimizer_side, step_size=step_size, gamma=gamma)
+    scheduler_front = optim.lr_scheduler.StepLR(optimizer_front, step_size=step_size_lr, gamma=gamma_step_lr)
+    scheduler_top = optim.lr_scheduler.StepLR(optimizer_top, step_size=step_size_lr, gamma=gamma_step_lr)
+    scheduler_side = optim.lr_scheduler.StepLR(optimizer_side, step_size=step_size_lr, gamma=gamma_step_lr)
 
-    train_data_loader = JTMDataset(training_data, training_labels, image_width, image_height, action_repetitions, batch_size,
-                                   SetType.TRAINING, use_cache)
-    val_data_loader = JTMDataset(validation_data, validation_labels, image_width, image_height, action_repetitions, batch_size,
-                                 SetType.VALIDATION, use_cache)
+    train_data_loader = JTMDataset(training_data, training_labels, image_width, image_height, batch_size, SetType.TRAINING,
+                                   analysed_kpts_description, action_repetitions, use_cache)
+    val_data_loader = JTMDataset(validation_data, validation_labels, image_width, image_height, batch_size, SetType.VALIDATION,
+                                 analysed_kpts_description, action_repetitions, use_cache)
 
     all_train_losses_front = []
     all_train_losses_top = []
@@ -85,12 +93,13 @@ def train(classes, training_data, training_labels, validation_data, validation_l
 
     start_time = time.time()
 
+    epoch = 0
     for epoch in range(epoch_nb):
         data, labels = next(iter(train_data_loader))
 
-        all_train_losses_front_tmp = []
-        all_train_losses_top_tmp = []
-        all_train_losses_side_tmp = []
+        all_train_losses_front_batch = []
+        all_train_losses_top_batch = []
+        all_train_losses_side_batch = []
 
         train_acc_front = 0.0
         train_acc_top = 0.0
@@ -109,10 +118,6 @@ def train(classes, training_data, training_labels, validation_data, validation_l
             output_front = model_alexnet_front(img_tensor_front)
             output_top = model_alexnet_top(img_tensor_top)
             output_side = model_alexnet_side(img_tensor_side)
-
-            _, pred_front = torch.max(output_front, 1)
-            _, pred_top = torch.max(output_top, 1)
-            _, pred_side = torch.max(output_side, 1)
 
             if torch.argmax(output_front).item() == lbl:
                 train_acc_front += 1
@@ -133,29 +138,29 @@ def train(classes, training_data, training_labels, validation_data, validation_l
             optimizer_top.step()
             optimizer_side.step()
 
-            all_train_losses_front_tmp.append(loss_front.item())
-            all_train_losses_top_tmp.append(loss_top.item())
-            all_train_losses_side_tmp.append(loss_side.item())
+            all_train_losses_front_batch.append(loss_front.item())
+            all_train_losses_top_batch.append(loss_top.item())
+            all_train_losses_side_batch.append(loss_side.item())
 
-        all_train_losses_front.append(np.mean(all_train_losses_front_tmp))
-        all_train_losses_top.append(np.mean(all_train_losses_top_tmp))
-        all_train_losses_side.append(np.mean(all_train_losses_side_tmp))
+        all_train_losses_front.append(np.mean(all_train_losses_front_batch))
+        all_train_losses_top.append(np.mean(all_train_losses_top_batch))
+        all_train_losses_side.append(np.mean(all_train_losses_side_batch))
 
-        if epoch % validate_every == 0 and epoch > 0:
+        if epoch % print_every == 0 and epoch > 0:
+            print('TRAIN_FRONT: %d %d%% (%s) %.4f [%d/%d -> %.2f%%]' % (
+                epoch, epoch / epoch_nb * 100, time_since(start_time), loss_front, train_acc_front, batch_size,
+                train_acc_front / batch_size * 100))
+            print('TRAIN_TOP: %d %d%% (%s) %.4f [%d/%d -> %.2f%%]' % (
+                epoch, epoch / epoch_nb * 100, time_since(start_time), loss_top, train_acc_top, batch_size,
+                train_acc_top / batch_size * 100))
+            print('TRAIN_SIDE: %d %d%% (%s) %.4f [%d/%d -> %.2f%%]' % (
+                epoch, epoch / epoch_nb * 100, time_since(start_time), loss_side, train_acc_side, batch_size,
+                train_acc_side / batch_size * 100))
+
+        if epoch % val_every == 0 and epoch > 0:
             all_batch_training_accuracies_front.append(train_acc_front / batch_size)
             all_batch_training_accuracies_top.append(train_acc_top / batch_size)
             all_batch_training_accuracies_side.append(train_acc_side / batch_size)
-
-            if epoch % print_every == 0:
-                print('TRAIN_FRONT: %d %d%% (%s) %.4f [%d/%d -> %.2f%%]' % (
-                    epoch, epoch / epoch_nb * 100, time_since(start_time), loss_front, train_acc_front, batch_size,
-                    train_acc_front / batch_size * 100))
-                print('TRAIN_TOP: %d %d%% (%s) %.4f [%d/%d -> %.2f%%]' % (
-                    epoch, epoch / epoch_nb * 100, time_since(start_time), loss_top, train_acc_top, batch_size,
-                    train_acc_top / batch_size * 100))
-                print('TRAIN_SIDE: %d %d%% (%s) %.4f [%d/%d -> %.2f%%]' % (
-                    epoch, epoch / epoch_nb * 100, time_since(start_time), loss_side, train_acc_side, batch_size,
-                    train_acc_side / batch_size * 100))
             with torch.no_grad():
                 data_valid, labels_valid = next(iter(val_data_loader))
 
@@ -177,15 +182,11 @@ def train(classes, training_data, training_labels, validation_data, validation_l
                     val_output_top = model_alexnet_top(val_img_tensor_top)
                     val_output_side = model_alexnet_side(val_img_tensor_side)
 
-                    _, val_pred_front = torch.max(val_output_front, 1)
-                    _, val_pred_top = torch.max(val_output_top, 1)
-                    _, val_pred_side = torch.max(val_output_side, 1)
-
                     if torch.argmax(val_output_front).item() == val_lbl:
                         val_acc_front += 1
                     if torch.argmax(val_output_top).item() == val_lbl:
                         val_acc_top += 1
-                    if torch.argmax(val_pred_side).item() == val_lbl:
+                    if torch.argmax(val_output_side).item() == val_lbl:
                         val_acc_side += 1
 
                     val_loss_front = criterion_front(val_output_front, val_lbl_tensor)
@@ -220,20 +221,12 @@ def train(classes, training_data, training_labels, validation_data, validation_l
 
     model_name = generate_model_name(method_name, epoch_nb, batch_size, learning_rate, optimizer_type.name)
 
-    if save_diagram:
-        save_diagram_common(all_train_losses_front, all_val_losses_front, model_name + '_front', validate_every, epoch_nb,
-                            results_path, all_batch_training_accuracies_front, all_batch_val_accuracies_front)
-        save_diagram_common(all_train_losses_top, all_val_losses_top, model_name + '_top', validate_every, epoch_nb, results_path,
-                            all_batch_training_accuracies_top, all_batch_val_accuracies_top)
-        save_diagram_common(all_train_losses_side, all_val_losses_side, model_name + '_side', validate_every, epoch_nb,
-                            results_path, all_batch_training_accuracies_side, all_batch_val_accuracies_side)
-
     if save_model:
-        save_model_common(model_alexnet_front, optimizer_front, epoch, validate_every, all_train_losses_front,
+        save_model_common(model_alexnet_front, optimizer_front, epoch, val_every, all_train_losses_front,
                           all_val_losses_front, save_model_for_inference, results_path, model_name + '_front')
-        save_model_common(model_alexnet_top, optimizer_top, epoch, validate_every, all_train_losses_top,
+        save_model_common(model_alexnet_top, optimizer_top, epoch, val_every, all_train_losses_top,
                           all_val_losses_top, save_model_for_inference, results_path, model_name + '_top')
-        save_model_common(model_alexnet_side, optimizer_side, epoch, validate_every, all_train_losses_side,
+        save_model_common(model_alexnet_side, optimizer_side, epoch, val_every, all_train_losses_side,
                           all_val_losses_side, save_model_for_inference, results_path, model_name + '_side')
 
     if save_loss:
@@ -243,5 +236,13 @@ def train(classes, training_data, training_labels, validation_data, validation_l
                          all_batch_training_accuracies_top, all_batch_val_accuracies_top)
         save_loss_common(all_train_losses_side, all_val_losses_side, model_name + '_side', results_path,
                          all_batch_training_accuracies_side, all_batch_val_accuracies_side)
+
+    if save_diagram:
+        save_diagram_common(all_train_losses_front, all_val_losses_front, model_name + '_front', val_every, epoch_nb,
+                            results_path, all_batch_training_accuracies_front, all_batch_val_accuracies_front)
+        save_diagram_common(all_train_losses_top, all_val_losses_top, model_name + '_top', val_every, epoch_nb, results_path,
+                            all_batch_training_accuracies_top, all_batch_val_accuracies_top)
+        save_diagram_common(all_train_losses_side, all_val_losses_side, model_name + '_side', val_every, epoch_nb,
+                            results_path, all_batch_training_accuracies_side, all_batch_val_accuracies_side)
 
     return model_alexnet_front, model_alexnet_top, model_alexnet_side
