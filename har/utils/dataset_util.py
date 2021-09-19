@@ -157,19 +157,19 @@ class SetType(Enum):
 class DatasetInputType(Enum):
     STEP = auto()
     SPLIT = auto()
+    TREE = auto()
 
 
-def get_analysed_keypoints(is_3d=True):
-    keypoints = video_pose_3d_kpts if is_3d else mmpose_kpts
-    analysed_kpts_left = [
-        keypoints['left_hip'], keypoints['left_knee'], keypoints['left_ankle'],
-        keypoints['left_shoulder'], keypoints['left_elbow'], keypoints['left_wrist']
-    ]
-    analysed_kpts_right = [
-        keypoints['right_hip'], keypoints['right_knee'], keypoints['right_ankle'],
-        keypoints['right_shoulder'], keypoints['right_elbow'], keypoints['right_wrist']
-    ]
-    return analysed_kpts_left, analysed_kpts_right
+class GeometricFeature(Enum):
+    JOINT_COORDINATE = 'JC'
+    RELATIVE_POSITION = 'RP'
+    JOINT_JOINT_DISTANCE = 'JJD'
+    JOINT_JOINT_ORIENTATION = 'JJO'
+    JOINT_LINE_DISTANCE = 'JLD'
+    LINE_LINE_ANGLE = 'LLA'
+    # JOINT_PLANE_DISTANCE = 'JPD'
+    # LINE_PLANE_ANGLE = 'LPA'
+    # PLANE_PLANE_ANGLE = 'PPA'
 
 
 def get_utd_mhad_dataset(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), set_type=SetType.TRAINING,

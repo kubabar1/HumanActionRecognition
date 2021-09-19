@@ -29,13 +29,17 @@ def validate_model(tensor_val_y, output_val, classes, epoch, epoch_nb, print_eve
     return loss_val.cpu().detach(), batch_acc
 
 
-def print_train_results(classes, output, tensor_train_y, epoch, epoch_nb, start_time, loss, batch_size, print_every,
-                        custom_text='RES'):
+def get_training_batch_accuracy(classes, output, tensor_train_y, batch_size):
     ctgs = [classes[int(tty)] for tty in tensor_train_y]
     gss = [classes[int(torch.argmax(torch.exp(o)).item())] for o in output]
     correct_pred_in_batch = len([1 for c, g in zip(ctgs, gss) if c == g])
     batch_accuracy = correct_pred_in_batch / batch_size
+    return correct_pred_in_batch, batch_accuracy
 
+
+def print_train_results(classes, output, tensor_train_y, epoch, epoch_nb, start_time, loss, batch_size, print_every,
+                        custom_text='RES'):
+    correct_pred_in_batch, batch_accuracy = get_training_batch_accuracy(classes, output, tensor_train_y, batch_size)
     if epoch % print_every == 0:
         print('TRAIN_%s: %d %d%% (%s) %.4f [%d/%d -> %.2f%%]' % (
             custom_text, epoch, epoch / epoch_nb * 100, time_since(start_time), loss, correct_pred_in_batch, batch_size,

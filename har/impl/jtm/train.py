@@ -8,16 +8,16 @@ import torchvision.models as models
 import torchvision.transforms as transforms
 
 from .utils.JTMDataset import JTMDataset
-from ...utils.dataset_util import get_analysed_keypoints, SetType
+from ...utils.dataset_util import SetType
 from ...utils.training_utils import save_model_common, save_diagram_common, generate_model_name, Optimizer, save_loss_common, \
     time_since
 
 
-def train(classes, training_data, training_labels, validation_data, validation_labels, image_width, image_height,
-          epoch_nb=200, batch_size=64, action_repetitions=100,
-          learning_rate=0.00001, print_every=2, weight_decay=0.0005, momentum=0.9, step_size=30, gamma=0.1, validate_every=2,
-          save_loss=True, save_diagram=True, results_path='results', optimizer_type=Optimizer.RMSPROP,
-          save_model=True, save_model_for_inference=False, use_cache=True):
+def train(classes, training_data, training_labels, validation_data, validation_labels, analysed_kpts_description,
+          input_size=36, dropout=0.5, epoch_nb=10000, batch_size=128, hidden_size=128, learning_rate=0.0001,
+          print_every=50, weight_decay=0, momentum=0.9, val_every=5, save_loss=True,
+          save_diagram=True, results_path='results', optimizer_type=Optimizer.RMSPROP, save_model=True,
+          save_model_for_inference=False, add_random_rotation_y=False, steps=32, split=20):
     method_name = 'jtm'
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     analysed_kpts_left, analysed_kpts_right = get_analysed_keypoints()

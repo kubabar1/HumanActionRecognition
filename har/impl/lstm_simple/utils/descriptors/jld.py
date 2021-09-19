@@ -9,7 +9,8 @@ def heron_formula(kpt_a, kpt_b, kpt_c):
     b = distance.euclidean(kpt_b, kpt_c)
     c = distance.euclidean(kpt_c, kpt_a)
     s = (a + b + c) / 2
-    return math.sqrt(s * (s - a) * (s - b) * (s - c))
+    tmp = s * (s - a) * (s - b) * (s - c)
+    return math.sqrt(tmp if tmp > 0 else 0)
 
 
 def calculate_jld(keypoints_sequence, analysed_kpts, analysed_lines):
@@ -27,13 +28,3 @@ def calculate_jld(keypoints_sequence, analysed_kpts, analysed_lines):
                     frame_tmp.append(jld)
         jld_batch.append(np.array(frame_tmp))
     return np.array(jld_batch)
-
-# def batch_test():
-#     kpts_sequence = np.random.rand(150, 17, 3)
-#     analysed_kpts = [16, 15, 14, 11, 12, 13, 1, 2, 3, 4, 5, 6]
-#     analysed_lines_1 = [[3, 2], [2, 1], [16, 15], [15, 14], [12, 11], [13, 12], [5, 4], [6, 5]]
-#     analysed_lines_2 = [[3, 1], [16, 14], [13, 11], [6, 4]]
-#     analysed_lines_3 = [[3, 16], [6, 16], [3, 6], [16, 6], [13, 6], [16, 13]]
-#     analysed_lines = analysed_lines_1 + analysed_lines_2 + analysed_lines_3
-#     jld_batch_tmp = calculate_jld(kpts_sequence, analysed_kpts, analysed_lines)
-#     print(jld_batch_tmp.shape)

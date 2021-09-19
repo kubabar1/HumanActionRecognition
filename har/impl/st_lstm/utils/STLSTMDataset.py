@@ -42,8 +42,9 @@ class STLSTMDataset(Dataset):
                 for i in range(parts):
                     data_arr.append(data_el[i * self.steps: i * self.steps + self.steps, all_analysed_kpts, :])
                     labels_arr.append(label_el)
-                    if len(data_arr) >= self.batch_size:
+                    if it >= self.batch_size:
                         break
+                    it += 1
             elif self.input_type == DatasetInputType.SPLIT:
                 data_arr.append(
                     np.array([a[randrange(len(a))] for a in np.array_split(data_el[:, all_analysed_kpts, :], self.split)]))
