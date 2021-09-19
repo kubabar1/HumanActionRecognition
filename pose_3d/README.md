@@ -21,6 +21,7 @@ Example command:
 
 ```
 python process_data.py \
+    --video-pose-3d-path /workspace/human_action_recognition/VideoPose3D \
     --input-directory unprocessed/ntu_rgbd/ \
     --output-directory dataset \
     --frame-width 1920 \
