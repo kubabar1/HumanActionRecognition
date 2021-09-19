@@ -169,3 +169,18 @@ if __name__ == '__main__':
 * **hidden_size** - (default 128) size of LSTM hidden layer used during training
 * **split** - (default 20) size of split used during training (only for input_type DatasetInputType.SPLIT)
 
+
+Geometric features config basis on **"On Geometric Features for Skeleton-Based Action Recognition using Multilayer LSTM Networks"**.
+
+```
+@INPROCEEDINGS{7926607,
+  author={Zhang, Songyang and Liu, Xiaoming and Xiao, Jun},
+  booktitle={2017 IEEE Winter Conference on Applications of Computer Vision (WACV)}, 
+  title={On Geometric Features for Skeleton-Based Action Recognition Using Multilayer LSTM Networks}, 
+  year={2017},
+  volume={},
+  number={},
+  pages={148-157},
+  doi={10.1109/WACV.2017.24}
+}
+```
