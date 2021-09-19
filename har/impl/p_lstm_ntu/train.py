@@ -7,18 +7,20 @@ import torch.optim as optim
 from .model.PLSTMModel import PLSTMModel
 from .utils.PLSTMDataset import PLSTMDataset
 from ...utils.dataset_util import DatasetInputType
-from ...utils.training_utils import save_model_common, save_diagram_common, generate_model_name, print_train_results, \
-    Optimizer, save_loss_common, validate_model
+from ...utils.model_name_generator import ModelNameGenerator
+from ...utils.training_utils import save_model_common, save_diagram_common, print_train_results, Optimizer, save_loss_common, \
+    validate_model, get_training_batch_accuracy
 
 
-def train(classes, training_data, training_labels, validation_data, validation_labels,
-          analysed_kpts_description, input_size=9, dropout=0.5, parts=4,
-          epoch_nb=10000, batch_size=128, hidden_size=128, learning_rate=0.0001,
-          print_every=50, weight_decay=0, momentum=0.9, val_every=5, input_type=DatasetInputType.SPLIT, save_loss=True,
-          save_diagram=True, results_path='results', optimizer_type=Optimizer.RMSPROP, save_model=True,
-          save_model_for_inference=False, add_random_rotation_y=False, steps=32, split=20):
+def train(classes, training_data, training_labels, validation_data, validation_labels, analysed_kpts_description, dropout=0.5,
+          epoch_nb=10000, batch_size=128, hidden_size=128, learning_rate=0.0001, print_every=50, weight_decay=0, momentum=0.9, val_every=5,
+          steps=32, split=20, input_type=DatasetInputType.SPLIT, optimizer_type=Optimizer.RMSPROP, results_path='results',
+          model_name_suffix='', save_loss=True, save_diagram=True, save_model=True, save_model_for_inference=False,
+          add_random_rotation_y=False, is_3d=True):
     method_name = 'p_lstm_ntu'
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    input_size = 9 if is_3d else 6
+    parts = 4
 
     p_lstm_model = PLSTMModel(input_size, hidden_size, len(classes), parts).to(device)
 
@@ -66,11 +68,10 @@ def train(classes, training_data, training_labels, validation_data, validation_l
         all_train_losses.append(loss.item())
 
         if epoch % print_every == 0 and epoch > 0:
-            train_accuracy = print_train_results(classes, output, tensor_train_y, epoch, epoch_nb, start_time, loss, batch_size,
-                                                 print_every)
-            all_batch_training_accuracies.append(train_accuracy)
+            print_train_results(classes, output, tensor_train_y, epoch, epoch_nb, start_time, loss, batch_size, print_every)
 
         if epoch % val_every == 0 and epoch > 0:
+            all_batch_training_accuracies.append(get_training_batch_accuracy(classes, output, tensor_train_y, batch_size)[1])
             with torch.no_grad():
                 data_val, val_y = next(iter(validation_data_loader))
                 tensor_test_y = torch.from_numpy(val_y).to(device)
@@ -82,12 +83,20 @@ def train(classes, training_data, training_labels, validation_data, validation_l
                 all_val_losses.append(val_loss)
                 all_batch_val_accuracies.append(val_batch_acc)
 
-    model_name = generate_model_name(method_name, epoch_nb, batch_size, learning_rate, optimizer_type.name, hidden_size,
-                                     input_type.name, momentum, weight_decay, None, dropout, split, steps)
-
-    if save_diagram:
-        save_diagram_common(all_train_losses, all_val_losses, model_name, val_every, epoch_nb, results_path,
-                            all_batch_training_accuracies, all_batch_val_accuracies)
+    model_name = ModelNameGenerator(method_name, model_name_suffix) \
+        .add_epoch_number(epoch_nb) \
+        .add_batch_size(batch_size) \
+        .add_learning_rate(learning_rate) \
+        .add_optimizer_name(optimizer_type.name) \
+        .add_hidden_size(hidden_size) \
+        .add_input_type(input_type.name) \
+        .add_dropout(dropout) \
+        .add_momentum(momentum) \
+        .add_weight_decay(weight_decay) \
+        .add_split(split) \
+        .add_steps(steps) \
+        .add_random_rotation_y(add_random_rotation_y) \
+        .add_is_3d(is_3d)
 
     if save_model:
         save_model_common(p_lstm_model, optimizer, epoch, val_every, all_train_losses, all_val_losses,
@@ -96,5 +105,9 @@ def train(classes, training_data, training_labels, validation_data, validation_l
     if save_loss:
         save_loss_common(all_train_losses, all_val_losses, model_name, results_path, all_batch_training_accuracies,
                          all_batch_val_accuracies)
+
+    if save_diagram:
+        save_diagram_common(all_train_losses, all_val_losses, model_name, val_every, epoch_nb, results_path,
+                            all_batch_training_accuracies, all_batch_val_accuracies)
 
     return p_lstm_model

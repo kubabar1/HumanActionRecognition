@@ -7,20 +7,23 @@ import torch.optim as optim
 from .model.STLSTMModel import STLSTMModel
 from .utils.STLSTMDataset import STLSTMDataset
 from ...utils.dataset_util import DatasetInputType
-from ...utils.training_utils import Optimizer, print_train_results, validate_model, generate_model_name, save_diagram_common, \
+from ...utils.model_name_generator import ModelNameGenerator
+from ...utils.training_utils import Optimizer, print_train_results, validate_model, save_diagram_common, \
     save_model_common, save_loss_common, get_training_batch_accuracy
 
 
 def train(classes, training_data, training_labels, validation_data, validation_labels, analysed_kpts_description,
-          input_size=3, dropout=0.5, epoch_nb=10000, batch_size=128, hidden_size=128, learning_rate=0.0001,
-          weight_decay=0, momentum=0.9, val_every=5, lbd=0.5, input_type=DatasetInputType.SPLIT, save_loss=True,
-          save_diagram=True, results_path='results', optimizer_type=Optimizer.RMSPROP, save_model=True, print_every=50,
-          save_model_for_inference=False, add_random_rotation_y=False, steps=32, split=20, use_two_layers=True, use_tau=False,
-          use_bias=True):
+          dropout=0.5, epoch_nb=10000, batch_size=128, hidden_size=128, learning_rate=0.0001,
+          weight_decay=0, momentum=0.9, val_every=5, print_every=50, lbd=0.5, steps=32, split=20, input_type=DatasetInputType.SPLIT,
+          optimizer_type=Optimizer.RMSPROP, results_path='results', model_name_suffix='', save_loss=True, save_diagram=True,
+          save_model=True, save_model_for_inference=False, add_random_rotation_y=False, use_two_layers=True, use_tau=False, use_bias=True,
+          is_3d=True):
     method_name = 'st_lstm'
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+    input_size = 3 if is_3d else 2
     joints_count = 12
+
     if input_type == DatasetInputType.TREE:
         joints_count = 29
 
@@ -86,8 +89,24 @@ def train(classes, training_data, training_labels, validation_data, validation_l
                 all_val_losses.append(val_loss)
                 all_batch_val_accuracies.append(batch_acc)
 
-    model_name = generate_model_name(method_name, epoch_nb, batch_size, learning_rate, optimizer_type.name, hidden_size,
-                                     input_type.name, momentum, weight_decay, None, dropout, split, steps)
+    model_name = ModelNameGenerator(method_name, model_name_suffix) \
+        .add_epoch_number(epoch_nb) \
+        .add_batch_size(batch_size) \
+        .add_learning_rate(learning_rate) \
+        .add_optimizer_name(optimizer_type.name) \
+        .add_hidden_size(hidden_size) \
+        .add_input_type(input_type.name) \
+        .add_dropout(dropout) \
+        .add_momentum(momentum) \
+        .add_weight_decay(weight_decay) \
+        .add_split(split) \
+        .add_steps(steps) \
+        .add_lambda(lbd) \
+        .add_random_rotation_y(add_random_rotation_y) \
+        .add_is_bias_used(use_bias) \
+        .add_is_tau(is_3d) \
+        .add_is_two_layers_used(use_two_layers) \
+        .add_is_3d(use_tau)
 
     if save_model:
         save_model_common(st_lstm_model, optimizer, epoch, val_every, all_train_losses, all_val_losses,

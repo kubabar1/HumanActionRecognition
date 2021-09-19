@@ -9,16 +9,15 @@ import torchvision.transforms as transforms
 
 from .utils.JTMDataset import JTMDataset
 from ...utils.dataset_util import SetType
-from ...utils.training_utils import save_model_common, save_diagram_common, generate_model_name, Optimizer, save_loss_common, \
-    time_since
+from ...utils.model_name_generator import ModelNameGenerator
+from ...utils.training_utils import save_model_common, save_diagram_common, Optimizer, save_loss_common, time_since
 
 
 def train(classes, training_data, training_labels, validation_data, validation_labels,
-          analysed_kpts_description, image_width, image_height,
-          epoch_nb=20, batch_size=32, learning_rate=0.0001, gamma_step_lr=0.1, step_size_lr=30,
-          print_every=2, weight_decay=0, momentum=0.9, val_every=2, save_loss=True,
-          save_diagram=True, results_path='results', optimizer_type=Optimizer.SGD, save_model=True,
-          save_model_for_inference=False, action_repetitions=100, use_cache=False):
+          analysed_kpts_description, image_width, image_height, epoch_nb=100, batch_size=32, learning_rate=0.0001, gamma_step_lr=0.1,
+          step_size_lr=30, print_every=2, weight_decay=0, momentum=0.9, val_every=2, action_repetitions=100, results_path='results',
+          model_name_suffix='', optimizer_type=Optimizer.SGD, save_loss=True, save_diagram=True, save_model=True,
+          save_model_for_inference=False, use_cache=False):
     method_name = 'jtm'
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -219,7 +218,16 @@ def train(classes, training_data, training_labels, validation_data, validation_l
         scheduler_top.step()
         scheduler_side.step()
 
-    model_name = generate_model_name(method_name, epoch_nb, batch_size, learning_rate, optimizer_type.name)
+    model_name = ModelNameGenerator(method_name, model_name_suffix) \
+        .add_epoch_number(epoch_nb) \
+        .add_batch_size(batch_size) \
+        .add_learning_rate(learning_rate) \
+        .add_optimizer_name(optimizer_type.name) \
+        .add_momentum(momentum) \
+        .add_weight_decay(weight_decay) \
+        .add_action_repetitions(action_repetitions) \
+        .add_step_size_lr(step_size_lr) \
+        .add_gamma_step_lr(gamma_step_lr)
 
     if save_model:
         save_model_common(model_alexnet_front, optimizer_front, epoch, val_every, all_train_losses_front,

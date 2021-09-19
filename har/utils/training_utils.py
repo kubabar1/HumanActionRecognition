@@ -95,17 +95,6 @@ def save_loss_common(all_train_losses, all_val_losses, model_name, results_path,
     np.save(os.path.join(results_path, model_name + '_val_acc'), all_val_acc)
 
 
-def generate_model_name(method_name, epoch_nb, batch_size, learning_rate, optimizer_name, hidden_size=None, input_type=None,
-                        momentum=None, weight_decay=None, hidden_layers=None, dropout=None, split=None, steps=None):
-    return '{}_ep_{}_b_{}_h_{}_lr_{}_opt_{}_inp_{}_mm_{}_wd_{}_hl_{}_dr_{}_split_{}_steps_{}'.format(method_name, epoch_nb,
-                                                                                                     batch_size, hidden_size,
-                                                                                                     learning_rate,
-                                                                                                     optimizer_name, input_type,
-                                                                                                     momentum, weight_decay,
-                                                                                                     hidden_layers, dropout,
-                                                                                                     split, steps)
-
-
 def time_since(since):
     now = time.time()
     s = now - since
