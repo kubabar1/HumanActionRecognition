@@ -15,9 +15,9 @@ from ...utils.training_utils import save_model_common, save_diagram_common, Opti
 
 def train(classes, training_data, training_labels, validation_data, validation_labels,
           analysed_kpts_description, image_width, image_height, epoch_nb=100, batch_size=32, learning_rate=0.0001, gamma_step_lr=0.1,
-          step_size_lr=30, print_every=2, weight_decay=0, momentum=0.9, val_every=2, action_repetitions=100, results_path='results',
+          step_size_lr=30, print_every=5, val_every=5, weight_decay=0, momentum=0.9, action_repetitions=100, results_path='results',
           model_name_suffix='', optimizer_type=Optimizer.SGD, save_loss=True, save_diagram=True, save_model=True,
-          save_model_for_inference=False, use_cache=False):
+          save_model_for_inference=False, use_cache=False, show_diagram=True, print_results=True):
     method_name = 'jtm'
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -145,7 +145,7 @@ def train(classes, training_data, training_labels, validation_data, validation_l
         all_train_losses_top.append(np.mean(all_train_losses_top_batch))
         all_train_losses_side.append(np.mean(all_train_losses_side_batch))
 
-        if epoch % print_every == 0 and epoch > 0:
+        if epoch % print_every == 0 and epoch > 0 and print_results:
             print('TRAIN_FRONT: %d %d%% (%s) %.4f [%d/%d -> %.2f%%]' % (
                 epoch, epoch / epoch_nb * 100, time_since(start_time), loss_front, train_acc_front, batch_size,
                 train_acc_front / batch_size * 100))
@@ -196,7 +196,7 @@ def train(classes, training_data, training_labels, validation_data, validation_l
                     all_val_losses_top_tmp.append(val_loss_top.item())
                     all_val_losses_side_tmp.append(val_loss_side.item())
 
-                if epoch % print_every == 0:
+                if print_results:
                     print('VALIDATION_FRONT: %d %d%% (%s) %.4f [%d/%d -> %.2f%%]' % (
                         epoch, epoch / epoch_nb * 100, time_since(start_time), val_loss_front, val_acc_front, batch_size,
                         val_acc_front / batch_size * 100))
@@ -227,7 +227,8 @@ def train(classes, training_data, training_labels, validation_data, validation_l
         .add_weight_decay(weight_decay) \
         .add_action_repetitions(action_repetitions) \
         .add_step_size_lr(step_size_lr) \
-        .add_gamma_step_lr(gamma_step_lr)
+        .add_gamma_step_lr(gamma_step_lr) \
+        .generate()
 
     if save_model:
         save_model_common(model_alexnet_front, optimizer_front, epoch, val_every, all_train_losses_front,
@@ -247,10 +248,10 @@ def train(classes, training_data, training_labels, validation_data, validation_l
 
     if save_diagram:
         save_diagram_common(all_train_losses_front, all_val_losses_front, model_name + '_front', val_every, epoch_nb,
-                            results_path, all_batch_training_accuracies_front, all_batch_val_accuracies_front)
+                            results_path, all_batch_training_accuracies_front, all_batch_val_accuracies_front, show_diagram)
         save_diagram_common(all_train_losses_top, all_val_losses_top, model_name + '_top', val_every, epoch_nb, results_path,
-                            all_batch_training_accuracies_top, all_batch_val_accuracies_top)
+                            all_batch_training_accuracies_top, all_batch_val_accuracies_top, show_diagram)
         save_diagram_common(all_train_losses_side, all_val_losses_side, model_name + '_side', val_every, epoch_nb,
-                            results_path, all_batch_training_accuracies_side, all_batch_val_accuracies_side)
+                            results_path, all_batch_training_accuracies_side, all_batch_val_accuracies_side, show_diagram)
 
     return model_alexnet_front, model_alexnet_top, model_alexnet_side

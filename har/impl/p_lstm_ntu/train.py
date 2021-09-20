@@ -16,7 +16,7 @@ def train(classes, training_data, training_labels, validation_data, validation_l
           epoch_nb=10000, batch_size=128, hidden_size=128, learning_rate=0.0001, print_every=50, weight_decay=0, momentum=0.9, val_every=5,
           steps=32, split=20, input_type=DatasetInputType.SPLIT, optimizer_type=Optimizer.RMSPROP, results_path='results',
           model_name_suffix='', save_loss=True, save_diagram=True, save_model=True, save_model_for_inference=False,
-          add_random_rotation_y=False, is_3d=True):
+          add_random_rotation_y=False, is_3d=True, show_diagram=True, print_results=True):
     method_name = 'p_lstm_ntu'
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     input_size = 9 if is_3d else 6
@@ -67,7 +67,7 @@ def train(classes, training_data, training_labels, validation_data, validation_l
 
         all_train_losses.append(loss.item())
 
-        if epoch % print_every == 0 and epoch > 0:
+        if epoch % print_every == 0 and epoch > 0 and print_results:
             print_train_results(classes, output, tensor_train_y, epoch, epoch_nb, start_time, loss, batch_size, print_every)
 
         if epoch % val_every == 0 and epoch > 0:
@@ -79,7 +79,7 @@ def train(classes, training_data, training_labels, validation_data, validation_l
                 output_test = p_lstm_model(tensor_test_x)
                 loss_val = criterion(output_test, tensor_test_y)
                 val_loss, val_batch_acc = validate_model(tensor_test_y, output_test, classes, epoch, epoch_nb, print_every,
-                                                         start_time, batch_size, loss_val)
+                                                         start_time, batch_size, loss_val, print_results=print_results)
                 all_val_losses.append(val_loss)
                 all_batch_val_accuracies.append(val_batch_acc)
 
@@ -96,7 +96,8 @@ def train(classes, training_data, training_labels, validation_data, validation_l
         .add_split(split) \
         .add_steps(steps) \
         .add_random_rotation_y(add_random_rotation_y) \
-        .add_is_3d(is_3d)
+        .add_is_3d(is_3d) \
+        .generate()
 
     if save_model:
         save_model_common(p_lstm_model, optimizer, epoch, val_every, all_train_losses, all_val_losses,
@@ -108,6 +109,6 @@ def train(classes, training_data, training_labels, validation_data, validation_l
 
     if save_diagram:
         save_diagram_common(all_train_losses, all_val_losses, model_name, val_every, epoch_nb, results_path,
-                            all_batch_training_accuracies, all_batch_val_accuracies)
+                            all_batch_training_accuracies, all_batch_val_accuracies, show_diagram=show_diagram)
 
     return p_lstm_model

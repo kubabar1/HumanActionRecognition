@@ -16,13 +16,13 @@ class Optimizer(Enum):
 
 
 def validate_model(tensor_val_y, output_val, classes, epoch, epoch_nb, print_every, start_time, batch_size, loss_val,
-                   custom_text='RES'):
+                   custom_text='RES', print_results=True):
     ctgs_val = [classes[int(tty)] for tty in tensor_val_y]
     gss_val = [classes[int(torch.argmax(torch.exp(o)).item())] for o in output_val]
     correct_pred_in_batch_val = len([1 for c, g in zip(ctgs_val, gss_val) if c == g])
     batch_acc = correct_pred_in_batch_val / batch_size
 
-    if epoch % print_every == 0:
+    if epoch % print_every == 0 and print_results:
         print('VALIDATE_%s: %d %d%% (%s) %.4f [%d/%d -> %.2f%%]' % (
             custom_text, epoch, epoch / epoch_nb * 100, time_since(start_time), loss_val, correct_pred_in_batch_val,
             batch_size, batch_acc * 100))
@@ -66,7 +66,7 @@ def save_model_common(model, optimizer, epoch, validate_every, all_train_losses,
 
 
 def save_diagram_common(all_train_losses, all_val_losses, model_name, validate_every, epoch_nb, results_path,
-                        all_batch_training_accuracies, all_batch_val_accuracies):
+                        all_batch_training_accuracies, all_batch_val_accuracies, show_diagram=True):
     if not os.path.exists(results_path):
         pathlib.Path(results_path).mkdir(parents=True)
     diagram_name = model_name + '_loss.png'
@@ -75,7 +75,8 @@ def save_diagram_common(all_train_losses, all_val_losses, model_name, validate_e
     plt.plot(list(range(validate_every, epoch_nb, validate_every)), all_val_losses, label='val')
     plt.savefig(os.path.join(results_path, diagram_name))
     plt.legend(loc="upper right")
-    plt.show()
+    if show_diagram:
+        plt.show()
 
     diagram_name = model_name + '_acc.png'
     plt.figure()
@@ -83,7 +84,8 @@ def save_diagram_common(all_train_losses, all_val_losses, model_name, validate_e
     plt.plot(list(range(validate_every, epoch_nb, validate_every)), all_batch_val_accuracies, label='val')
     plt.savefig(os.path.join(results_path, diagram_name))
     plt.legend(loc="upper right")
-    plt.show()
+    if show_diagram:
+        plt.show()
 
 
 def save_loss_common(all_train_losses, all_val_losses, model_name, results_path, all_train_acc, all_val_acc):
