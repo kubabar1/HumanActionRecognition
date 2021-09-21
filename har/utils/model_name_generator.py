@@ -99,4 +99,4 @@ class ModelNameGenerator:
     def generate(self):
         if self.model_name_suffix != '':
             self.params.append(('', self.model_name_suffix))
-        return '_'.join([i[1] if i[0] is '' else i[0] + '_' + i[1] for i in self.params])
+        return '_'.join([i[1] if i[0] == '' else i[0] + '_' + i[1] for i in self.params])
