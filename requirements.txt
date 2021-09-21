@@ -46,7 +46,6 @@ networkx==2.5
 numpy==1.20.2
 olefile==0.46
 onnx==1.7.0
-onnxruntime==1.5.1
 opencv-contrib-python==4.5.1.48
 opencv-python==4.5.1.48
 opencv-python-headless==4.5.1.48
