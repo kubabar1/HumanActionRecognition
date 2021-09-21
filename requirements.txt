@@ -37,17 +37,17 @@ kwarray==0.5.13
 matplotlib==3.4.0
 mccabe==0.6.1
 mkl-fft==1.3.0
-mkl-random @ file:///tmp/build/80754af9/mkl_random_1618853974840/work
+mkl-random==1.2.1
 mkl-service==2.3.0
 mmcv-full==1.2.7
-mmdet @ file:///home/kuba/workspace/pose_estimation/mmdetection
+mmdet==2.10.0
 mmlvis==10.5.3
-mmpose @ file:///home/kuba/workspace/pose_estimation/mmpose
+mmpose==0.12.0
 mmpycocotools==12.0.3
 motmetrics==1.2.0
 munkres==1.1.4
 networkx==2.5
-numpy @ file:///tmp/build/80754af9/numpy_and_numpy_base_1620831194891/work
+numpy==1.20.2
 olefile==0.46
 onnx==1.7.0
 onnxruntime==1.5.1
@@ -57,9 +57,10 @@ opencv-python-headless==4.5.1.48
 ordered-set==4.0.2
 packaging==20.9
 pandas==1.2.3
-Pillow @ file:///tmp/build/80754af9/pillow_1617386154241/work
+Pillow==8.2.0
+pip==21.1.1
 pluggy==0.13.1
-poseval @ git+https://github.com/svenkreiss/poseval.git@3128c5cbcf90946e5164ff438ad651e113e64613
+poseval==0.1.0
 protobuf==3.15.6
 py==1.10.0
 py-cpuinfo==7.0.0
@@ -78,8 +79,9 @@ requests==2.25.1
 scikit-image==0.18.1
 scikit-learn==0.24.1
 scipy==1.6.2
+setuptools==52.0.0.post20210125
 Shapely==1.7.1
-six @ file:///tmp/build/80754af9/six_1605205313296/work
+six==1.15.0
 sklearn==0.0
 smplx==0.1.28
 tabulate==0.8.9
@@ -92,9 +94,10 @@ torchaudio==0.7.0a0+a853dff
 torchvision==0.8.2
 tqdm==4.59.0
 typing==3.7.4.3
-typing-extensions @ file:///home/ktietz/src/ci_mi/typing_extensions_1612808209620/work
+typing-extensions==3.7.4.3
 ubelt==0.9.5
 urllib3==1.26.4
+wheel==0.36.2
 xdoctest==0.15.4
 xmltodict==0.12.0
 xtcocotools==1.8
