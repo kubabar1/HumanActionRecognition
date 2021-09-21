@@ -1,5 +1,6 @@
 import csv
 import os
+import shutil
 import textwrap
 from enum import Enum, auto
 from random import randrange
@@ -453,7 +454,7 @@ def get_right_kpts(analysed_kpts_description):
     ]
 
 
-def prepare_dataset(data, labels, set_type, analysed_kpts_description, geometric_feature, use_cache, method_name):
+def prepare_dataset(data, labels, set_type, analysed_kpts_description, geometric_feature, use_cache, remove_cache, method_name):
     dataset_cache_root_dir = 'dataset_cache'
     dataset_cache_method_dir = method_name
     dataset_cache_data_file_name = 'data_arr_cache'
@@ -461,6 +462,9 @@ def prepare_dataset(data, labels, set_type, analysed_kpts_description, geometric
     dataset_cache_dir = os.path.join(dataset_cache_root_dir, dataset_cache_method_dir, geometric_feature.value, set_type.name)
     data_arr_cache_path = os.path.join(dataset_cache_dir, dataset_cache_data_file_name)
     labels_arr_cache_path = os.path.join(dataset_cache_dir, dataset_cache_labels_file_name)
+
+    if remove_cache:
+        shutil.rmtree(dataset_cache_dir)
 
     if use_cache and os.path.exists(data_arr_cache_path + '.npy') and os.path.exists(labels_arr_cache_path + '.npy'):
         data_arr = np.load(data_arr_cache_path + '.npy', allow_pickle=True)

@@ -17,12 +17,12 @@ def train(classes, training_data, training_labels, validation_data, validation_l
           val_every=5, steps=32, split=20, input_type=DatasetInputType.SPLIT, optimizer_type=Optimizer.RMSPROP,
           geometric_feature=GeometricFeature.JOINT_COORDINATE, results_path='results', model_name_suffix='', save_loss=True,
           save_diagram=True, save_model=True, save_model_for_inference=False, add_random_rotation_y=False, use_cache=False, is_3d=True,
-          show_diagram=True, print_results=True):
+          show_diagram=True, print_results=True, remove_cache=False):
     method_name = 'lstm_simple'
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     if geometric_feature == GeometricFeature.JOINT_COORDINATE:
-        input_size = len(analysed_kpts_description.values()) * 3
+        input_size = len(analysed_kpts_description.values()) * (3 if is_3d else 2)
     elif geometric_feature == GeometricFeature.RELATIVE_POSITION:
         input_size = (len(analysed_kpts_description.values()) * (len(analysed_kpts_description.values()) - 1)) * 3
     elif geometric_feature == GeometricFeature.JOINT_JOINT_DISTANCE:
@@ -60,10 +60,10 @@ def train(classes, training_data, training_labels, validation_data, validation_l
 
     train_data_loader = LSTMSimpleDataset(training_data, training_labels, batch_size, analysed_kpts_description, SetType.TRAINING,
                                           input_type, steps=steps, split=split, geometric_feature=geometric_feature,
-                                          add_random_rotation_y=add_random_rotation_y, use_cache=use_cache)
+                                          add_random_rotation_y=add_random_rotation_y, use_cache=use_cache, remove_cache=remove_cache)
     validation_data_loader = LSTMSimpleDataset(validation_data, validation_labels, batch_size, analysed_kpts_description,
                                                SetType.VALIDATION, input_type, steps=steps, split=split,
-                                               geometric_feature=geometric_feature, use_cache=use_cache)
+                                               geometric_feature=geometric_feature, use_cache=use_cache, remove_cache=remove_cache)
 
     for epoch in range(epoch_nb):
         data, train_y = next(iter(train_data_loader))

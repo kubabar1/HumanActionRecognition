@@ -1,3 +1,5 @@
+import os
+
 from matplotlib import pyplot as plt
 from matplotlib.legend import Legend
 from matplotlib.legend_handler import HandlerBase
@@ -11,7 +13,8 @@ class TextHandler(HandlerBase):
         return [tx]
 
 
-def draw_confusion_matrix(correct_arr, predicted_arr, classes, save_fig=True, result_path='results/evaluate.png', font_size=12):
+def draw_confusion_matrix(correct_arr, predicted_arr, classes, save_fig=True, result_path='results', font_size=12,
+                          show_diagram=True):
     cm = confusion_matrix(correct_arr, predicted_arr, labels=classes)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
 
@@ -31,7 +34,7 @@ def draw_confusion_matrix(correct_arr, predicted_arr, classes, save_fig=True, re
         # fig.set_size_inches((8.5, 11), forward=False)
         fig = plt.gcf()
         fig.set_size_inches((18, 8), forward=False)
-        fig.savefig(result_path)
+        fig.savefig(os.path.join(result_path, 'evaluate.png'))
 
-    mng = plt.get_current_fig_manager()
-    plt.show()
+    if show_diagram:
+        plt.show()

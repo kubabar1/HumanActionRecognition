@@ -13,7 +13,7 @@ class LSTMSimpleDataset(Dataset):
                  input_type: DatasetInputType = DatasetInputType.SPLIT,
                  geometric_feature: GeometricFeature = GeometricFeature.JOINT_COORDINATE,
                  steps: int = 32, split: int = 20, add_random_rotation_y: bool = False, is_test: bool = False,
-                 use_cache: bool = False):
+                 use_cache: bool = False, remove_cache: bool = False):
         self.is_test = is_test
         self.geometric_feature = geometric_feature
         self.analysed_kpts_description = analysed_kpts_description
@@ -23,13 +23,14 @@ class LSTMSimpleDataset(Dataset):
         self.input_type = input_type
         self.add_random_rotation_y = add_random_rotation_y
         self.use_cache = use_cache
+        self.remove_cache = remove_cache
         self.set_type = set_type
         if geometric_feature == GeometricFeature.JOINT_COORDINATE:
             self.data = [calculate_jjc(d, list(analysed_kpts_description.values())) for d in data]
             self.labels = labels
         else:
             self.data, self.labels = prepare_dataset(data, labels, set_type, self.analysed_kpts_description, geometric_feature,
-                                                     use_cache, 'lstm_simple')
+                                                     use_cache, remove_cache, 'lstm_simple')
 
     def __len__(self):
         return len(self.data)

@@ -1,17 +1,14 @@
-# from har.impl.p_lstm_ntu.evaluate import evaluate_tests
-# from har.impl.st_lstm.evaluate import evaluate_tests
-from har.impl.jtm.evaluate import evaluate_tests, ModelType
-from har.utils.dataset_util import SetType, berkeley_mhad_classes, video_pose_3d_kpts, get_berkeley_dataset, berkeley_frame_height, \
-    berkeley_frame_width
+from har.impl.jtm.evaluate import evaluate_tests
+from har.impl.lstm_simple.evaluate import evaluate_tests, load_model
+from har.utils.dataset_util import SetType, berkeley_mhad_classes, video_pose_3d_kpts, get_berkeley_dataset
 
 
 def main():
     test_data, test_labels = get_berkeley_dataset('datasets_processed/berkeley/3D', set_type=SetType.TEST)
-    model_path = './results' \
-                 '/jtm_ep_20_b_32_h_None_lr_0.0001_opt_SGD_inp_None_mm_None_wd_None_hl_None_dr_None_split_None_steps_None_front.pth'
+    model_path = 'results/lstm_simple_ep_10000_b_128_h_128_lr_0.0001_opt_RMSPROP_inp_STEP_mm_0.9_wd_0_hl_3_dr_0.5.pth'
+    lstm_simple_model = load_model(model_path, berkeley_mhad_classes, video_pose_3d_kpts)
 
-    accuracy = evaluate_tests(berkeley_mhad_classes, test_data, test_labels, model_path, video_pose_3d_kpts, berkeley_frame_width,
-                              berkeley_frame_height, ModelType.FRONT)
+    accuracy = evaluate_tests(berkeley_mhad_classes, test_data, test_labels, lstm_simple_model, video_pose_3d_kpts)
 
     print('Test accuracy: {}'.format(accuracy))
 
