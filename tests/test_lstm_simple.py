@@ -48,16 +48,6 @@ class TestLSTMSimple(unittest.TestCase):
 
         run_fit_test(lstm_simple_model, test_data, test_labels)
 
-        assert os.path.exists(os.path.join(self.test_results_path, generated_model_name))
-        assert os.path.exists(os.path.join(self.test_results_path, generated_acc_diagram))
-        assert os.path.exists(os.path.join(self.test_results_path, generated_loss_diagram))
-        assert os.path.exists(os.path.join(self.test_results_path, generated_train_acc))
-        assert os.path.exists(os.path.join(self.test_results_path, generated_train_loss))
-        assert os.path.exists(os.path.join(self.test_results_path, generated_val_acc))
-        assert os.path.exists(os.path.join(self.test_results_path, generated_val_loss))
-
-        assert os.path.exists(os.path.join(self.test_results_path, 'evaluate.png'))
-
 
 def run_train_test(training_data, training_labels, validation_data, validation_labels, test_results_path):
     train(berkeley_mhad_classes, training_data, training_labels, validation_data, validation_labels, video_pose_3d_kpts, epoch_nb=5,
