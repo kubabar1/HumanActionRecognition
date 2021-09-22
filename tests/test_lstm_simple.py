@@ -25,7 +25,6 @@ class TestLSTMSimple(unittest.TestCase):
             zip_ref.extractall(self.test_dataset_path)
 
     def test_run_training_evaluate_fit(self):
-        print('test1')
         generated_model_name = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D.pth'
         generated_acc_diagram = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D_acc.png'
         generated_loss_diagram = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D_loss.png'
@@ -57,6 +56,7 @@ class TestLSTMSimple(unittest.TestCase):
         assert os.path.exists(os.path.join(self.test_results_path, generated_val_acc))
         assert os.path.exists(os.path.join(self.test_results_path, generated_val_loss))
 
+        print(os.path.exists(os.path.join(self.test_results_path, 'evaluate.png')))
         assert os.path.exists(os.path.join(self.test_results_path, 'evaluate.png'))
 
 
