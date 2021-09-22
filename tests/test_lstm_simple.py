@@ -25,6 +25,7 @@ class TestLSTMSimple(unittest.TestCase):
             zip_ref.extractall(self.test_dataset_path)
 
     def test_run_training_evaluate_fit(self):
+        print('test1')
         generated_model_name = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D.pth'
         generated_acc_diagram = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D_acc.png'
         generated_loss_diagram = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D_loss.png'
@@ -33,19 +34,28 @@ class TestLSTMSimple(unittest.TestCase):
         generated_val_acc = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D_val_acc.npy'
         generated_val_loss = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D_val_loss.npy'
 
+        print('test2')
+
         training_data, training_labels = get_berkeley_dataset(os.path.join(self.test_dataset_path, 'berkeley-3D'),
                                                               set_type=SetType.TRAINING)
+        print('test3')
         validation_data, validation_labels = get_berkeley_dataset(os.path.join(self.test_dataset_path, 'berkeley-3D'),
                                                                   set_type=SetType.VALIDATION)
+        print('test4')
         test_data, test_labels = get_berkeley_dataset(os.path.join(self.test_dataset_path, 'berkeley-3D'), set_type=SetType.TEST)
+        print('test5')
 
         run_train_test(training_data, training_labels, validation_data, validation_labels, self.test_results_path)
+        print('test6')
 
         lstm_simple_model = run_load_model_test(os.path.join(self.test_results_path, generated_model_name))
+        print('test7')
 
         run_evaluation_test(lstm_simple_model, test_data, test_labels, self.test_results_path)
+        print('test8')
 
         run_fit_test(lstm_simple_model, test_data, test_labels)
+        print('test9')
 
         assert os.path.exists(os.path.join(self.test_results_path, generated_model_name))
         assert os.path.exists(os.path.join(self.test_results_path, generated_acc_diagram))
@@ -54,8 +64,10 @@ class TestLSTMSimple(unittest.TestCase):
         assert os.path.exists(os.path.join(self.test_results_path, generated_train_loss))
         assert os.path.exists(os.path.join(self.test_results_path, generated_val_acc))
         assert os.path.exists(os.path.join(self.test_results_path, generated_val_loss))
+        print('test10')
 
         assert os.path.exists(os.path.join(self.test_results_path, 'evaluate.png'))
+        print('test11')
 
 
 def run_train_test(training_data, training_labels, validation_data, validation_labels, test_results_path):
