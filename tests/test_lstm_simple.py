@@ -40,13 +40,17 @@ class TestLSTMSimple(unittest.TestCase):
                                                                   set_type=SetType.VALIDATION)
         test_data, test_labels = get_berkeley_dataset(os.path.join(self.test_dataset_path, 'berkeley-3D'), set_type=SetType.TEST)
 
-        run_train_test(training_data, training_labels, validation_data, validation_labels, self.test_results_path)
+        train(berkeley_mhad_classes, training_data, training_labels, validation_data, validation_labels, video_pose_3d_kpts, epoch_nb=5,
+              show_diagram=False, results_path=self.test_results_path, val_every=2, print_every=2, print_results=False)
 
-        lstm_simple_model = run_load_model_test(os.path.join(self.test_results_path, generated_model_name))
+        lstm_simple_model = load_model(os.path.join(self.test_results_path, generated_model_name), berkeley_mhad_classes, video_pose_3d_kpts)
 
-        run_evaluation_test(lstm_simple_model, test_data, test_labels, self.test_results_path)
+        evaluate_tests(berkeley_mhad_classes, test_data, test_labels, lstm_simple_model, video_pose_3d_kpts,
+                                  results_path=self.test_results_path, show_diagram=False)
 
-        run_fit_test(lstm_simple_model, test_data, test_labels)
+        random_id = randrange(len(test_labels))
+        test_sequence, test_label = test_data[random_id], test_labels[random_id]
+        fit(berkeley_mhad_classes, test_sequence, lstm_simple_model, video_pose_3d_kpts)
 
         assert os.path.exists(os.path.join(self.test_results_path, generated_model_name))
         assert os.path.exists(os.path.join(self.test_results_path, generated_acc_diagram))
@@ -56,31 +60,4 @@ class TestLSTMSimple(unittest.TestCase):
         assert os.path.exists(os.path.join(self.test_results_path, generated_val_acc))
         assert os.path.exists(os.path.join(self.test_results_path, generated_val_loss))
 
-        print(os.path.exists(os.path.join(self.test_results_path, 'evaluate.png')))
         assert os.path.exists(os.path.join(self.test_results_path, 'evaluate.png'))
-
-
-def run_train_test(training_data, training_labels, validation_data, validation_labels, test_results_path):
-    train(berkeley_mhad_classes, training_data, training_labels, validation_data, validation_labels, video_pose_3d_kpts, epoch_nb=5,
-          show_diagram=False, results_path=test_results_path, val_every=2, print_every=2, print_results=False)
-
-
-def run_load_model_test(generated_model_path):
-    return load_model(generated_model_path, berkeley_mhad_classes, video_pose_3d_kpts)
-
-
-def run_evaluation_test(lstm_simple_model, test_data, test_labels, results_path, print_results=False):
-    accuracy = evaluate_tests(berkeley_mhad_classes, test_data, test_labels, lstm_simple_model, video_pose_3d_kpts,
-                              results_path=results_path, show_diagram=False)
-    if print_results:
-        print('Test accuracy: {}'.format(accuracy))
-
-
-def run_fit_test(lstm_simple_model, test_data, test_labels, print_results=False):
-    random_id = randrange(len(test_labels))
-    test_sequence, test_label = test_data[random_id], test_labels[random_id]
-    predicted = fit(berkeley_mhad_classes, test_sequence, lstm_simple_model, video_pose_3d_kpts)
-    if print_results:
-        print('CORRECT: {}'.format(berkeley_mhad_classes[test_label]))
-        print('PREDICTED: {}'.format(predicted))
-
