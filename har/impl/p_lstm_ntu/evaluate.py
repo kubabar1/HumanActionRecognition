@@ -9,14 +9,19 @@ from ...utils.dataset_util import DatasetInputType, get_all_body_parts_splits, g
 from ...utils.evaluation_utils import draw_confusion_matrix
 
 
-def evaluate_tests(classes, test_data, test_labels, model_path, analysed_kpts_description, hidden_size=128,
-                   input_size=9, parts=4, input_type=DatasetInputType.SPLIT, steps=32, split=20):
+def load_model(model_path, classes, hidden_size=128, is_3d=True):
     warnings.filterwarnings("ignore", message="Setting attributes on ParameterList is not supported.")
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-    p_lstm_model = PLSTMModel(input_size, hidden_size, len(classes), parts).to(device)
+    input_size = 9 if is_3d else 6
+    p_lstm_model = PLSTMModel(input_size, hidden_size, len(classes)).to(device)
     p_lstm_model.load_state_dict(torch.load(model_path))
     p_lstm_model.eval()
+    return p_lstm_model
+
+
+def evaluate_tests(classes, test_data, test_labels, p_lstm_model, analysed_kpts_description, input_type=DatasetInputType.SPLIT, steps=32,
+                   split=20, show_diagram=True, results_path='results'):
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     test_data_loader = PLSTMDataset(test_data, test_labels, len(test_data), analysed_kpts_description, steps=steps, split=split,
                                     input_type=input_type, is_test=True)
@@ -31,21 +36,13 @@ def evaluate_tests(classes, test_data, test_labels, model_path, analysed_kpts_de
     correct_arr = [classes[int(i)] for i in tensor_val_y]
     predicted_arr = [classes[int(torch.argmax(torch.exp(i)).item())] for i in output_val]
 
-    draw_confusion_matrix(correct_arr, predicted_arr, classes)
+    draw_confusion_matrix(correct_arr, predicted_arr, classes, result_path=results_path, show_diagram=show_diagram)
 
     return np.sum([1 for c, p in zip(correct_arr, predicted_arr) if c == p]) / len(correct_arr)
 
 
-def fit(classes, data, model_path, analysed_kpts_description, hidden_size=128, input_size=9, parts=4,
-        input_type=DatasetInputType.SPLIT, steps=32, split=20):
-    warnings.filterwarnings("ignore", message="Setting attributes on ParameterList is not supported.")
+def fit(classes, data, p_lstm_model, analysed_kpts_description, input_type=DatasetInputType.SPLIT, steps=32, split=20):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    # torch.set_printoptions(precision=5, sci_mode=False)
-
-    p_lstm_model = PLSTMModel(input_size, hidden_size, len(classes), parts).to(device)
-    p_lstm_model.load_state_dict(torch.load(model_path))
-    p_lstm_model.eval()
-
     analysed_body_parts = ['right_wrist', 'left_wrist', 'right_elbow', 'left_elbow', 'right_shoulder', 'left_shoulder',
                            'right_hip', 'left_hip', 'right_knee', 'left_knee', 'right_ankle', 'left_ankle']
 

@@ -6,7 +6,7 @@ from .PLSTMCell import PLSTMCell
 
 
 class PLSTMModel(nn.Module):
-    def __init__(self, input_size, hidden_size, classes_count, parts):
+    def __init__(self, input_size, hidden_size, classes_count, parts=4):
         super(PLSTMModel, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size

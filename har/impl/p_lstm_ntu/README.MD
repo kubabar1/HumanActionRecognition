@@ -1,78 +1,58 @@
 ## P-LSTM
-
 This implementation basis on LSTM cell modification proposed in article **"NTU RGB+D: A Large Scale Dataset for 3D Human Activity Analysis"**.
 
+1. [Training](#1-training)
 
-### Training
+2. [Evaluation](#2-load-model)
 
-Train neural network on given dataset.
+3. [Evaluation](#3-evaluation)
 
-Example use of train method:
-```
-from har.impl.lstm_simple.train import train
-from har.utils.dataset_util import get_berkeley_dataset_3d, SetType, berkeley_mhad_classes
+4. [Fit](#4-fit)
 
-def main():
-    training_data, training_labels = get_berkeley_dataset_3d('datasets/BerkeleyMHAD/3D', set_type=SetType.TRAINING)
-    validation_data, validation_labels = get_berkeley_dataset_3d('datasets/BerkeleyMHAD/3D', set_type=SetType.VALIDATION)
+5. [Additional info](#5-additional-info)
 
-    train(berkeley_mhad_classes, training_data, training_labels, validation_data, validation_labels)
+6. [Article](#6-article)
 
-if __name__ == '__main__':
-    main()
-```
+### 1. Training
 
-##### Params:
-* **classes** - list of classes (class ID must comply with labels ID's)
-* **training_data** - list of training data sequences e.g. list containing 100 sequences of size (125, 17, 3)
-* **training_labels** - list containing action labels for each training sequence
-* **validation_data** - list of validation data sequences e.g. list containing 100 sequences of size (125, 17, 3)
-* **validation_labels** - list containing action labels for each validation sequence 
-* **analysed_kpts_description** - object describing keypoints meaning in training and validation data list, e.g:
-```
-{
-    'right_wrist': 16, 
-    'left_wrist': 13, 
-    'right_elbow': 15, 
-    'left_elbow': 12, 
-    'right_shoulder': 14, 
-    'left_shoulder': 11, 
-    'right_hip': 1, 
-    'left_hip': 4, 
-    'right_knee': 2, 
-    'left_knee': 5, 
-    'right_ankle': 3, 
-    'left_ankle': 6
-}
-```
-* **input_size** - (default 9) size of input vector data for every part (part param is described below) (e.g. 4 parts, each containing 3 keypoints, each described by coordinates (x, y, z) -> 4 parts x 9)
-* **dropout** - (default 0.5) applied dropout between LSTM layers
-* **parts** - (default 4) count of parts in P-LSTM cell (corresponding to body part, e.g. right wrist, right elbow, right shoulder -> right arm)
-* **epoch_nb** - (default 10000) count of training iterations
-* **batch_size** - (default 128) size of input data batch
-* **hidden_size** - (default 128) size of LSTM hidden layer
-* **learning_rate** - (default 0.0001) learning rate
-* **print_every** - (default 50) print results every iterations rate
-* **weight_decay** - (default 0) optimizer weight decay parameter
-* **momentum** - (default 0.9) optimizer momentum parameter
-* **val_every** - (default 5) validate network every iteration rate
-* **input_type** - (default DatasetInputType.SPLIT) object defining type of input data (STEP or SPLIT); input using enum defined in DatasetInputType from utils.dataset_util
-* **save_loss** - (default True) boolean defining if generate file containing array of losses
-* **save_diagram** - (default True) boolean defining if save generated diagrams of loses and accuracy
-* **results_path** - (default 'results') path, where generated results should be placed
-* **optimizer_type** - (default Optimizer.RMSPROP) type of optimizer (must be of type **Optimizer**, defined in *har/utils/training_utils.py* )
-* **save_model** - (default True) is model should be saved (to evaluation)
-* **save_model_for_inference** - (default False) is model should be saved for inference (it will enable run training again in future)
-* **add_random_rotation_y** - (default False) is random rotation should be performed on training data during training
-* **steps** - (default 32) size of step (only for input_type DatasetInputType.STEP)
-* **split** - (default 20) size of split (only for input_type DatasetInputType.SPLIT)
+- [Parameters](#parameters---training)
 
+- [Example](#example---training)
+           
+#### Parameters - training
+| Parameter name  | Default value  | Description |
+| :--------- |:--------------: | :---- |
+| **classes*** | - | list of classes (class ID must comply with labels ID's) |
+| **training_data*** | - | list of training data sequences e.g. list containing 100 sequences of size (125, 17, 3) |
+| **training_labels*** | - | list containing action labels for each training sequence |
+| **validation_data*** | - | list of validation data sequences e.g. list containing 100 sequences of size (125, 17, 3) |
+| **validation_labels*** | - | list containing action labels for each validation sequence |
+| **analysed_kpts_description*** | - | object describing keypoints meaning in training and validation data list (example object described [here](#example-analysed_kpts_description-object)) |
+| **epoch_nb** | 10000 | count of training iterations |
+| **batch_size** | 128 | size of input data batch |
+| **learning_rate** | 0.0001 | learning rate |
+| **hidden_size** | 128 | size of LSTM hidden layer |
+| **dropout** | 0.5 | applied dropout between LSTM layers |
+| **momentum** | 0.9 | optimizer momentum parameter |
+| **weight_decay** | 0 | optimizer weight decay parameter |
+| **print_every** | 50 | print training results rate |
+| **val_every** | 5 | validate network rate |
+| **input_type** | SPLIT | object defining type of input data (STEP or SPLIT) (must be of type **DatasetInputType**, defined in *har/utils/dataset_util.py* ) |
+| **optimizer_type** | RMSPROP | type of optimizer (must be of type **Optimizer**, defined in *har/utils/training_utils.py* ) |
+| **steps** | 32 | size of step (only for input_type DatasetInputType.STEP) |
+| **split** | 20 | size of split (only for input_type DatasetInputType.SPLIT) |
+| **results_path** | 'results' | path, where generated results should be placed |
+| **model_name_suffix** | '' | suffix added to generated model name |
+| **save_loss** | True | boolean defining if generate file containing array of losses |
+| **save_diagram** | True | boolean defining if save generated diagram of losses and accuracies |
+| **save_model** | True | boolean defining if model should be saved (for evaluation) |
+| **save_model_for_inference** | False | boolean defining if model should be saved (for inference - it will enable run training again in future) |
+| **add_random_rotation_y** | False | is random rotation should be performed on training data during training |
+| **is_3d** | True | boolean defining if input coordinates are 3D (for False input coordinates should be 2D) |
+| **show_diagram** | True | boolean defining if show diagram after training |
+| **print_results** | True | boolean defining if print training and validation results during training |
 
-### Evaluate
-
-Evaluate generated model on test dataset.
-
-Example use of evaluate method:
+#### Example - training
 ```
 from har.impl.p_lstm_ntu.evaluate import evaluate_tests
 from har.utils.dataset_util import SetType, berkeley_mhad_classes, video_pose_3d_kpts, get_berkeley_dataset
@@ -91,55 +71,118 @@ if __name__ == '__main__':
     main()
 ```
 
-##### Params:
-* **classes** - list of classes (class ID must comply with labels ID's)
-* **test_data** - list of test data sequences e.g. list containing 100 sequences of size (125, 17, 3)
-* **test_labels** - list containing action labels for each test sequence 
-* **model_path** - path to generated model
-* **analysed_kpts_description** - object describing keypoints meaning in training and validation data list, e.g:
+
+### 2. Load model
+
+- [Parameters](#parameters---load-model)
+
+- [Example](#example---load-model)
+
+#### Parameters - load model
+| Parameter name  | Default value  | Description |
+| :--------- |:--------------: | :---- |
+| **model_path*** | - | path to model generated during training |
+| **classes*** | - | list of classes (class ID must comply with labels ID's) |
+| **hidden_size** | 128 | size of LSTM hidden layer used during training NN |
+| **is_3d** | True | boolean defining if input coordinates are 3D (for False input coordinates should be 2D) - must agree with value set during training|
+
+
+#### Example - load model
 ```
-{
-    'right_wrist': 16, 
-    'left_wrist': 13, 
-    'right_elbow': 15, 
-    'left_elbow': 12, 
-    'right_shoulder': 14, 
-    'left_shoulder': 11, 
-    'right_hip': 1, 
-    'left_hip': 4, 
-    'right_knee': 2, 
-    'left_knee': 5, 
-    'right_ankle': 3, 
-    'left_ankle': 6
-}
+from har.impl.p_lstm_ntu.evaluate import evaluate_tests, load_model
+from har.utils.dataset_util import SetType, berkeley_mhad_classes, video_pose_3d_kpts, get_berkeley_dataset
+
+
+def main():
+    test_data, test_labels = get_berkeley_dataset('datasets_processed/berkeley/3D', set_type=SetType.TEST)
+    model_path = 'results/model_p_lstm_ntu_en_1000_bs_128_lr_0.0001_op_RMSPROP_hs_128_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D.pth'
+    p_simple_model = load_model(model_path, berkeley_mhad_classes)
+
+
+if __name__ == '__main__':
+    main()
 ```
-* **parts** - (default 4) count of parts in P-LSTM cell used during training (corresponding to body part, e.g. right wrist, right elbow, right shoulder -> right arm)
-* **input_size** - (default 9) size of input vector data for every part used during training (part param is described below) (e.g. 4 parts, each containing 3 keypoints, each described by coordinates (x, y, z) -> 4 parts x 9)
-* **input_type** - (default DatasetInputType.SPLIT) object defining type of input data used during training (STEP or SPLIT); input using enum defined in DatasetInputType from utils.dataset_util
-* **hidden_size** - (default 128) size of LSTM hidden layer used during training
-* **steps** - (default 32) size of step used during training (only for input_type DatasetInputType.STEP)
-* **split** - (default 20) size of split used during training (only for input_type DatasetInputType.SPLIT)
 
-### Fit
 
-Evaluate generated model on given single sequence.
+### 3. Evaluation
 
-Example use of evaluate method:
+- [Parameters](#parameters---evaluation)
+
+- [Example](#example---evaluation)
+
+#### Parameters - evaluation
+| Parameter name  | Default value  | Description |
+| :--------- |:--------------: | :---- |
+| **classes*** | - | list of classes (class ID must comply with labels ID's) - order must agree with this used during training NN |
+| **test_data*** | - | list of test data sequences e.g. list containing 100 sequences of size (125, 17, 3) |
+| **test_labels*** | - | list containing action labels for each test sequence |
+| **p_lstm_model*** | - | trained model loaded using function load_model |
+| **analysed_kpts_description*** | - | object describing keypoints meaning in training and validation data list (example object described [here](#example-analysed_kpts_description-object)) |
+| **input_type** | SPLIT | object defining type of input data (STEP or SPLIT) (must be of type **DatasetInputType**, defined in *har/utils/dataset_util.py* ) - must agree with type of input used during training NN |
+| **steps** | 32 | size of step (only for input_type DatasetInputType.STEP) - must agree with type of input used during training NN |
+| **split** | 20 | size of split (only for input_type DatasetInputType.SPLIT) - must agree with type of input used during training NN |
+| **show_diagram** | True | boolean defining if show diagram after evaluation |
+| **results_path** | 'results' | path, where generated results should be placed |
+
+classes, test_data, test_labels, p_lstm_model, 
+analysed_kpts_description, input_type=DatasetInputType.SPLIT, steps=32,
+                   split=20
+
+
+#### Example - evaluation
+```
+from har.impl.p_lstm_ntu.evaluate import evaluate_tests, load_model
+from har.utils.dataset_util import SetType, berkeley_mhad_classes, video_pose_3d_kpts, get_berkeley_dataset
+
+
+def main():
+    test_data, test_labels = get_berkeley_dataset('datasets_processed/berkeley/3D', set_type=SetType.TEST)
+    model_path = 'results/model_p_lstm_ntu_en_1000_bs_128_lr_0.0001_op_RMSPROP_hs_128_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D.pth'
+    p_simple_model = load_model(model_path, berkeley_mhad_classes)
+    accuracy = evaluate_tests(berkeley_mhad_classes, test_data, test_labels, p_simple_model, video_pose_3d_kpts)
+    print('Test accuracy: {}'.format(accuracy))
+
+
+if __name__ == '__main__':
+    main()
+```
+
+
+### 4. Fit
+
+- [Parameters](#parameters---fit)
+
+- [Example](#example---fit)
+
+#### Parameters - fit
+| Parameter name  | Default value  | Description |
+| :--------- |:--------------: | :---- |
+| **classes*** | - | list of classes (class ID must comply with labels ID's) - order must agree with this used during training NN |
+| **data*** | - | input data as vector of shape (frames_count, kpts_count, kpt_coordinates_count) e.g. (59, 17, 3) |
+| **p_lstm_model*** | - | trained model loaded using function load_model |
+| **analysed_kpts_description*** | - | object describing keypoints meaning in training and validation data list (example object described [here](#example-analysed_kpts_description-object)) |
+| **input_type** | SPLIT | object defining type of input data (STEP or SPLIT) (must be of type **DatasetInputType**, defined in *har/utils/dataset_util.py* ) - must agree with type of input used during training NN |
+| **steps** | 32 | size of step (only for input_type DatasetInputType.STEP) - must agree with type of input used during training NN |
+| **split** | 20 | size of split (only for input_type DatasetInputType.SPLIT) - must agree with type of input used during training NN |
+
+
+#### Example - fit
 ```
 from random import randrange
 
-from har.impl.p_lstm_ntu.evaluate import fit
-from har.utils.dataset_util import get_berkeley_dataset, SetType, berkeley_mhad_classes, video_pose_3d_kpts, DatasetInputType
+from har.impl.p_lstm_ntu.evaluate import load_model, fit
+from har.utils.dataset_util import get_berkeley_dataset, SetType, berkeley_mhad_classes, video_pose_3d_kpts
 
 
 def main():
     test_data, test_labels = get_berkeley_dataset('datasets/BerkeleyMHAD/3D', set_type=SetType.TEST)
     random_id = randrange(len(test_labels))
     test_sequence, test_label = test_data[random_id], test_labels[random_id]
-    model_path = 'results/p_lstm_ntu_ep_10000_b_128_h_128_lr_0.0001_opt_RMSPROP_inp_SPLIT_mm_0.9_wd_0_hl_None_dr_0.5_split_20_steps_32.pth'
+    model_path = 'results/model_p_lstm_ntu_en_1000_bs_128_lr_0.0001_op_RMSPROP_hs_128_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D.pth'
 
-    predicted = fit(berkeley_mhad_classes, test_sequence, model_path, video_pose_3d_kpts, hidden_size=128, input_size=9, parts=4,
-                    input_type=DatasetInputType.SPLIT, steps=32, split=20)
+    p_lstm_model = load_model(model_path, berkeley_mhad_classes)
+
+    predicted = fit(berkeley_mhad_classes, test_sequence, p_lstm_model, video_pose_3d_kpts)
 
     print('CORRECT: {}'.format(berkeley_mhad_classes[test_label]))
     print('PREDICTED: {}'.format(predicted))
@@ -149,11 +192,10 @@ if __name__ == '__main__':
     main()
 ```
 
-##### Params:
-* **classes** - list of classes (class ID must comply with labels ID's)
-* **data** - input sequence of shape (sequence_length, keypoints_count, kpt_coordinates_count), e.g. (190, 17, 3)
-* **model_path** - path to generated model
-* **analysed_kpts_description** - object describing keypoints meaning in training and validation data list, e.g:
+
+### 5. Additional info
+
+#### Example analysed_kpts_description object
 ```
 {
     'right_wrist': 16, 
@@ -170,15 +212,9 @@ if __name__ == '__main__':
     'left_ankle': 6
 }
 ```
-* **parts** - (default 4) count of parts in P-LSTM cell used during training (corresponding to body part, e.g. right wrist, right elbow, right shoulder -> right arm)
-* **input_size** - (default 9) size of input vector data for every part used during training (part param is described below) (e.g. 4 parts, each containing 3 keypoints, each described by coordinates (x, y, z) -> 4 parts x 9)
-* **input_type** - (default DatasetInputType.SPLIT) object defining type of input data used during training (STEP or SPLIT); input using enum defined in DatasetInputType from utils.dataset_util
-* **hidden_size** - (default 128) size of LSTM hidden layer used during training
-* **steps** - (default 32) size of step used during training (only for input_type DatasetInputType.STEP)
-* **split** - (default 20) size of split used during training (only for input_type DatasetInputType.SPLIT)
 
+### 6. Article
 
-##### Article:
 ```
 @inproceedings{shahroudy2016ntu,
   title={Ntu rgb+ d: A large scale dataset for 3d human activity analysis},

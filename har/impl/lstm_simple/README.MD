@@ -80,13 +80,12 @@ if __name__ == '__main__':
 
 - [Example](#example---load-model)
 
-hidden_size=128, hidden_layers=3, is_3d=True):
 #### Parameters - load model
 | Parameter name  | Default value  | Description |
 | :--------- |:--------------: | :---- |
 | **model_path*** | - | path to model generated during training |
 | **classes*** | - | list of classes (class ID must comply with labels ID's) |
-| **analysed_kpts_description*** | - | object describing keypoints meaning in training and validation data list (example object described [here](#example-analysed_kpts_description-object)) |
+| **analysed_kpts_count** | 12 | count of analysed keypoints |
 | **hidden_size** | 128 | size of LSTM hidden layer used during training NN |
 | **hidden_layers** | 3 | count of hidden layers in LSTM network used during training NN |
 | **is_3d** | True | boolean defining if input coordinates are 3D (for False input coordinates should be 2D) - must agree with value set during training|
@@ -130,7 +129,6 @@ if __name__ == '__main__':
 
 #### Example - evaluation
 ```
-from har.impl.jtm.evaluate import evaluate_tests
 from har.impl.lstm_simple.evaluate import evaluate_tests, load_model
 from har.utils.dataset_util import SetType, berkeley_mhad_classes, video_pose_3d_kpts, get_berkeley_dataset
 
