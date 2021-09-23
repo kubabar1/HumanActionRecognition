@@ -18,17 +18,12 @@ class TestLSTMSimple(unittest.TestCase):
 
     @classmethod
     def setup_class(cls):
-        print('\n===Setup Class===')
         if os.path.exists(cls.test_results_path):
             shutil.rmtree(cls.test_results_path)
         if os.path.exists(cls.test_dataset_path):
             shutil.rmtree(cls.test_dataset_path)
         with zipfile.ZipFile(cls.test_dataset_resource_path, 'r') as zip_ref:
             zip_ref.extractall(cls.test_dataset_path)
-
-    @classmethod
-    def teardown_class(cls):
-        print('\n===Teardown Class===')
 
     def test_run_training_evaluate_fit(self):
         generated_model_name = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D.pth'
