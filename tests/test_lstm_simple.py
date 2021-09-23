@@ -16,13 +16,19 @@ class TestLSTMSimple(unittest.TestCase):
     test_dataset_resource_path = 'tests/test_resources/berkeley-3D.zip'
     test_dataset_path = 'tests/test_dataset'
 
-    def setUp(self):
-        if os.path.exists(self.test_results_path):
-            shutil.rmtree(self.test_results_path)
-        if os.path.exists(self.test_dataset_path):
-            shutil.rmtree(self.test_dataset_path)
-        with zipfile.ZipFile(self.test_dataset_resource_path, 'r') as zip_ref:
-            zip_ref.extractall(self.test_dataset_path)
+    @classmethod
+    def setup_class(cls):
+        print('\n===Setup Class===')
+        if os.path.exists(cls.test_results_path):
+            shutil.rmtree(cls.test_results_path)
+        if os.path.exists(cls.test_dataset_path):
+            shutil.rmtree(cls.test_dataset_path)
+        with zipfile.ZipFile(cls.test_dataset_resource_path, 'r') as zip_ref:
+            zip_ref.extractall(cls.test_dataset_path)
+
+    @classmethod
+    def teardown_class(cls):
+        print('\n===Teardown Class===')
 
     def test_run_training_evaluate_fit(self):
         generated_model_name = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D.pth'
@@ -33,7 +39,29 @@ class TestLSTMSimple(unittest.TestCase):
         generated_val_acc = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D_val_acc.npy'
         generated_val_loss = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D_val_loss.npy'
 
-        assert 1 == 1
+        training_data, training_labels = get_berkeley_dataset(os.path.join(self.test_dataset_path, 'berkeley-3D'),
+                                                              set_type=SetType.TRAINING)
+        validation_data, validation_labels = get_berkeley_dataset(os.path.join(self.test_dataset_path, 'berkeley-3D'),
+                                                                  set_type=SetType.VALIDATION)
+        test_data, test_labels = get_berkeley_dataset(os.path.join(self.test_dataset_path, 'berkeley-3D'), set_type=SetType.TEST)
+
+        run_train_test(training_data, training_labels, validation_data, validation_labels, self.test_results_path)
+
+        lstm_simple_model = run_load_model_test(os.path.join(self.test_results_path, generated_model_name))
+
+        run_evaluation_test(lstm_simple_model, test_data, test_labels, self.test_results_path)
+
+        run_fit_test(lstm_simple_model, test_data, test_labels)
+
+        assert os.path.exists(os.path.join(self.test_results_path, generated_model_name))
+        assert os.path.exists(os.path.join(self.test_results_path, generated_acc_diagram))
+        assert os.path.exists(os.path.join(self.test_results_path, generated_loss_diagram))
+        assert os.path.exists(os.path.join(self.test_results_path, generated_train_acc))
+        assert os.path.exists(os.path.join(self.test_results_path, generated_train_loss))
+        assert os.path.exists(os.path.join(self.test_results_path, generated_val_acc))
+        assert os.path.exists(os.path.join(self.test_results_path, generated_val_loss))
+
+        assert os.path.exists(os.path.join(self.test_results_path, 'evaluate.png'))
 
 
 def run_train_test(training_data, training_labels, validation_data, validation_labels, test_results_path):
