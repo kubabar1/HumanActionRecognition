@@ -59,7 +59,7 @@ def run_train_test(training_data, training_labels, validation_data, validation_l
 
 
 def run_load_model_test(generated_model_path):
-    return load_model(generated_model_path, berkeley_mhad_classes)
+    return load_model(generated_model_path, len(berkeley_mhad_classes))
 
 
 def run_evaluation_test(lstm_simple_model, test_data, test_labels, results_path, print_results=False):

@@ -9,10 +9,10 @@ from ...utils.dataset_util import DatasetInputType, SetType
 from ...utils.evaluation_utils import draw_confusion_matrix
 
 
-def load_model(model_path, classes, analysed_kpts_count=12, hidden_size=128, hidden_layers=3, is_3d=True):
+def load_model(model_path, classes_count, analysed_kpts_count=12, hidden_size=128, hidden_layers=3, is_3d=True):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     input_size = analysed_kpts_count * (3 if is_3d else 2)
-    lstm_model = LSTMSimpleModel(input_size, hidden_size, hidden_layers, len(classes)).to(device)
+    lstm_model = LSTMSimpleModel(input_size, hidden_size, hidden_layers, classes_count).to(device)
     lstm_model.load_state_dict(torch.load(model_path))
     lstm_model.eval()
     return lstm_model

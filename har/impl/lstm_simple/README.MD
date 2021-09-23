@@ -40,7 +40,7 @@ This solution uses Pytorch implementation of plain LSTM neural network.
 | **val_every** | 5 | validate network rate |
 | **input_type** | SPLIT | object defining type of input data (STEP or SPLIT) (must be of type **DatasetInputType**, defined in *har/utils/dataset_util.py* ) |
 | **geometric_feature** | JOINT_COORDINATE | type of geometric feature used during training (basis on article *"On Geometric Features for Skeleton-Based Action Recognition using Multilayer LSTM Networks"*) (must be of type **GeometricFeature**, defined in *har/utils/dataset_util.py* )|
-| **optimizer** | RMSPROP | type of optimizer (must be of type **Optimizer**, defined in *har/utils/training_utils.py* ) |
+| **optimizer_type** | RMSPROP | type of optimizer (must be of type **Optimizer**, defined in *har/utils/training_utils.py* ) |
 | **steps** | 32 | size of step (only for input_type DatasetInputType.STEP) |
 | **split** | 20 | size of split (only for input_type DatasetInputType.SPLIT) |
 | **results_path** | 'results' | path, where generated results should be placed |
@@ -84,7 +84,7 @@ if __name__ == '__main__':
 | Parameter name  | Default value  | Description |
 | :--------- |:--------------: | :---- |
 | **model_path*** | - | path to model generated during training |
-| **classes*** | - | list of classes (class ID must comply with labels ID's) |
+| **classes_count*** | - | count of classes |
 | **analysed_kpts_count** | 12 | count of analysed keypoints |
 | **hidden_size** | 128 | size of LSTM hidden layer used during training NN |
 | **hidden_layers** | 3 | count of hidden layers in LSTM network used during training NN |
@@ -99,7 +99,7 @@ from har.utils.dataset_util import berkeley_mhad_classes, video_pose_3d_kpts
 
 def main():
     model_path = 'results/lstm_simple_ep_10001_b_128_h_128_lr_0.0001_opt_RMSPROP_inp_SPLIT_mm_0.9_wd_0_hl_3_dr_0.5_split_20_steps_32.pth'
-    lstm_simple_model = load_model(model_path, berkeley_mhad_classes, video_pose_3d_kpts)
+    lstm_simple_model = load_model(model_path, len(berkeley_mhad_classes))
 
 
 if __name__ == '__main__':
@@ -136,7 +136,7 @@ from har.utils.dataset_util import SetType, berkeley_mhad_classes, video_pose_3d
 def main():
     test_data, test_labels = get_berkeley_dataset('datasets_processed/berkeley/3D', set_type=SetType.TEST)
     model_path = 'results/lstm_simple_ep_10000_b_128_h_128_lr_0.0001_opt_RMSPROP_inp_STEP_mm_0.9_wd_0_hl_3_dr_0.5.pth'
-    lstm_simple_model = load_model(model_path, berkeley_mhad_classes, video_pose_3d_kpts)
+    lstm_simple_model = load_model(model_path, len(berkeley_mhad_classes))
 
     accuracy = evaluate_tests(berkeley_mhad_classes, test_data, test_labels, lstm_simple_model, video_pose_3d_kpts)
 
@@ -178,7 +178,7 @@ def main():
     test_sequence, test_label = test_data[random_id], test_labels[random_id]
     model_path = 'results/lstm_simple_ep_10001_b_128_h_128_lr_0.0001_opt_RMSPROP_inp_SPLIT_mm_0.9_wd_0_hl_3_dr_0.5_split_20_steps_32.pth'
 
-    lstm_simple_model = load_model(model_path, berkeley_mhad_classes, video_pose_3d_kpts)
+    lstm_simple_model = load_model(model_path, len(berkeley_mhad_classes))
 
     predicted = fit(berkeley_mhad_classes, test_sequence, lstm_simple_model, video_pose_3d_kpts)
 

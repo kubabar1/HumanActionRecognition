@@ -9,11 +9,11 @@ from ...utils.dataset_util import DatasetInputType, get_all_body_parts_splits, g
 from ...utils.evaluation_utils import draw_confusion_matrix
 
 
-def load_model(model_path, classes, hidden_size=128, is_3d=True):
+def load_model(model_path, classes_count, hidden_size=128, is_3d=True):
     warnings.filterwarnings("ignore", message="Setting attributes on ParameterList is not supported.")
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     input_size = 9 if is_3d else 6
-    p_lstm_model = PLSTMModel(input_size, hidden_size, len(classes)).to(device)
+    p_lstm_model = PLSTMModel(input_size, hidden_size, classes_count).to(device)
     p_lstm_model.load_state_dict(torch.load(model_path))
     p_lstm_model.eval()
     return p_lstm_model

@@ -54,17 +54,15 @@ This implementation basis on LSTM cell modification proposed in article **"NTU R
 
 #### Example - training
 ```
-from har.impl.p_lstm_ntu.evaluate import evaluate_tests
-from har.utils.dataset_util import SetType, berkeley_mhad_classes, video_pose_3d_kpts, get_berkeley_dataset
+from har.impl.p_lstm_ntu.train import train
+from har.utils.dataset_util import get_berkeley_dataset, SetType, berkeley_mhad_classes, video_pose_3d_kpts
 
 
 def main():
-    test_data, test_labels = get_berkeley_dataset('datasets_processed/berkeley/3D', set_type=SetType.TEST)
-    model_path = './results/p_lstm_ntu_ep_10000_b_128_h_128_lr_0.0001_opt_RMSPROP_inp_SPLIT_mm_0.9_wd_0_hl_None_dr_0.5_split_20_steps_32.pth'
+    training_data, training_labels = get_berkeley_dataset('datasets/BerkeleyMHAD/3D', set_type=SetType.TRAINING)
+    validation_data, validation_labels = get_berkeley_dataset('datasets/BerkeleyMHAD/3D', set_type=SetType.VALIDATION)
 
-    accuracy = evaluate_tests(berkeley_mhad_classes, test_data, test_labels, model_path, video_pose_3d_kpts)
-
-    print('Test accuracy: {}'.format(accuracy))
+    train(berkeley_mhad_classes, training_data, training_labels, validation_data, validation_labels, video_pose_3d_kpts, epoch_nb=500)
 
 
 if __name__ == '__main__':
@@ -82,7 +80,7 @@ if __name__ == '__main__':
 | Parameter name  | Default value  | Description |
 | :--------- |:--------------: | :---- |
 | **model_path*** | - | path to model generated during training |
-| **classes*** | - | list of classes (class ID must comply with labels ID's) |
+| **classes_count*** | - | count of classes |
 | **hidden_size** | 128 | size of LSTM hidden layer used during training NN |
 | **is_3d** | True | boolean defining if input coordinates are 3D (for False input coordinates should be 2D) - must agree with value set during training|
 
@@ -96,7 +94,7 @@ from har.utils.dataset_util import SetType, berkeley_mhad_classes, video_pose_3d
 def main():
     test_data, test_labels = get_berkeley_dataset('datasets_processed/berkeley/3D', set_type=SetType.TEST)
     model_path = 'results/model_p_lstm_ntu_en_1000_bs_128_lr_0.0001_op_RMSPROP_hs_128_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D.pth'
-    p_simple_model = load_model(model_path, berkeley_mhad_classes)
+    p_simple_model = load_model(model_path, len(berkeley_mhad_classes))
 
 
 if __name__ == '__main__':
@@ -138,7 +136,7 @@ from har.utils.dataset_util import SetType, berkeley_mhad_classes, video_pose_3d
 def main():
     test_data, test_labels = get_berkeley_dataset('datasets_processed/berkeley/3D', set_type=SetType.TEST)
     model_path = 'results/model_p_lstm_ntu_en_1000_bs_128_lr_0.0001_op_RMSPROP_hs_128_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D.pth'
-    p_simple_model = load_model(model_path, berkeley_mhad_classes)
+    p_simple_model = load_model(model_path, len(berkeley_mhad_classes))
     accuracy = evaluate_tests(berkeley_mhad_classes, test_data, test_labels, p_simple_model, video_pose_3d_kpts)
     print('Test accuracy: {}'.format(accuracy))
 
@@ -180,7 +178,7 @@ def main():
     test_sequence, test_label = test_data[random_id], test_labels[random_id]
     model_path = 'results/model_p_lstm_ntu_en_1000_bs_128_lr_0.0001_op_RMSPROP_hs_128_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D.pth'
 
-    p_lstm_model = load_model(model_path, berkeley_mhad_classes)
+    p_lstm_model = load_model(model_path, len(berkeley_mhad_classes))
 
     predicted = fit(berkeley_mhad_classes, test_sequence, p_lstm_model, video_pose_3d_kpts)
 

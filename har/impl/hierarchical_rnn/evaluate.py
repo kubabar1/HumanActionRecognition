@@ -1,5 +1,3 @@
-from random import randrange
-
 import numpy as np
 import torch
 
@@ -9,13 +7,18 @@ from ...utils.dataset_util import DatasetInputType, get_all_body_parts_steps, ge
 from ...utils.evaluation_utils import draw_confusion_matrix
 
 
-def evaluate_tests(classes, test_data, test_labels, model_path, analysed_kpts_description, hidden_size=128, input_size=9,
-                   input_type=DatasetInputType.SPLIT, split=20, steps=32):
+def load_model(model_path, classes_count, hidden_size=128, is_3d=True):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-    hrnn_model = HierarchicalRNNModel(input_size, hidden_size, len(classes)).to(device)
+    input_size = 9 if is_3d else 6
+    hrnn_model = HierarchicalRNNModel(input_size, hidden_size, classes_count).to(device)
     hrnn_model.load_state_dict(torch.load(model_path))
     hrnn_model.eval()
+    return hrnn_model
+
+
+def evaluate_tests(classes, test_data, test_labels, hrnn_model, analysed_kpts_description, input_type=DatasetInputType.SPLIT, split=20,
+                   steps=32, show_diagram=True, results_path='results'):
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     test_data_loader = HierarchicalRNNDataset(test_data, test_labels, len(test_data), analysed_kpts_description,
                                               split=split, steps=steps, input_type=input_type, is_test=True)
@@ -30,18 +33,13 @@ def evaluate_tests(classes, test_data, test_labels, model_path, analysed_kpts_de
     correct_arr = [classes[int(i)] for i in tensor_val_y]
     predicted_arr = [classes[int(torch.argmax(torch.exp(i)).item())] for i in output_val]
 
-    draw_confusion_matrix(correct_arr, predicted_arr, classes)
+    draw_confusion_matrix(correct_arr, predicted_arr, classes, show_diagram=show_diagram, result_path=results_path)
 
     return np.sum([1 for c, p in zip(correct_arr, predicted_arr) if c == p]) / len(correct_arr)
 
 
-def fit(classes, data, model_path, analysed_kpts_description, hidden_size=128, input_size=9, input_type=DatasetInputType.SPLIT,
-        split=20, steps=32):
+def fit(classes, data, hrnn_model, analysed_kpts_description, input_type=DatasetInputType.SPLIT, split=20, steps=32):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-    hrnn_model = HierarchicalRNNModel(input_size, hidden_size, len(classes)).to(device)
-    hrnn_model.load_state_dict(torch.load(model_path))
-    hrnn_model.eval()
 
     analysed_body_parts = ['right_wrist', 'left_wrist', 'right_elbow', 'left_elbow', 'right_shoulder', 'left_shoulder',
                            'right_hip', 'left_hip', 'right_knee', 'left_knee', 'right_ankle', 'left_ankle']
