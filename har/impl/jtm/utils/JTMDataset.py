@@ -1,11 +1,12 @@
 import math
 import os
+import shutil
 from random import randrange
+from typing import Dict
 
 import numpy as np
 import tqdm
 from torch.utils.data import Dataset
-from typing import Dict
 
 from har.utils.dataset_util import SetType, get_left_kpts, get_right_kpts
 from .jtm import rotate, jtm_res_to_pil_img, jtm
@@ -13,10 +14,10 @@ from .jtm import rotate, jtm_res_to_pil_img, jtm
 
 class JTMDataset(Dataset):
     def __init__(self, data, labels, image_width, image_height, batch_size, set_type: SetType,
-                 analysed_kpts_description: Dict, action_repetitions=100, use_cache=False, is_test=False):
+                 analysed_kpts_description: Dict, action_repetitions=100, use_cache=False, remove_cache=False, is_test=False):
         if use_cache:
             self.data, self.labels = generate_jtm_images_dataset(data, labels, image_width, image_height, action_repetitions,
-                                                                 set_type, analysed_kpts_description)
+                                                                 set_type, analysed_kpts_description, remove_cache)
         else:
             self.data, self.labels = data, labels
         self.batch_size = batch_size
@@ -24,6 +25,7 @@ class JTMDataset(Dataset):
         self.image_width = image_width
         self.image_height = image_height
         self.use_cache = use_cache
+        self.remove_cache = remove_cache
         self.is_test = is_test
 
     def __len__(self):
@@ -56,12 +58,16 @@ class JTMDataset(Dataset):
         return data_arr, labels_arr
 
 
-def generate_jtm_images_dataset(data, labels, image_width, image_height, action_repetitions, set_type, analysed_kpts_description):
+def generate_jtm_images_dataset(data, labels, image_width, image_height, action_repetitions, set_type, analysed_kpts_description,
+                                remove_cache):
     data_base_name = 'data'
     data_root_dir = 'images_cache'
     dataset_cache_dir = os.path.join('dataset_cache', 'jtm', set_type.name)
     data_arr_cache_path = os.path.join(dataset_cache_dir, 'data_arr_cache')
     labels_arr_cache_path = os.path.join(dataset_cache_dir, 'labels_arr_cache')
+
+    if remove_cache:
+        shutil.rmtree(dataset_cache_dir)
 
     if os.path.exists(data_arr_cache_path + '.npy') and os.path.exists(labels_arr_cache_path + '.npy'):
         return np.load(data_arr_cache_path + '.npy', allow_pickle=True), np.load(labels_arr_cache_path + '.npy',

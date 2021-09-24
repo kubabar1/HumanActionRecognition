@@ -17,7 +17,7 @@ def train(classes, training_data, training_labels, validation_data, validation_l
           analysed_kpts_description, image_width, image_height, epoch_nb=100, batch_size=32, learning_rate=0.0001, gamma_step_lr=0.1,
           step_size_lr=30, print_every=5, val_every=5, weight_decay=0, momentum=0.9, action_repetitions=100, results_path='results',
           model_name_suffix='', optimizer_type=Optimizer.SGD, save_loss=True, save_diagram=True, save_model=True,
-          save_model_for_inference=False, use_cache=False, show_diagram=True, print_results=True):
+          save_model_for_inference=False, use_cache=False, show_diagram=True, print_results=True, remove_cache=False):
     method_name = 'jtm'
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -37,13 +37,9 @@ def train(classes, training_data, training_labels, validation_data, validation_l
     model_alexnet_top.classifier[6] = nn.Linear(4096, len(classes))
     model_alexnet_side.classifier[6] = nn.Linear(4096, len(classes))
 
-    # Move the input and AlexNet_model to GPU
     model_alexnet_front.to(device)
     model_alexnet_top.to(device)
     model_alexnet_side.to(device)
-
-    # Model description
-    # print(model_alexnet_front.eval())
 
     if optimizer_type == Optimizer.RMSPROP:
         optimizer_front = optim.RMSprop(model_alexnet_front.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
@@ -64,15 +60,14 @@ def train(classes, training_data, training_labels, validation_data, validation_l
     criterion_top = nn.CrossEntropyLoss()
     criterion_side = nn.CrossEntropyLoss()
 
-    # Scheduler to change learning rate depends on epoch number
     scheduler_front = optim.lr_scheduler.StepLR(optimizer_front, step_size=step_size_lr, gamma=gamma_step_lr)
     scheduler_top = optim.lr_scheduler.StepLR(optimizer_top, step_size=step_size_lr, gamma=gamma_step_lr)
     scheduler_side = optim.lr_scheduler.StepLR(optimizer_side, step_size=step_size_lr, gamma=gamma_step_lr)
 
     train_data_loader = JTMDataset(training_data, training_labels, image_width, image_height, batch_size, SetType.TRAINING,
-                                   analysed_kpts_description, action_repetitions, use_cache)
+                                   analysed_kpts_description, action_repetitions, use_cache, remove_cache)
     val_data_loader = JTMDataset(validation_data, validation_labels, image_width, image_height, batch_size, SetType.VALIDATION,
-                                 analysed_kpts_description, action_repetitions, use_cache)
+                                 analysed_kpts_description, action_repetitions, use_cache, remove_cache)
 
     all_train_losses_front = []
     all_train_losses_top = []

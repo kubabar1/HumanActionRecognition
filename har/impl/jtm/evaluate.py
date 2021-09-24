@@ -1,14 +1,12 @@
 from enum import Enum
-from random import randrange
 
-import numpy as np
 import torch
 import torch.nn as nn
 import torchvision.models as models
 import torchvision.transforms as transforms
 
 from .utils.JTMDataset import JTMDataset, generate_sample_images
-from ...utils.dataset_util import DatasetInputType, SetType
+from ...utils.dataset_util import SetType
 from ...utils.evaluation_utils import draw_confusion_matrix
 
 
@@ -18,8 +16,18 @@ class ModelType(Enum):
     SIDE = 2
 
 
-def evaluate_tests(classes, test_data, test_labels, model_path, analysed_kpts_description, image_width, image_height,
-                   model_type: ModelType):
+def load_model(model_path, classes_count):
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    jtm_model = models.AlexNet()
+    jtm_model.classifier[6] = nn.Linear(4096, classes_count)
+    jtm_model.load_state_dict(torch.load(model_path))
+    jtm_model.eval()
+    jtm_model.to(device)
+    return jtm_model
+
+
+def evaluate_tests(classes, test_data, test_labels, jtm_model, analysed_kpts_description, image_width, image_height,
+                   model_type: ModelType, result_path='results', show_diagram=True):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     transform = transforms.Compose([
@@ -27,12 +35,6 @@ def evaluate_tests(classes, test_data, test_labels, model_path, analysed_kpts_de
         transforms.CenterCrop(224),
         transforms.ToTensor()
     ])
-
-    jtm_model = models.AlexNet()
-    jtm_model.classifier[6] = nn.Linear(4096, len(classes))
-    jtm_model.load_state_dict(torch.load(model_path))
-    jtm_model.eval()
-    jtm_model.to(device)
 
     test_data_loader = JTMDataset(test_data, test_labels, image_width, image_height, len(test_data),
                                   SetType.TEST, analysed_kpts_description, is_test=True)
@@ -54,12 +56,12 @@ def evaluate_tests(classes, test_data, test_labels, model_path, analysed_kpts_de
     correct_arr = [classes[int(i)] for i in test_y]
     predicted_arr = [classes[int(i)] for i in pred]
 
-    draw_confusion_matrix(correct_arr, predicted_arr, classes)
+    draw_confusion_matrix(correct_arr, predicted_arr, classes, result_path=result_path, show_diagram=show_diagram)
 
     return test_acc / len(test_x)
 
 
-def fit(classes, data, model_path, analysed_kpts_description, image_width, image_height, model_type: ModelType):
+def fit(classes, data, jtm_model, analysed_kpts_description, image_width, image_height, model_type: ModelType):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     transform = transforms.Compose([
@@ -68,15 +70,9 @@ def fit(classes, data, model_path, analysed_kpts_description, image_width, image
         transforms.ToTensor()
     ])
 
-    jtm_model = models.AlexNet()
-    jtm_model.classifier[6] = nn.Linear(4096, len(classes))
-    jtm_model.load_state_dict(torch.load(model_path))
-    jtm_model.eval()
-    jtm_model.to(device)
-
     smpl_img = generate_sample_images(data, analysed_kpts_description, image_width, image_height)[model_type.value]
 
-    test_img_tensor = torch.unsqueeze(transform(smpl_img), model_type.value).to(device)
+    test_img_tensor = torch.unsqueeze(transform(smpl_img), 0).to(device)
     test_output = jtm_model(test_img_tensor)
 
     return classes[torch.argmax(test_output).item()]
