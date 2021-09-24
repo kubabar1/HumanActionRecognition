@@ -81,7 +81,7 @@ class ModelNameGenerator:
             self.params.append(('', 'rotations'))
         return self
 
-    def add_random_rotation_y(self, is_bias_used):
+    def add_is_bias_used(self, is_bias_used):
         if is_bias_used:
             self.params.append(('', 'bias'))
         return self

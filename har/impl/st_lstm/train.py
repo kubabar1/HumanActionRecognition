@@ -104,9 +104,9 @@ def train(classes, training_data, training_labels, validation_data, validation_l
         .add_lambda(lbd) \
         .add_random_rotation_y(add_random_rotation_y) \
         .add_is_bias_used(use_bias) \
-        .add_is_tau(is_3d) \
+        .add_is_tau(use_tau) \
         .add_is_two_layers_used(use_two_layers) \
-        .add_is_3d(use_tau) \
+        .add_is_3d(is_3d) \
         .generate()
 
     if save_model:

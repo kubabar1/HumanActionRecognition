@@ -1,4 +1,4 @@
-from har.impl.hierarchical_rnn.train import train
+from har.impl.st_lstm.train import train
 from har.utils.dataset_util import get_berkeley_dataset, SetType, berkeley_mhad_classes, video_pose_3d_kpts
 
 
