@@ -10,7 +10,7 @@ from tests.utils import setup_test_resources
 unittest.TestLoader.sortTestMethodsUsing = None
 
 
-class TestLSTMSimple(unittest.TestCase):
+class TestSTLSTM(unittest.TestCase):
     test_results_path = 'tests/results'
     test_dataset_resource_path = 'tests/test_resources/berkeley-3D.zip'
     test_dataset_path = 'tests/test_dataset'

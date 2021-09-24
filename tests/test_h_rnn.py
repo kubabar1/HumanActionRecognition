@@ -36,11 +36,11 @@ class TestHRNN(unittest.TestCase):
 
         run_train_test(training_data, training_labels, validation_data, validation_labels, self.test_results_path)
 
-        lstm_simple_model = run_load_model_test(os.path.join(self.test_results_path, generated_model_name))
+        h_rnn_model = run_load_model_test(os.path.join(self.test_results_path, generated_model_name))
 
-        run_evaluation_test(lstm_simple_model, test_data, test_labels, self.test_results_path, print_results=True)
+        run_evaluation_test(h_rnn_model, test_data, test_labels, self.test_results_path, print_results=True)
 
-        run_fit_test(lstm_simple_model, test_data, test_labels, print_results=True)
+        run_fit_test(h_rnn_model, test_data, test_labels, print_results=True)
 
         assert os.path.exists(os.path.join(self.test_results_path, generated_model_name))
         assert os.path.exists(os.path.join(self.test_results_path, generated_acc_diagram))
@@ -62,17 +62,17 @@ def run_load_model_test(generated_model_path):
     return load_model(generated_model_path, len(berkeley_mhad_classes))
 
 
-def run_evaluation_test(lstm_simple_model, test_data, test_labels, results_path, print_results=False):
-    accuracy = evaluate_tests(berkeley_mhad_classes, test_data, test_labels, lstm_simple_model, video_pose_3d_kpts,
+def run_evaluation_test(h_rnn_model, test_data, test_labels, results_path, print_results=False):
+    accuracy = evaluate_tests(berkeley_mhad_classes, test_data, test_labels, h_rnn_model, video_pose_3d_kpts,
                               results_path=results_path, show_diagram=False)
     if print_results:
         print('Test accuracy: {}'.format(accuracy))
 
 
-def run_fit_test(lstm_simple_model, test_data, test_labels, print_results=False):
+def run_fit_test(h_rnn_model, test_data, test_labels, print_results=False):
     random_id = randrange(len(test_labels))
     test_sequence, test_label = test_data[random_id], test_labels[random_id]
-    predicted = fit(berkeley_mhad_classes, test_sequence, lstm_simple_model, video_pose_3d_kpts)
+    predicted = fit(berkeley_mhad_classes, test_sequence, h_rnn_model, video_pose_3d_kpts)
     if print_results:
         print('CORRECT: {}'.format(berkeley_mhad_classes[test_label]))
         print('PREDICTED: {}'.format(predicted))
