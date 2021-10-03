@@ -1,3 +1,4 @@
+import random
 import time
 
 import torch
@@ -68,6 +69,8 @@ def train(classes, training_data, training_labels, validation_data, validation_l
     for epoch in range(epoch_nb):
         data, train_y = next(iter(train_data_loader))
         tensor_train_y = torch.from_numpy(train_y).to(device)
+
+        # data *= random.uniform(0.1, 1)
 
         optimizer.zero_grad()
 
