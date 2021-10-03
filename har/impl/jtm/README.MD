@@ -25,7 +25,7 @@ This method returns 3 models - for front, top and side view images.
 | Parameter name  | Default value  | Description |
 | :--------- |:--------------: | :---- |
 | **classes*** | - | list of classes (class ID must comply with labels ID's) |
-| **training_data*** | - | list of training data sequences e.g. list containing 100 sequences of size (125, 17, 3) |
+| **training_data*** | - | list of training data sequences e.g. list containing 100 sequences of size (125, 17, 3) - input data coordinates must be in range <-1, 1> |
 | **training_labels*** | - | list containing action labels for each training sequence |
 | **validation_data*** | - | list of validation data sequences e.g. list containing 100 sequences of size (125, 17, 3) |
 | **validation_labels*** | - | list containing action labels for each validation sequence |

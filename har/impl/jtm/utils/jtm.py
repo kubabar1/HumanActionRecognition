@@ -37,13 +37,11 @@ def jtm(positions_w, positions_h, image_width, image_height, analysed_kpts_left,
             v = brightness[frame_id][kpt_id]
             if kpt_id in analysed_kpts_left:
                 h = hue[frame_id]
-            # elif kpt_id in analysed_kpts_right:
             else:
                 h = 1 - hue[frame_id]
             rgb = colorsys.hsv_to_rgb(h, s, v)
-            if kpt_id in all_analysed_kpts:
-                # img[int(y), int(x)] = rgb
-                draw_circle(img, int(x), int(y), rgb, image_width, image_height)
+            # img[int(y), int(x)] = rgb
+            draw_circle(img, int(x), int(y), rgb, image_width, image_height)
     return img
 
 
