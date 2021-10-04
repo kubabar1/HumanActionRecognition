@@ -1,4 +1,5 @@
 import csv
+import math
 import os
 import shutil
 import textwrap
@@ -6,7 +7,6 @@ from enum import Enum, auto
 from random import randrange
 
 import numpy as np
-import scipy.spatial
 import tqdm
 
 from har.impl.lstm_simple.utils.descriptors.jjd import calculate_jjd
@@ -155,6 +155,9 @@ mmpose_kpts = {
 berkeley_frame_width = 640
 berkeley_frame_height = 480
 
+utd_mhad_frame_width = 640
+utd_mhad_frame_height = 480
+
 
 class SetType(Enum):
     TRAINING = auto()
@@ -289,6 +292,21 @@ def get_berkeley_dataset(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), set
     return data_list, label_list
 
 
+# def get_berkeley_custom_dataset(dataset_path):
+#     data_file_name = '3d_coordinates.npy'
+#     data_paths = []
+#     for root, dirs, files in os.walk(dataset_path):
+#         if not dirs:
+#             data_path = os.path.join(root, data_file_name)
+#             data_paths.append(data_path)
+#
+#     data_paths = sorted(data_paths)
+#     data_list = [np.load(i)[:, :, :] / 1.5 for i in data_paths]
+#     label_list = [int(i.split(os.path.sep)[-3][1:]) - 1 for i in data_paths]
+#
+#     return data_list, label_list
+
+
 def get_ntu_rgbd_dataset(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), set_type=SetType.TRAINING,
                          data_file_name=None, use_3d=True):
     if data_file_name is None:
@@ -352,9 +370,15 @@ def normalise_2d_data(keypoints, video_width, video_height, analysed_kpts_descri
 
 def random_rotate_y(data_3d, rotation=None):
     if rotation is None:
-        rotation = [np.radians(i) for i in [45, 90, 135, 180, 225, 270, 315]]
-    rot_vector = scipy.spatial.transform.Rotation.from_rotvec(rotation[randrange(len(rotation))] * np.array([0, 1, 0]))
-    return np.array([np.array([rot_vector.apply(f) for f in b]) for b in data_3d])
+        rotation = [np.radians(i) for i in np.array(range(0, 360, 15))]
+    rotation = Ry(rotation[randrange(len(rotation))])
+    return np.array([frame * rotation for frame in data_3d])
+
+
+def Ry(theta):
+    return np.matrix([[math.cos(theta), 0, math.sin(theta)],
+                      [0, 1, 0],
+                      [-math.sin(theta), 0, math.cos(theta)]])
 
 
 def get_all_body_parts_steps(data, analysed_body_parts, analysed_kpts_description, begin, end):
