@@ -242,6 +242,20 @@ def get_csv_data(data_path):
     return arr.reshape((-1, 17, 3))
 
 
+def normalise_skeleton(data_3d, left_hip_index, right_hip_index):
+    return scale_skeleton(move_hip_to_center(data_3d, left_hip_index, right_hip_index))
+
+
+def scale_skeleton(data_3d):
+    s = 1 / np.max(np.abs(data_3d))
+    return data_3d * s
+
+
+def move_hip_to_center(data_3d, left_hip_index, right_hip_index):
+    dd = data_3d[:, left_hip_index, :] + data_3d[:, right_hip_index, :] / 2
+    return np.array([[k - dd[i] for k in d] for i, d in enumerate(data_3d)])
+
+
 def get_berkeley_dataset(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), set_type=SetType.TRAINING,
                          data_file_name=None, use_3d=True):
     if data_file_name is None:
@@ -263,6 +277,11 @@ def get_berkeley_dataset(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), set
 
     data_paths = sorted(data_paths)
     data_paths_res = []
+
+    # cluster1 = list(filter(lambda x: '/Cluster01/' in x, data_paths))
+    # cluster2 = list(filter(lambda x: '/Cluster02/' in x, data_paths))
+    # cluster3 = list(filter(lambda x: '/Cluster03/' in x, data_paths))
+    # cluster4 = list(filter(lambda x: '/Cluster04/' in x, data_paths))
 
     for i in np.array_split(data_paths, 4):
         dataset_size = len(i)
