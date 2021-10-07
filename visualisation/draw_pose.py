@@ -4,13 +4,58 @@ import os
 import numpy as np
 
 from utils.cv2_utils import get_frames_count, draw_points_multiple_poses, draw_points_single_pose, draw_3d_pose
-from utils.hpe_results_utils import read_keypoints_all_poses, get_best_pose, read_keypoints_csv
+from utils.hpe_results_utils import read_keypoints_all_poses, get_best_pose, read_keypoints_csv, read_keypoints_csv_no_keys
+
+video_pose_3d_kpts = {
+    'right_wrist': 16,
+    'left_wrist': 13,
+    'right_elbow': 15,
+    'left_elbow': 12,
+    'right_shoulder': 14,
+    'left_shoulder': 11,
+    'right_hip': 1,
+    'left_hip': 4,
+    'right_knee': 2,
+    'left_knee': 5,
+    'right_ankle': 3,
+    'left_ankle': 6
+}
+
+processed_kpts_12 = {
+    'right_shoulder': 0,
+    'right_elbow': 1,
+    'right_wrist': 2,
+    'left_shoulder': 3,
+    'left_elbow': 4,
+    'left_wrist': 5,
+    'right_hip': 6,
+    'right_knee': 7,
+    'right_ankle': 8,
+    'left_hip': 9,
+    'left_knee': 10,
+    'left_ankle': 11
+}
+
+mmpose_kpts = {
+    'left_shoulder': 5,
+    'right_shoulder': 6,
+    'left_elbow': 7,
+    'right_elbow': 8,
+    'left_wrist': 9,
+    'right_wrist': 10,
+    'left_hip': 11,
+    'right_hip': 12,
+    'left_knee': 13,
+    'right_knee': 14,
+    'left_ankle': 15,
+    'right_ankle': 16
+}
 
 
 def draw_pose(data_path, ground_truth_video, many_poses, draw_3d):
     if draw_3d:
         data = np.load(data_path)
-        draw_3d_pose(data)
+        draw_3d_pose(data, video_pose_3d_kpts)
     else:
         frames_count = int(get_frames_count(ground_truth_video))
         if many_poses:
@@ -20,7 +65,7 @@ def draw_pose(data_path, ground_truth_video, many_poses, draw_3d):
             if os.path.isdir(data_path):
                 data = get_best_pose(read_keypoints_all_poses(data_path), frames_count)
             else:
-                data = read_keypoints_csv(data_path)
+                data = read_keypoints_csv_no_keys(data_path)
             draw_points_single_pose(ground_truth_video, data)
 
 
