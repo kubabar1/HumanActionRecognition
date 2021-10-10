@@ -242,7 +242,11 @@ def get_csv_data(data_path):
     return arr.reshape((-1, 17, 3))
 
 
-def normalise_skeleton(data_3d, left_hip_index, right_hip_index):
+def normalise_skeleton_3d_batch(data_3d_batch, left_hip_index, right_hip_index):
+    return [normalise_skeleton_3d(data_3d, left_hip_index, right_hip_index) for data_3d in data_3d_batch]
+
+
+def normalise_skeleton_3d(data_3d, left_hip_index, right_hip_index):
     return scale_skeleton(move_hip_to_center(data_3d, left_hip_index, right_hip_index))
 
 
@@ -252,12 +256,11 @@ def scale_skeleton(data_3d):
 
 
 def move_hip_to_center(data_3d, left_hip_index, right_hip_index):
-    dd = data_3d[:, left_hip_index, :] + data_3d[:, right_hip_index, :] / 2
-    return np.array([[k - dd[i] for k in d] for i, d in enumerate(data_3d)])
+    dd = (data_3d[:, left_hip_index, :] + data_3d[:, right_hip_index, :]) / 2
+    return np.array([[keypoint - dd[frame_id] for keypoint in frame] for frame_id, frame in enumerate(data_3d)])
 
 
-def get_berkeley_dataset(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), set_type=SetType.TRAINING,
-                         data_file_name=None, use_3d=True):
+def get_berkeley_dataset(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), set_type=SetType.TRAINING, data_file_name=None, use_3d=True):
     if data_file_name is None:
         if use_3d:
             data_file_name = '3d_coordinates.npy'
@@ -304,8 +307,8 @@ def get_berkeley_dataset(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), set
     if use_3d:
         data_list = [np.load(i)[:, :, :] for i in data_paths_res]
     else:
-        data_list = [normalize_screen_coordinates(get_csv_data(i)[:, :, :2], berkeley_frame_width, berkeley_frame_height) for i in
-                     data_paths_res]
+        data_list = [get_csv_data(i)[:, :, :2] for i in data_paths_res]
+        data_list = [np.array([[[kpt[0], -kpt[1]] for kpt in frame] for frame in data_3d]) for data_3d in data_list]
     label_list = [int(i.split(os.path.sep)[-3][1:]) - 1 for i in data_paths_res]
 
     return data_list, label_list
@@ -380,11 +383,6 @@ def get_ntu_rgbd_dataset(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), set
 def normalize_screen_coordinates(X, w, h):
     assert X.shape[-1] == 2
     return X / w * 2 - [1, h / w]
-
-
-def normalise_2d_data(keypoints, video_width, video_height, analysed_kpts_description=video_pose_3d_kpts):
-    keypoints = keypoints[:, list(analysed_kpts_description.values()), :2]
-    return normalize_screen_coordinates(keypoints[..., :2], w=video_width, h=video_height)
 
 
 def random_rotate_y(data_3d, rotation=None):

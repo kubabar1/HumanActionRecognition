@@ -55,6 +55,7 @@ This solution uses Pytorch implementation of plain LSTM neural network.
 | **is_3d** | True | boolean defining if input coordinates are 3D (for False input coordinates should be 2D) |
 | **show_diagram** | True | boolean defining if show diagram after training |
 | **print_results** | True | boolean defining if print training and validation results during training |
+| **use_normalisation** | True | boolean defining if normalization should be performed on input data |
 
 #### Example - training
 ```

@@ -16,7 +16,12 @@ def calculate_lla(keypoints_sequence, analysed_lines):
                     joint_j2 = frame[line_j[0]]
                     joint_k2 = frame[line_j[1]]
                     jjo_2 = (joint_j2 - joint_k2) / np.linalg.norm(joint_j2 - joint_k2)
-                    res = math.acos(np.matmul(jjo_1, jjo_2))
+                    tmp = np.matmul(jjo_1, jjo_2)
+                    if tmp > 1:
+                        tmp = 1
+                    elif tmp < -1:
+                        tmp = -1
+                    res = math.acos(tmp)
                     frame_tmp.append(res)
         lla_batch.append(np.array(frame_tmp))
     return np.array(lla_batch)

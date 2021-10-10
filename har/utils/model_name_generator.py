@@ -86,6 +86,11 @@ class ModelNameGenerator:
             self.params.append(('', 'bias'))
         return self
 
+    def add_is_normalization_used(self, is_normalization_used):
+        if is_normalization_used:
+            self.params.append(('', 'normalized'))
+        return self
+
     def add_is_tau(self, is_tau):
         if is_tau:
             self.params.append(('', 'tau'))

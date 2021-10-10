@@ -1,4 +1,3 @@
-import random
 import time
 
 import torch
@@ -7,7 +6,7 @@ import torch.optim as optim
 
 from .model.LSTMSimpleModel import LSTMSimpleModel
 from .utils.LSTMSimpleDataset import LSTMSimpleDataset
-from ...utils.dataset_util import DatasetInputType, GeometricFeature, SetType, get_analysed_lines_ids
+from ...utils.dataset_util import DatasetInputType, GeometricFeature, SetType, get_analysed_lines_ids, normalise_skeleton_3d_batch
 from ...utils.model_name_generator import ModelNameGenerator
 from ...utils.training_utils import save_model_common, save_diagram_common, print_train_results, \
     Optimizer, save_loss_common, validate_model, get_training_batch_accuracy
@@ -18,7 +17,7 @@ def train(classes, training_data, training_labels, validation_data, validation_l
           val_every=5, steps=32, split=20, input_type=DatasetInputType.SPLIT, optimizer_type=Optimizer.RMSPROP,
           geometric_feature=GeometricFeature.JOINT_COORDINATE, results_path='results', model_name_suffix='', save_loss=True,
           save_diagram=True, save_model=True, save_model_for_inference=False, add_random_rotation_y=False, use_cache=False, is_3d=True,
-          show_diagram=True, print_results=True, remove_cache=False):
+          show_diagram=True, print_results=True, remove_cache=False, use_normalisation=True):
     method_name = 'lstm_simple'
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -59,6 +58,12 @@ def train(classes, training_data, training_labels, validation_data, validation_l
     start_time = time.time()
     epoch = 0
 
+    if use_normalisation:
+        training_data = normalise_skeleton_3d_batch(training_data, analysed_kpts_description['left_hip'],
+                                                    analysed_kpts_description['right_hip'])
+        validation_data = normalise_skeleton_3d_batch(validation_data, analysed_kpts_description['left_hip'],
+                                                      analysed_kpts_description['right_hip'])
+
     train_data_loader = LSTMSimpleDataset(training_data, training_labels, batch_size, analysed_kpts_description, SetType.TRAINING,
                                           input_type, steps=steps, split=split, geometric_feature=geometric_feature,
                                           add_random_rotation_y=add_random_rotation_y, use_cache=use_cache, remove_cache=remove_cache)
@@ -69,8 +74,6 @@ def train(classes, training_data, training_labels, validation_data, validation_l
     for epoch in range(epoch_nb):
         data, train_y = next(iter(train_data_loader))
         tensor_train_y = torch.from_numpy(train_y).to(device)
-
-        # data *= random.uniform(0.1, 1)
 
         optimizer.zero_grad()
 
@@ -117,6 +120,7 @@ def train(classes, training_data, training_labels, validation_data, validation_l
         .add_split(split) \
         .add_steps(steps) \
         .add_random_rotation_y(add_random_rotation_y) \
+        .add_is_normalization_used(use_normalisation) \
         .add_is_3d(is_3d) \
         .generate()
 
