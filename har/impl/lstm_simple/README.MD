@@ -174,7 +174,7 @@ from har.utils.dataset_util import get_berkeley_dataset, SetType, berkeley_mhad_
 
 
 def main():
-    test_data, test_labels = get_berkeley_dataset('datasets/BerkeleyMHAD/3D', set_type=SetType.TEST)
+    test_data, test_labels = get_berkeley_dataset('datasets_processed/berkeley/3D', set_type=SetType.TEST)
     random_id = randrange(len(test_labels))
     test_sequence, test_label = test_data[random_id], test_labels[random_id]
     model_path = 'results/lstm_simple_ep_10001_b_128_h_128_lr_0.0001_opt_RMSPROP_inp_SPLIT_mm_0.9_wd_0_hl_3_dr_0.5_split_20_steps_32.pth'

@@ -152,6 +152,21 @@ mmpose_kpts = {
     'right_ankle': 16
 }
 
+berkeley_original_12 = {
+    'right_shoulder': 0,
+    'right_elbow': 1,
+    'right_wrist': 2,
+    'left_shoulder': 3,
+    'left_elbow': 4,
+    'left_wrist': 5,
+    'right_hip': 6,
+    'right_knee': 7,
+    'right_ankle': 8,
+    'left_hip': 9,
+    'left_knee': 10,
+    'left_ankle': 11
+}
+
 berkeley_frame_width = 640
 berkeley_frame_height = 480
 

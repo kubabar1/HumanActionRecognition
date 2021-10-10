@@ -42,7 +42,7 @@ from har.utils.dataset_util import get_berkeley_dataset, SetType, berkeley_mhad_
 
 
 def main():
-    test_data, test_labels = get_berkeley_dataset('datasets/BerkeleyMHAD/3D', set_type=SetType.TEST)
+    test_data, test_labels = get_berkeley_dataset('datasets_processed/berkeley/3D', set_type=SetType.TEST)
     random_id = randrange(len(test_labels))
     test_sequence, test_label = test_data[random_id], test_labels[random_id]
     model_path = 'results' \
@@ -92,7 +92,7 @@ This implementation basis on LSTM cell modification proposed in article **"Spati
 | **validation_data*** | - | list of validation data sequences e.g. list containing 100 sequences of size (125, 17, 3) |
 | **validation_labels*** | - | list containing action labels for each validation sequence |
 | **analysed_kpts_description*** | - | object describing keypoints meaning in training and validation data list (example object described [here](#example-analysed_kpts_description-object)) |
-| **epoch_nb** | 10000 | count of training iterations |
+| **epoch_nb** | 5000 | count of training iterations |
 | **batch_size** | 128 | size of input data batch |
 | **learning_rate** | 0.0001 | learning rate |
 | **hidden_size** | 128 | size of LSTM hidden layer |
@@ -128,8 +128,8 @@ from har.utils.dataset_util import get_berkeley_dataset, SetType, berkeley_mhad_
 
 
 def main():
-    training_data, training_labels = get_berkeley_dataset('datasets/BerkeleyMHAD/3D', set_type=SetType.TRAINING)
-    validation_data, validation_labels = get_berkeley_dataset('datasets/BerkeleyMHAD/3D', set_type=SetType.VALIDATION)
+    training_data, training_labels = get_berkeley_dataset('datasets_processed/berkeley/3D', set_type=SetType.TRAINING)
+    validation_data, validation_labels = get_berkeley_dataset('datasets_processed/berkeley/3D', set_type=SetType.VALIDATION)
 
     train(berkeley_mhad_classes, training_data, training_labels, validation_data, validation_labels, video_pose_3d_kpts)
 
@@ -239,7 +239,7 @@ from har.utils.dataset_util import get_berkeley_dataset, SetType, berkeley_mhad_
 
 
 def main():
-    test_data, test_labels = get_berkeley_dataset('datasets/BerkeleyMHAD/3D', set_type=SetType.TEST)
+    test_data, test_labels = get_berkeley_dataset('datasets_processed/berkeley/3D', set_type=SetType.TEST)
     random_id = randrange(len(test_labels))
     test_sequence, test_label = test_data[random_id], test_labels[random_id]
     model_path = 'results/model_st_lstm_en_500_bs_128_lr_0.0001_op_RMSPROP_hs_128_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_lbd_0.5_bias_2layers_3D.pth'
