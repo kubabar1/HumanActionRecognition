@@ -20,13 +20,13 @@ class TestLSTMSimple(unittest.TestCase):
         setup_test_resources(cls.test_results_path, cls.test_dataset_path, cls.test_dataset_resource_path)
 
     def test_run_training_evaluate_fit(self):
-        generated_model_name = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D.pth'
-        generated_acc_diagram = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D_acc.png'
-        generated_loss_diagram = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D_loss.png'
-        generated_train_acc = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D_train_acc.npy'
-        generated_train_loss = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D_train_loss.npy'
-        generated_val_acc = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D_val_acc.npy'
-        generated_val_loss = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D_val_loss.npy'
+        generated_model_name = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D_normalized.pth'
+        generated_acc_diagram = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D_normalized_acc.png'
+        generated_loss_diagram = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D_normalized_loss.png'
+        generated_train_acc = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D_normalized_train_acc.npy'
+        generated_train_loss = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D_normalized_train_loss.npy'
+        generated_val_acc = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D_normalized_val_acc.npy'
+        generated_val_loss = 'model_lstm_simple_en_5_bs_128_lr_0.0001_op_RMSPROP_geo_JOINT_COORDINATE_hs_128_hl_3_it_SPLIT_dropout_0.5_momentum_0.9_wd_0_split_20_steps_32_3D_normalized_val_loss.npy'
 
         training_data, training_labels = get_berkeley_dataset(os.path.join(self.test_dataset_path, 'berkeley-3D'),
                                                               set_type=SetType.TRAINING)

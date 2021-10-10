@@ -120,8 +120,8 @@ def train(classes, training_data, training_labels, validation_data, validation_l
         .add_split(split) \
         .add_steps(steps) \
         .add_random_rotation_y(add_random_rotation_y) \
-        .add_is_normalization_used(use_normalisation) \
         .add_is_3d(is_3d) \
+        .add_is_normalization_used(use_normalisation) \
         .generate()
 
     if save_model:
