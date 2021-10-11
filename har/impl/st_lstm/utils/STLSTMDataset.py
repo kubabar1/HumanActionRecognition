@@ -37,6 +37,9 @@ class STLSTMDataset(Dataset):
                 data_el = self.data[random_data_idx]
                 label_el = self.labels[random_data_idx]
 
+            if self.add_random_rotation_y:
+                data_el = random_rotate_y(data_el)
+
             if self.input_type == DatasetInputType.STEP:
                 parts = int(data_el.shape[0] / self.steps)
                 for i in range(parts):
@@ -59,9 +62,6 @@ class STLSTMDataset(Dataset):
 
         np_data = np.array(data_arr)
         np_label = np.array(labels_arr)
-
-        if self.add_random_rotation_y:
-            np_data = random_rotate_y(np_data)
 
         return np_data, np_label
 

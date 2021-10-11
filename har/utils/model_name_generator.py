@@ -1,3 +1,6 @@
+import time
+
+
 class ModelNameGenerator:
     def __init__(self, method_name, model_name_suffix=''):
         super(ModelNameGenerator, self).__init__()
@@ -104,4 +107,5 @@ class ModelNameGenerator:
     def generate(self):
         if self.model_name_suffix != '':
             self.params.append(('', self.model_name_suffix))
+            self.params.append(('', int(time.time() * 1000)))
         return '_'.join([i[1] if i[0] == '' else i[0] + '_' + i[1] for i in self.params])

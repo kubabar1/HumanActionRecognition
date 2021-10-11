@@ -54,6 +54,9 @@ class HierarchicalRNNDataset(Dataset):
                 data_el = self.data[random_data_idx]
                 label_el = self.labels[random_data_idx]
 
+            if self.add_random_rotation_y:
+                data_el = random_rotate_y(data_el)
+
             if self.input_type == DatasetInputType.STEP:
                 parts = int(data_el.shape[0] / self.steps)
                 for i in range(parts):
@@ -100,12 +103,5 @@ class HierarchicalRNNDataset(Dataset):
         right_arms = np.concatenate((right_wrists, right_elbows, right_shoulders), axis=2)
         left_legs = np.concatenate((left_hips, left_knees, left_ankles), axis=2)
         right_legs = np.concatenate((right_hips, right_knees, right_ankles), axis=2)
-
-        if self.add_random_rotation_y:
-            rotation = [np.radians(i) for i in [45, 90, 135, 180, 225, 270, 315]]
-            left_arms = random_rotate_y(left_arms, rotation)
-            right_arms = random_rotate_y(right_arms, rotation)
-            left_legs = random_rotate_y(left_legs, rotation)
-            right_legs = random_rotate_y(right_legs, rotation)
 
         return [left_arms, right_arms, left_legs, right_legs], np.array(labels_arr)
