@@ -33,7 +33,7 @@ This method returns 3 models - for front, top and side view images.
 | **image_width*** | - | width of input image (video frame) |
 | **image_height*** | - | height of input image (video frame) |
 | **epoch_nb** | 100 | count of training iterations |
-| **batch_size** | 128 | size of input data batch |
+| **batch_size** | 64 | size of input data batch |
 | **learning_rate** | 0.0001 | learning rate |
 | **gamma_step_lr** | 0.1 | scheduler step LR gamma parameter |
 | **step_size_lr** | 30 | scheduler size of step LR |
@@ -53,6 +53,8 @@ This method returns 3 models - for front, top and side view images.
 | **use_cache** | False | boolean defining if cache should be generated; after set to True, directory *dataset_cache* will be created during training and it will store all processed inputs which will be sampled during batch generation; thanks to bath generation before each iteration will took less time (however processing all data before first iteration will took much time); this option is enabled for all geometric_feature options except JOINT_COORDINATE; **!IMPORTANT** - remember to remove cache after some changes in input data (if remove cache option isn't set to true) |
 | **remove_cache** | False | boolean defining if cache directory for selected input options should be removed before use (only when use_cache is set to True) |
 | **show_diagram** | True | boolean defining if show diagram after training |
+| **add_timestamp** | True | boolean defining if add timestamp to generated output files names |
+| **neural_network_model** | ALEXNET | type of neural network (must be of type **NeuralNetworkModel**, defined in *har/impl/jtm/train.py* ) |
 
 
 #### Example - training

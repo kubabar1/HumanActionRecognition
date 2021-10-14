@@ -1,4 +1,5 @@
 import time
+from enum import Enum, auto
 
 import numpy as np
 import torch
@@ -13,11 +14,19 @@ from ...utils.model_name_generator import ModelNameGenerator
 from ...utils.training_utils import save_model_common, save_diagram_common, Optimizer, save_loss_common, time_since
 
 
+class NeuralNetworkModel(Enum):
+    ALEXNET = auto()
+    RESNET152 = auto()
+    MOBILENETV2 = auto()
+    SHUFFLENETV2 = auto()
+
+
 def train(classes, training_data, training_labels, validation_data, validation_labels,
-          analysed_kpts_description, image_width, image_height, epoch_nb=100, batch_size=32, learning_rate=0.0001, gamma_step_lr=0.1,
+          analysed_kpts_description, image_width, image_height, epoch_nb=100, batch_size=64, learning_rate=0.0001, gamma_step_lr=0.1,
           step_size_lr=30, print_every=5, val_every=5, weight_decay=0, momentum=0.9, action_repetitions=100, results_path='results',
-          model_name_suffix='', optimizer_type=Optimizer.SGD, save_loss=True, save_diagram=True, save_model=True,
-          save_model_for_inference=False, use_cache=False, show_diagram=True, print_results=True, remove_cache=False):
+          model_name_suffix='', optimizer_type=Optimizer.SGD, neural_network_model=NeuralNetworkModel.ALEXNET,
+          save_loss=True, save_diagram=True, save_model=True, save_model_for_inference=False, use_cache=False, show_diagram=True,
+          print_results=True, remove_cache=False, add_timestamp=True):
     method_name = 'jtm'
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -27,32 +36,20 @@ def train(classes, training_data, training_labels, validation_data, validation_l
         transforms.ToTensor()
     ])
 
-    # Load AlexNet torch.hub.load('pytorch/vision:v0.6.0', 'alexnet', pretrained=True)
-    model_alexnet_front = models.alexnet(pretrained=True)
-    model_alexnet_top = models.alexnet(pretrained=True)
-    model_alexnet_side = models.alexnet(pretrained=True)
-
-    # Updating the third and the last classifier that is the output layer of the network.
-    model_alexnet_front.classifier[6] = nn.Linear(4096, len(classes))
-    model_alexnet_top.classifier[6] = nn.Linear(4096, len(classes))
-    model_alexnet_side.classifier[6] = nn.Linear(4096, len(classes))
-
-    model_alexnet_front.to(device)
-    model_alexnet_top.to(device)
-    model_alexnet_side.to(device)
+    model_front, model_top, model_side = get_neural_network_models(neural_network_model, classes, device)
 
     if optimizer_type == Optimizer.RMSPROP:
-        optimizer_front = optim.RMSprop(model_alexnet_front.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
-        optimizer_top = optim.RMSprop(model_alexnet_top.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
-        optimizer_side = optim.RMSprop(model_alexnet_side.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
+        optimizer_front = optim.RMSprop(model_front.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
+        optimizer_top = optim.RMSprop(model_top.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
+        optimizer_side = optim.RMSprop(model_side.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
     elif optimizer_type == Optimizer.SGD:
-        optimizer_front = optim.SGD(model_alexnet_front.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
-        optimizer_top = optim.SGD(model_alexnet_top.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
-        optimizer_side = optim.SGD(model_alexnet_side.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
+        optimizer_front = optim.SGD(model_front.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
+        optimizer_top = optim.SGD(model_top.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
+        optimizer_side = optim.SGD(model_side.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
     elif optimizer_type == Optimizer.ADAM:
-        optimizer_front = optim.Adam(model_alexnet_front.parameters(), lr=learning_rate, weight_decay=weight_decay)
-        optimizer_top = optim.Adam(model_alexnet_top.parameters(), lr=learning_rate, weight_decay=weight_decay)
-        optimizer_side = optim.Adam(model_alexnet_side.parameters(), lr=learning_rate, weight_decay=weight_decay)
+        optimizer_front = optim.Adam(model_front.parameters(), lr=learning_rate, weight_decay=weight_decay)
+        optimizer_top = optim.Adam(model_top.parameters(), lr=learning_rate, weight_decay=weight_decay)
+        optimizer_side = optim.Adam(model_side.parameters(), lr=learning_rate, weight_decay=weight_decay)
     else:
         raise Exception('Unknown optimizer')
 
@@ -109,9 +106,9 @@ def train(classes, training_data, training_labels, validation_data, validation_l
             optimizer_top.zero_grad()
             optimizer_side.zero_grad()
 
-            output_front = model_alexnet_front(img_tensor_front)
-            output_top = model_alexnet_top(img_tensor_top)
-            output_side = model_alexnet_side(img_tensor_side)
+            output_front = model_front(img_tensor_front)
+            output_top = model_top(img_tensor_top)
+            output_side = model_side(img_tensor_side)
 
             if torch.argmax(output_front).item() == lbl:
                 train_acc_front += 1
@@ -172,9 +169,9 @@ def train(classes, training_data, training_labels, validation_data, validation_l
                     val_img_tensor_side = torch.unsqueeze(transform(val_img[2]), 0).to(device)
                     val_lbl_tensor = torch.tensor([val_lbl]).to(device)
 
-                    val_output_front = model_alexnet_front(val_img_tensor_front)
-                    val_output_top = model_alexnet_top(val_img_tensor_top)
-                    val_output_side = model_alexnet_side(val_img_tensor_side)
+                    val_output_front = model_front(val_img_tensor_front)
+                    val_output_top = model_top(val_img_tensor_top)
+                    val_output_side = model_side(val_img_tensor_side)
 
                     if torch.argmax(val_output_front).item() == val_lbl:
                         val_acc_front += 1
@@ -213,7 +210,7 @@ def train(classes, training_data, training_labels, validation_data, validation_l
         scheduler_top.step()
         scheduler_side.step()
 
-    model_name = ModelNameGenerator(method_name, model_name_suffix) \
+    model_name = ModelNameGenerator(method_name, model_name_suffix, add_timestamp) \
         .add_epoch_number(epoch_nb) \
         .add_batch_size(batch_size) \
         .add_learning_rate(learning_rate) \
@@ -223,14 +220,15 @@ def train(classes, training_data, training_labels, validation_data, validation_l
         .add_action_repetitions(action_repetitions) \
         .add_step_size_lr(step_size_lr) \
         .add_gamma_step_lr(gamma_step_lr) \
+        .add_neural_network_model(neural_network_model.name) \
         .generate()
 
     if save_model:
-        save_model_common(model_alexnet_front, optimizer_front, epoch, val_every, all_train_losses_front,
+        save_model_common(model_front, optimizer_front, epoch, val_every, all_train_losses_front,
                           all_val_losses_front, save_model_for_inference, results_path, model_name + '_front')
-        save_model_common(model_alexnet_top, optimizer_top, epoch, val_every, all_train_losses_top,
+        save_model_common(model_top, optimizer_top, epoch, val_every, all_train_losses_top,
                           all_val_losses_top, save_model_for_inference, results_path, model_name + '_top')
-        save_model_common(model_alexnet_side, optimizer_side, epoch, val_every, all_train_losses_side,
+        save_model_common(model_side, optimizer_side, epoch, val_every, all_train_losses_side,
                           all_val_losses_side, save_model_for_inference, results_path, model_name + '_side')
 
     if save_loss:
@@ -249,4 +247,48 @@ def train(classes, training_data, training_labels, validation_data, validation_l
         save_diagram_common(all_train_losses_side, all_val_losses_side, model_name + '_side', val_every, epoch_nb,
                             results_path, all_batch_training_accuracies_side, all_batch_val_accuracies_side, show_diagram)
 
-    return model_alexnet_front, model_alexnet_top, model_alexnet_side
+    return model_front, model_top, model_side
+
+
+def get_neural_network_models(neural_network_model_type, classes, device):
+    if neural_network_model_type == NeuralNetworkModel.ALEXNET:
+        # Load AlexNet torch.hub.load('pytorch/vision:v0.6.0', 'alexnet', pretrained=True)
+        model_front = models.alexnet(pretrained=True)
+        model_top = models.alexnet(pretrained=True)
+        model_side = models.alexnet(pretrained=True)
+
+        # Updating the third and the last classifier that is the output layer of the network.
+        model_front.classifier[6] = nn.Linear(4096, len(classes))
+        model_top.classifier[6] = nn.Linear(4096, len(classes))
+        model_side.classifier[6] = nn.Linear(4096, len(classes))
+    elif neural_network_model_type == NeuralNetworkModel.RESNET152:
+        model_front = models.resnet152(pretrained=True)
+        model_top = models.resnet152(pretrained=True)
+        model_side = models.resnet152(pretrained=True)
+
+        model_front.fc = nn.Linear(2048, len(classes))
+        model_top.fc = nn.Linear(2048, len(classes))
+        model_side.fc = nn.Linear(2048, len(classes))
+    elif neural_network_model_type == NeuralNetworkModel.MOBILENETV2:
+        model_front = models.mobilenet_v2(pretrained=True)
+        model_top = models.mobilenet_v2(pretrained=True)
+        model_side = models.mobilenet_v2(pretrained=True)
+
+        model_front.classifier[1] = nn.Linear(1280, len(classes))
+        model_top.classifier[1] = nn.Linear(1280, len(classes))
+        model_side.classifier[1] = nn.Linear(1280, len(classes))
+    elif neural_network_model_type == NeuralNetworkModel.SHUFFLENETV2:
+        model_front = models.shufflenet_v2_x1_0(pretrained=True)
+        model_top = models.shufflenet_v2_x1_0(pretrained=True)
+        model_side = models.shufflenet_v2_x1_0(pretrained=True)
+
+        model_front.fc = nn.Linear(1024, len(classes))
+        model_top.fc = nn.Linear(1024, len(classes))
+        model_side.fc = nn.Linear(1024, len(classes))
+    else:
+        raise ValueError('Unknown NN model')
+
+    model_front.to(device)
+    model_top.to(device)
+    model_side.to(device)
+    return model_front, model_top, model_side

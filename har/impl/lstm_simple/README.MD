@@ -56,6 +56,7 @@ This solution uses Pytorch implementation of plain LSTM neural network.
 | **show_diagram** | True | boolean defining if show diagram after training |
 | **print_results** | True | boolean defining if print training and validation results during training |
 | **use_normalisation** | True | boolean defining if normalization should be performed on input data |
+| **add_timestamp** | True | boolean defining if add timestamp to generated output files names |
 
 #### Example - training
 ```

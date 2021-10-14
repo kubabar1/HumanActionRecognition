@@ -21,29 +21,31 @@ class TestLSTMSimple(unittest.TestCase):
         setup_test_resources(cls.test_results_path, cls.test_dataset_path, cls.test_dataset_resource_path)
 
     def test_run_training_evaluate_fit(self):
-        generated_model_name_front = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_front.pth'
-        generated_acc_diagram_front = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_front_acc.png'
-        generated_loss_diagram_front = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_front_loss.png'
-        generated_train_acc_front = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_front_train_acc.npy'
-        generated_train_loss_front = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_front_train_loss.npy'
-        generated_val_acc_front = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_front_val_acc.npy'
-        generated_val_loss_front = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_front_val_loss.npy'
+        'model_jtm_en_1_bs_64_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_network_ALEXNET_front.pth'
 
-        generated_model_name_top = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_top.pth'
-        generated_acc_diagram_top = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_top_acc.png'
-        generated_loss_diagram_top = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_top_loss.png'
-        generated_train_acc_top = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_top_train_acc.npy'
-        generated_train_loss_top = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_top_train_loss.npy'
-        generated_val_acc_top = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_top_val_acc.npy'
-        generated_val_loss_top = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_top_val_loss.npy'
+        generated_model_name_front = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_network_ALEXNET_front.pth'
+        generated_acc_diagram_front = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_network_ALEXNET_front_acc.png'
+        generated_loss_diagram_front = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_network_ALEXNET_front_loss.png'
+        generated_train_acc_front = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_network_ALEXNET_front_train_acc.npy'
+        generated_train_loss_front = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_network_ALEXNET_front_train_loss.npy'
+        generated_val_acc_front = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_network_ALEXNET_front_val_acc.npy'
+        generated_val_loss_front = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_network_ALEXNET_front_val_loss.npy'
 
-        generated_model_name_side = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_side.pth'
-        generated_acc_diagram_side = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_side_acc.png'
-        generated_loss_diagram_side = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_side_loss.png'
-        generated_train_acc_side = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_side_train_acc.npy'
-        generated_train_loss_side = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_side_train_loss.npy'
-        generated_val_acc_side = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_side_val_acc.npy'
-        generated_val_loss_side = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_side_val_loss.npy'
+        generated_model_name_top = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_network_ALEXNET_top.pth'
+        generated_acc_diagram_top = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_network_ALEXNET_top_acc.png'
+        generated_loss_diagram_top = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_network_ALEXNET_top_loss.png'
+        generated_train_acc_top = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_network_ALEXNET_top_train_acc.npy'
+        generated_train_loss_top = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_network_ALEXNET_top_train_loss.npy'
+        generated_val_acc_top = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_network_ALEXNET_top_val_acc.npy'
+        generated_val_loss_top = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_network_ALEXNET_top_val_loss.npy'
+
+        generated_model_name_side = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_network_ALEXNET_side.pth'
+        generated_acc_diagram_side = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_network_ALEXNET_side_acc.png'
+        generated_loss_diagram_side = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_network_ALEXNET_side_loss.png'
+        generated_train_acc_side = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_network_ALEXNET_side_train_acc.npy'
+        generated_train_loss_side = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_network_ALEXNET_side_train_loss.npy'
+        generated_val_acc_side = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_network_ALEXNET_side_val_acc.npy'
+        generated_val_loss_side = 'model_jtm_en_1_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_5_stlr_30_gammastlr_0.1_network_ALEXNET_side_val_loss.npy'
         generated_evaluate_path = os.path.join(self.test_results_path, 'evaluate.png')
 
         training_data, training_labels = get_berkeley_dataset(os.path.join(self.test_dataset_path, 'berkeley-3D'),
@@ -106,7 +108,7 @@ class TestLSTMSimple(unittest.TestCase):
 def run_train_test(training_data, training_labels, validation_data, validation_labels, test_results_path):
     train(berkeley_mhad_classes, training_data, training_labels, validation_data, validation_labels, video_pose_3d_kpts,
           berkeley_frame_width, berkeley_frame_height, epoch_nb=1, results_path=test_results_path, val_every=1, print_every=1,
-          show_diagram=False, print_results=False, action_repetitions=5)
+          show_diagram=False, print_results=False, action_repetitions=5, add_timestamp=False, batch_size=32)
 
 
 def run_load_model_test(generated_model_path):

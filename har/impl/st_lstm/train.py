@@ -17,7 +17,7 @@ def train(classes, training_data, training_labels, validation_data, validation_l
           weight_decay=0, momentum=0.9, val_every=5, print_every=50, lbd=0.5, steps=32, split=20, input_type=DatasetInputType.SPLIT,
           optimizer_type=Optimizer.RMSPROP, results_path='results', model_name_suffix='', save_loss=True, save_diagram=True,
           save_model=True, save_model_for_inference=False, add_random_rotation_y=False, use_two_layers=True, use_tau=False, use_bias=True,
-          is_3d=True, show_diagram=True, print_results=True, use_normalisation=True):
+          is_3d=True, show_diagram=True, print_results=True, use_normalisation=True, add_timestamp=True):
     method_name = 'st_lstm'
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -95,7 +95,7 @@ def train(classes, training_data, training_labels, validation_data, validation_l
                 all_val_losses.append(val_loss)
                 all_batch_val_accuracies.append(batch_acc)
 
-    model_name = ModelNameGenerator(method_name, model_name_suffix) \
+    model_name = ModelNameGenerator(method_name, model_name_suffix, add_timestamp) \
         .add_epoch_number(epoch_nb) \
         .add_batch_size(batch_size) \
         .add_learning_rate(learning_rate) \

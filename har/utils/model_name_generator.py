@@ -2,9 +2,10 @@ import time
 
 
 class ModelNameGenerator:
-    def __init__(self, method_name, model_name_suffix=''):
+    def __init__(self, method_name, model_name_suffix='', add_timestamp=True):
         super(ModelNameGenerator, self).__init__()
         self.params = [('model', method_name)]
+        self.add_timestamp = add_timestamp
         self.model_name_suffix = model_name_suffix
 
     def add_epoch_number(self, param_value):
@@ -21,6 +22,10 @@ class ModelNameGenerator:
 
     def add_optimizer_name(self, param_value):
         self.params.append(('op', str(param_value)))
+        return self
+
+    def add_neural_network_model(self, param_value):
+        self.params.append(('network', str(param_value)))
         return self
 
     def add_geometric_feature(self, param_value):
@@ -107,5 +112,6 @@ class ModelNameGenerator:
     def generate(self):
         if self.model_name_suffix != '':
             self.params.append(('', self.model_name_suffix))
-            self.params.append(('', int(time.time() * 1000)))
+        if self.add_timestamp:
+            self.params.append(('', str(int(time.time() * 1000))))
         return '_'.join([i[1] if i[0] == '' else i[0] + '_' + i[1] for i in self.params])

@@ -55,7 +55,8 @@ class TestSTLSTM(unittest.TestCase):
 
 def run_train_test(training_data, training_labels, validation_data, validation_labels, test_results_path):
     train(berkeley_mhad_classes, training_data, training_labels, validation_data, validation_labels, video_pose_3d_kpts, epoch_nb=5,
-          show_diagram=False, results_path=test_results_path, val_every=2, print_every=2, print_results=False, use_tau=True)
+          show_diagram=False, results_path=test_results_path, val_every=2, print_every=2, print_results=False, use_tau=True,
+          add_timestamp=False)
 
 
 def run_load_model_test(generated_model_path):
