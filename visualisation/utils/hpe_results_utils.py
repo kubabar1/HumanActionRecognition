@@ -22,6 +22,24 @@ def read_keypoints_csv(input_csv_path):
     return result
 
 
+def read_keypoints_csv_no_keys(input_csv_path):
+    """Read predicted keypoints saved in csv file
+
+    :param input_csv_path: path to input csv with predicted keypoints
+    :return: {'frame_nb': [ (keypoint_1_x, keypoint_1_y, keypoint_1_accuracy), (keypoint_2_x, ...), ...], 'frame_nb': [...], ...}
+        e.g:
+        {'1': [('12.2', '43.2', '0.342312'), ('2.1', '3.4', '0.41232'), ...], '2': [('33.2', '1.5', '0.64312'), ...], ... }
+    """
+    result = []
+    with open(input_csv_path, newline='') as csvfile:
+        keypoints_reader = csv.reader(csvfile, delimiter=',')
+        i = 0
+        for row in keypoints_reader:
+            result.append([np.array(row[i * 3:i * 3 + 3], dtype='float') for i in range(17)])
+            i += 1
+    return result
+
+
 def read_keypoints_all_poses(pose_result_dir_path):
     """Read keypoints for all poses in directory
 

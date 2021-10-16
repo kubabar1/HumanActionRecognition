@@ -1,3 +1,4 @@
+import math as m
 import os
 import time
 
@@ -161,105 +162,190 @@ def close_window(event):
     close = True
 
 
-def draw_3d_pose(data_3d):
+from math import *
+
+
+def angle_trunc(a):
+    while a < 0.0:
+        a += pi * 2
+    return a
+
+
+def getAngleBetweenPoints(x_orig, y_orig, x_landmark, y_landmark):
+    deltaY = y_landmark - y_orig
+    deltaX = x_landmark - x_orig
+    return angle_trunc(atan2(deltaY, deltaX))
+
+
+def draw_3d_pose(data_3d, kpts_description, pause=0.1):
     fig = plt.figure(figsize=(4, 4))
     ax = fig.add_subplot(111, projection='3d')
 
-    line0, = ax.plot(np.array([data_3d[0][15][0], data_3d[0][16][0]]),
-                     np.array([data_3d[0][15][1], data_3d[0][16][1]]),
-                     np.array([data_3d[0][15][2], data_3d[0][16][2]]))
-    line1, = ax.plot(np.array([data_3d[0][15][0], data_3d[0][14][0]]),
-                     np.array([data_3d[0][15][1], data_3d[0][14][1]]),
-                     np.array([data_3d[0][15][2], data_3d[0][14][2]]))
+    right_wrist = kpts_description['right_wrist']
+    left_wrist = kpts_description['left_wrist']
+    right_elbow = kpts_description['right_elbow']
+    left_elbow = kpts_description['left_elbow']
+    right_shoulder = kpts_description['right_shoulder']
+    left_shoulder = kpts_description['left_shoulder']
+    right_hip = kpts_description['right_hip']
+    left_hip = kpts_description['left_hip']
+    right_knee = kpts_description['right_knee']
+    left_knee = kpts_description['left_knee']
+    right_ankle = kpts_description['right_ankle']
+    left_ankle = kpts_description['left_ankle']
 
-    line2, = ax.plot(np.array([data_3d[0][13][0], data_3d[0][12][0]]),
-                     np.array([data_3d[0][13][1], data_3d[0][12][1]]),
-                     np.array([data_3d[0][13][2], data_3d[0][12][2]]))
-    line3, = ax.plot(np.array([data_3d[0][11][0], data_3d[0][12][0]]),
-                     np.array([data_3d[0][11][1], data_3d[0][12][1]]),
-                     np.array([data_3d[0][11][2], data_3d[0][12][2]]))
+    data_3d = normalise_skeleton(data_3d, left_hip, right_hip)
+    # print(data_3d.shape)
+    # data_3d = np.array([[[k[0], k[1], k[2]]  for k in f] for f in data_3d])
 
-    line4, = ax.plot(np.array([data_3d[0][11][0], data_3d[0][14][0]]),
-                     np.array([data_3d[0][11][1], data_3d[0][14][1]]),
-                     np.array([data_3d[0][11][2], data_3d[0][14][2]]))
+    line0, = ax.plot(np.array([data_3d[0][right_elbow][0], data_3d[0][right_wrist][0]]),
+                     np.array([data_3d[0][right_elbow][1], data_3d[0][right_wrist][1]]),
+                     np.array([data_3d[0][right_elbow][2], data_3d[0][right_wrist][2]]))
+    line1, = ax.plot(np.array([data_3d[0][right_elbow][0], data_3d[0][right_shoulder][0]]),
+                     np.array([data_3d[0][right_elbow][1], data_3d[0][right_shoulder][1]]),
+                     np.array([data_3d[0][right_elbow][2], data_3d[0][right_shoulder][2]]))
 
-    line5, = ax.plot(np.array([data_3d[0][11][0], data_3d[0][4][0]]),
-                     np.array([data_3d[0][11][1], data_3d[0][4][1]]),
-                     np.array([data_3d[0][11][2], data_3d[0][4][2]]))
-    line6, = ax.plot(np.array([data_3d[0][1][0], data_3d[0][14][0]]),
-                     np.array([data_3d[0][1][1], data_3d[0][14][1]]),
-                     np.array([data_3d[0][1][2], data_3d[0][14][2]]))
+    line2, = ax.plot(np.array([data_3d[0][left_wrist][0], data_3d[0][left_elbow][0]]),
+                     np.array([data_3d[0][left_wrist][1], data_3d[0][left_elbow][1]]),
+                     np.array([data_3d[0][left_wrist][2], data_3d[0][left_elbow][2]]))
+    line3, = ax.plot(np.array([data_3d[0][left_shoulder][0], data_3d[0][left_elbow][0]]),
+                     np.array([data_3d[0][left_shoulder][1], data_3d[0][left_elbow][1]]),
+                     np.array([data_3d[0][left_shoulder][2], data_3d[0][left_elbow][2]]))
 
-    line7, = ax.plot(np.array([data_3d[0][1][0], data_3d[0][4][0]]),
-                     np.array([data_3d[0][1][1], data_3d[0][4][1]]),
-                     np.array([data_3d[0][1][2], data_3d[0][4][2]]))
+    line4, = ax.plot(np.array([data_3d[0][left_shoulder][0], data_3d[0][right_shoulder][0]]),
+                     np.array([data_3d[0][left_shoulder][1], data_3d[0][right_shoulder][1]]),
+                     np.array([data_3d[0][left_shoulder][2], data_3d[0][right_shoulder][2]]))
 
-    line8, = ax.plot(np.array([data_3d[0][1][0], data_3d[0][2][0]]),
-                     np.array([data_3d[0][1][1], data_3d[0][2][1]]),
-                     np.array([data_3d[0][1][2], data_3d[0][2][2]]))
-    line9, = ax.plot(np.array([data_3d[0][2][0], data_3d[0][3][0]]),
-                     np.array([data_3d[0][2][1], data_3d[0][3][1]]),
-                     np.array([data_3d[0][2][2], data_3d[0][3][2]]))
+    line5, = ax.plot(np.array([data_3d[0][left_shoulder][0], data_3d[0][left_hip][0]]),
+                     np.array([data_3d[0][left_shoulder][1], data_3d[0][left_hip][1]]),
+                     np.array([data_3d[0][left_shoulder][2], data_3d[0][left_hip][2]]))
+    line6, = ax.plot(np.array([data_3d[0][right_hip][0], data_3d[0][right_shoulder][0]]),
+                     np.array([data_3d[0][right_hip][1], data_3d[0][right_shoulder][1]]),
+                     np.array([data_3d[0][right_hip][2], data_3d[0][right_shoulder][2]]))
 
-    line10, = ax.plot(np.array([data_3d[0][5][0], data_3d[0][6][0]]),
-                      np.array([data_3d[0][5][1], data_3d[0][6][1]]),
-                      np.array([data_3d[0][5][2], data_3d[0][6][2]]))
-    line11, = ax.plot(np.array([data_3d[0][5][0], data_3d[0][4][0]]),
-                      np.array([data_3d[0][5][1], data_3d[0][4][1]]),
-                      np.array([data_3d[0][5][2], data_3d[0][4][2]]))
+    line7, = ax.plot(np.array([data_3d[0][right_hip][0], data_3d[0][left_hip][0]]),
+                     np.array([data_3d[0][right_hip][1], data_3d[0][left_hip][1]]),
+                     np.array([data_3d[0][right_hip][2], data_3d[0][left_hip][2]]))
 
-    ax.view_init(90, 90)
+    line8, = ax.plot(np.array([data_3d[0][right_hip][0], data_3d[0][right_knee][0]]),
+                     np.array([data_3d[0][right_hip][1], data_3d[0][right_knee][1]]),
+                     np.array([data_3d[0][right_hip][2], data_3d[0][right_knee][2]]))
+    line9, = ax.plot(np.array([data_3d[0][right_knee][0], data_3d[0][right_ankle][0]]),
+                     np.array([data_3d[0][right_knee][1], data_3d[0][right_ankle][1]]),
+                     np.array([data_3d[0][right_knee][2], data_3d[0][right_ankle][2]]))
+
+    line10, = ax.plot(np.array([data_3d[0][left_knee][0], data_3d[0][left_ankle][0]]),
+                      np.array([data_3d[0][left_knee][1], data_3d[0][left_ankle][1]]),
+                      np.array([data_3d[0][left_knee][2], data_3d[0][left_ankle][2]]))
+    line11, = ax.plot(np.array([data_3d[0][left_knee][0], data_3d[0][left_hip][0]]),
+                      np.array([data_3d[0][left_knee][1], data_3d[0][left_hip][1]]),
+                      np.array([data_3d[0][left_knee][2], data_3d[0][left_hip][2]]))
+
+    # ax.view_init(90, 90)
     ax.set_xlim3d(-1, 1)
     ax.set_ylim3d(-1, 1)
     ax.set_zlim3d(-1, 1)
 
+    axs = fig.gca(projection='3d')
+
+    xLabel = axs.set_xlabel('x')
+    yLabel = axs.set_ylabel('y')
+    zLabel = axs.set_zlabel('z')
+
+    # print(data_3d[0][right_hip][2])
+    #
+    # rot = atan((data_3d[0][right_hip][2] - data_3d[0][left_hip][2]) / (data_3d[0][right_hip][0] - data_3d[0][left_hip][0]))
+    # print(rot)
+    #
+    # ry = Ry(rot)
+    #
+    # data_3d = np.array([[ry * np.array([[k[0]], [k[1]], [k[2]]]) for k in f] for f in data_3d])
+    #
+    # # data_3d = rotate(data_3d, 0, angleInDegrees, 0)
+    #
+    # rot = atan((data_3d[0][right_hip][2] - data_3d[0][left_hip][2]) / (data_3d[0][right_hip][0] - data_3d[0][left_hip][0]))
+    # print(rot)
+    # data_3d = data_3d.reshape((-1, 17, 3))
+
     for f in range(1, len(data_3d)):
-        # data_3d = rotate(data_3d, 0, 0, f)
+        data = data_3d[f]
 
         # for i in video_pose_3d_kpts.values():
         #     ax.scatter(q[f][i][0], q[f][i][1], q[f][i][2])
-        line0.set_data(np.array([data_3d[f][15][0], data_3d[f][16][0]]), np.array([data_3d[f][15][1], data_3d[f][16][1]]))
-        line0.set_3d_properties(np.array([data_3d[f][15][2], data_3d[f][16][2]]))
+        line0.set_data(np.array([data[right_elbow][0], data[right_wrist][0]]),
+                       np.array([data[right_elbow][1], data[right_wrist][1]]))
+        line0.set_3d_properties(np.array([data[right_elbow][2], data[right_wrist][2]]))
 
-        line1.set_data(np.array([data_3d[f][15][0], data_3d[f][14][0]]), np.array([data_3d[f][15][1], data_3d[f][14][1]]))
-        line1.set_3d_properties(np.array([data_3d[f][15][2], data_3d[f][14][2]]))
+        line1.set_data(np.array([data[right_elbow][0], data[right_shoulder][0]]),
+                       np.array([data[right_elbow][1], data[right_shoulder][1]]))
+        line1.set_3d_properties(np.array([data[right_elbow][2], data[right_shoulder][2]]))
 
-        line2.set_data(np.array([data_3d[f][13][0], data_3d[f][12][0]]), np.array([data_3d[f][13][1], data_3d[f][12][1]]))
-        line2.set_3d_properties(np.array([data_3d[f][13][2], data_3d[f][12][2]]))
+        line2.set_data(np.array([data[left_wrist][0], data[left_elbow][0]]),
+                       np.array([data[left_wrist][1], data[left_elbow][1]]))
+        line2.set_3d_properties(np.array([data[left_wrist][2], data[left_elbow][2]]))
 
-        line3.set_data(np.array([data_3d[f][11][0], data_3d[f][12][0]]), np.array([data_3d[f][11][1], data_3d[f][12][1]]))
-        line3.set_3d_properties(np.array([data_3d[f][11][2], data_3d[f][12][2]]))
+        line3.set_data(np.array([data[left_shoulder][0], data[left_elbow][0]]),
+                       np.array([data[left_shoulder][1], data[left_elbow][1]]))
+        line3.set_3d_properties(np.array([data[left_shoulder][2], data[left_elbow][2]]))
 
-        line4.set_data(np.array([data_3d[f][11][0], data_3d[f][14][0]]), np.array([data_3d[f][11][1], data_3d[f][14][1]]))
-        line4.set_3d_properties(np.array([data_3d[f][11][2], data_3d[f][14][2]]))
+        line4.set_data(np.array([data[left_shoulder][0], data[right_shoulder][0]]),
+                       np.array([data[left_shoulder][1], data[right_shoulder][1]]))
+        line4.set_3d_properties(np.array([data[left_shoulder][2], data[right_shoulder][2]]))
 
-        line5.set_data(np.array([data_3d[f][11][0], data_3d[f][4][0]]), np.array([data_3d[f][11][1], data_3d[f][4][1]]))
-        line5.set_3d_properties(np.array([data_3d[f][11][2], data_3d[f][4][2]]))
+        line5.set_data(np.array([data[left_shoulder][0], data[left_hip][0]]),
+                       np.array([data[left_shoulder][1], data[left_hip][1]]))
+        line5.set_3d_properties(np.array([data[left_shoulder][2], data[left_hip][2]]))
 
-        line6.set_data(np.array([data_3d[f][1][0], data_3d[f][14][0]]), np.array([data_3d[f][1][1], data_3d[f][14][1]]))
-        line6.set_3d_properties(np.array([data_3d[f][1][2], data_3d[f][14][2]]))
+        line6.set_data(np.array([data[right_hip][0], data[right_shoulder][0]]),
+                       np.array([data[right_hip][1], data[right_shoulder][1]]))
+        line6.set_3d_properties(np.array([data[right_hip][2], data[right_shoulder][2]]))
 
-        line7.set_data(np.array([data_3d[f][1][0], data_3d[f][4][0]]), np.array([data_3d[f][1][1], data_3d[f][4][1]]))
-        line7.set_3d_properties(np.array([data_3d[f][1][2], data_3d[f][4][2]]))
+        line7.set_data(np.array([data[right_hip][0], data[left_hip][0]]),
+                       np.array([data[right_hip][1], data[left_hip][1]]))
+        line7.set_3d_properties(np.array([data[right_hip][2], data[left_hip][2]]))
 
-        line8.set_data(np.array([data_3d[f][1][0], data_3d[f][2][0]]), np.array([data_3d[f][1][1], data_3d[f][2][1]]))
-        line8.set_3d_properties(np.array([data_3d[f][1][2], data_3d[f][2][2]]))
+        line8.set_data(np.array([data[right_hip][0], data[right_knee][0]]),
+                       np.array([data[right_hip][1], data[right_knee][1]]))
+        line8.set_3d_properties(np.array([data[right_hip][2], data[right_knee][2]]))
 
-        line9.set_data(np.array([data_3d[f][2][0], data_3d[f][3][0]]), np.array([data_3d[f][2][1], data_3d[f][3][1]]))
-        line9.set_3d_properties(np.array([data_3d[f][2][2], data_3d[f][3][2]]))
+        line9.set_data(np.array([data[right_knee][0], data[right_ankle][0]]),
+                       np.array([data[right_knee][1], data[right_ankle][1]]))
+        line9.set_3d_properties(np.array([data[right_knee][2], data[right_ankle][2]]))
 
-        line10.set_data(np.array([data_3d[f][5][0], data_3d[f][6][0]]), np.array([data_3d[f][5][1], data_3d[f][6][1]]))
-        line10.set_3d_properties(np.array([data_3d[f][5][2], data_3d[f][6][2]]))
+        line10.set_data(np.array([data[left_knee][0], data[left_ankle][0]]),
+                        np.array([data[left_knee][1], data[left_ankle][1]]))
+        line10.set_3d_properties(np.array([data[left_knee][2], data[left_ankle][2]]))
 
-        line11.set_data(np.array([data_3d[f][4][0], data_3d[f][5][0]]), np.array([data_3d[f][4][1], data_3d[f][5][1]]))
-        line11.set_3d_properties(np.array([data_3d[f][4][2], data_3d[f][5][2]]))
+        line11.set_data(np.array([data[left_hip][0], data[left_knee][0]]),
+                        np.array([data[left_hip][1], data[left_knee][1]]))
+        line11.set_3d_properties(np.array([data[left_hip][2], data[left_knee][2]]))
 
         plt.draw()
-        plt.pause(0.1)
+        plt.pause(pause)
         fig.canvas.mpl_connect('close_event', close_window)
         if close:
             plt.close('all')
             break
+
+
+def normalise_skeleton(data_3d, left_hip_index, right_hip_index):
+    return scale_skeleton(move_hip_to_center(data_3d, left_hip_index, right_hip_index))
+
+
+def scale_skeleton(data_3d):
+    s = 1 / np.max(np.abs(data_3d))
+    return data_3d * s
+
+
+def move_hip_to_center(data_3d, left_hip_index, right_hip_index):
+    dd = (data_3d[:, left_hip_index, :] + data_3d[:, right_hip_index, :]) / 2
+    return np.array([[k - dd[i] for k in d] for i, d in enumerate(data_3d)])
+
+
+def Ry(theta):
+    return np.matrix([[m.cos(theta), 0, m.sin(theta)],
+                      [0, 1, 0],
+                      [-m.sin(theta), 0, m.cos(theta)]])
 
 
 def rotate(data_3d, rotate_x=0, rotate_y=0, rotate_z=0):

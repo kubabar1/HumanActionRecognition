@@ -21,7 +21,7 @@ video_pose_3d_kpts = {
     'left_ankle': 6
 }
 
-processed_kpts_12 = {
+berkeley_original_12 = {
     'right_shoulder': 0,
     'right_elbow': 1,
     'right_wrist': 2,
@@ -55,7 +55,7 @@ mmpose_kpts = {
 def draw_pose(data_path, ground_truth_video, many_poses, draw_3d):
     if draw_3d:
         data = np.load(data_path)
-        draw_3d_pose(data, video_pose_3d_kpts)
+        draw_3d_pose(data, video_pose_3d_kpts, 0.1)
     else:
         frames_count = int(get_frames_count(ground_truth_video))
         if many_poses:
