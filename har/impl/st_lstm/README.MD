@@ -56,7 +56,7 @@ This implementation basis on LSTM cell modification proposed in article **"Spati
 | **is_3d** | True | boolean defining if input coordinates are 3D (for False input coordinates should be 2D) |
 | **show_diagram** | True | boolean defining if show diagram after training |
 | **print_results** | True | boolean defining if print training and validation results during training |
-| **use_normalisation** | True | boolean defining if normalization should be performed on input data |
+| **use_normalization** | True | boolean defining if normalization should be performed on input data |
 | **add_timestamp** | True | boolean defining if add timestamp to generated output files names |
 
 #### Example - training
@@ -131,6 +131,7 @@ if __name__ == '__main__':
 | **steps** | 32 | size of step (only for input_type DatasetInputType.STEP) - must agree with type of input used during training NN |
 | **split** | 20 | size of split (only for input_type DatasetInputType.SPLIT) - must agree with type of input used during training NN |
 | **show_diagram** | True | boolean defining if show diagram after evaluation |
+| **use_normalization** | True | boolean defining if normalization should be performed on input data |
 | **results_path** | 'results' | path, where generated results should be placed |
 
 #### Example - evaluation
@@ -167,6 +168,7 @@ if __name__ == '__main__':
 | **analysed_kpts_description*** | - | object describing keypoints meaning in training and validation data list (example object described [here](#example-analysed_kpts_description-object)) |
 | **input_type** | SPLIT | object defining type of input data (STEP or SPLIT) (must be of type **DatasetInputType**, defined in *har/utils/dataset_util.py* ) - must agree with type of input used during training NN |
 | **split** | 20 | size of split (only for input_type DatasetInputType.SPLIT) - must agree with type of input used during training NN |
+| **use_normalization** | True | boolean defining if normalization should be performed on input data |
 
 #### Example - fit
 ```

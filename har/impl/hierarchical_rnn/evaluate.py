@@ -3,7 +3,7 @@ import torch
 
 from .model.HierarchicalRNNModel import HierarchicalRNNModel
 from .utils.HierarchicalRNNDataset import HierarchicalRNNDataset
-from ...utils.dataset_util import DatasetInputType, get_all_body_parts_steps, get_all_body_parts_splits, prepare_body_part_data
+from ...utils.dataset_util import DatasetInputType, prepare_body_part_data, normalise_skeleton_3d_batch, normalise_skeleton_3d
 from ...utils.evaluation_utils import draw_confusion_matrix
 
 
@@ -17,7 +17,9 @@ def load_model(model_path, classes_count, hidden_size=128, is_3d=True):
 
 
 def evaluate_tests(classes, test_data, test_labels, hrnn_model, analysed_kpts_description, input_type=DatasetInputType.SPLIT, split=20,
-                   steps=32, show_diagram=True, results_path='results'):
+                   steps=32, show_diagram=True, results_path='results', use_normalization=True):
+    if use_normalization:
+        test_data = normalise_skeleton_3d_batch(test_data, analysed_kpts_description['left_hip'], analysed_kpts_description['right_hip'])
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     test_data_loader = HierarchicalRNNDataset(test_data, test_labels, len(test_data), analysed_kpts_description,
@@ -38,7 +40,10 @@ def evaluate_tests(classes, test_data, test_labels, hrnn_model, analysed_kpts_de
     return np.sum([1 for c, p in zip(correct_arr, predicted_arr) if c == p]) / len(correct_arr)
 
 
-def fit(classes, data, hrnn_model, analysed_kpts_description, input_type=DatasetInputType.SPLIT, split=20, steps=32):
+def fit(classes, data, hrnn_model, analysed_kpts_description, input_type=DatasetInputType.SPLIT, split=20, steps=32,
+        use_normalization=True):
+    if use_normalization:
+        data = normalise_skeleton_3d(data, analysed_kpts_description['left_hip'], analysed_kpts_description['right_hip'])
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     analysed_body_parts = ['right_wrist', 'left_wrist', 'right_elbow', 'left_elbow', 'right_shoulder', 'left_shoulder',

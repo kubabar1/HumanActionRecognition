@@ -5,7 +5,8 @@ import torch
 
 from .model.PLSTMModel import PLSTMModel
 from .utils.PLSTMDataset import PLSTMDataset
-from ...utils.dataset_util import DatasetInputType, get_all_body_parts_splits, get_all_body_parts_steps
+from ...utils.dataset_util import DatasetInputType, get_all_body_parts_splits, get_all_body_parts_steps, normalise_skeleton_3d_batch, \
+    normalise_skeleton_3d
 from ...utils.evaluation_utils import draw_confusion_matrix
 
 
@@ -20,7 +21,9 @@ def load_model(model_path, classes_count, hidden_size=128, is_3d=True):
 
 
 def evaluate_tests(classes, test_data, test_labels, p_lstm_model, analysed_kpts_description, input_type=DatasetInputType.SPLIT, steps=32,
-                   split=20, show_diagram=True, results_path='results'):
+                   split=20, show_diagram=True, results_path='results', use_normalization=True):
+    if use_normalization:
+        test_data = normalise_skeleton_3d_batch(test_data, analysed_kpts_description['left_hip'], analysed_kpts_description['right_hip'])
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     test_data_loader = PLSTMDataset(test_data, test_labels, len(test_data), analysed_kpts_description, steps=steps, split=split,
@@ -41,7 +44,10 @@ def evaluate_tests(classes, test_data, test_labels, p_lstm_model, analysed_kpts_
     return np.sum([1 for c, p in zip(correct_arr, predicted_arr) if c == p]) / len(correct_arr)
 
 
-def fit(classes, data, p_lstm_model, analysed_kpts_description, input_type=DatasetInputType.SPLIT, steps=32, split=20):
+def fit(classes, data, p_lstm_model, analysed_kpts_description, input_type=DatasetInputType.SPLIT, steps=32, split=20,
+        use_normalization=True):
+    if use_normalization:
+        data = normalise_skeleton_3d(data, analysed_kpts_description['left_hip'], analysed_kpts_description['right_hip'])
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     analysed_body_parts = ['right_wrist', 'left_wrist', 'right_elbow', 'left_elbow', 'right_shoulder', 'left_shoulder',
                            'right_hip', 'left_hip', 'right_knee', 'left_knee', 'right_ankle', 'left_ankle']

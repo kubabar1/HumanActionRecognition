@@ -16,7 +16,7 @@ def train(classes, training_data, training_labels, validation_data, validation_l
           batch_size=128, hidden_size=128, learning_rate=0.0001, print_every=50, weight_decay=0, momentum=0.9, val_every=5, steps=32,
           split=20, input_type=DatasetInputType.SPLIT, optimizer_type=Optimizer.RMSPROP, results_path='results', model_name_suffix='',
           save_loss=True, save_diagram=True, save_model=True, save_model_for_inference=False, add_random_rotation_y=False, is_3d=True,
-          show_diagram=True, print_results=True, use_normalisation=True, add_timestamp=True):
+          show_diagram=True, print_results=True, use_normalization=True, add_timestamp=True):
     method_name = 'hierarchical_rnn'
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -44,7 +44,7 @@ def train(classes, training_data, training_labels, validation_data, validation_l
     start_time = time.time()
     epoch = 0
 
-    if use_normalisation:
+    if use_normalization:
         training_data = normalise_skeleton_3d_batch(training_data, analysed_kpts_description['left_hip'],
                                                     analysed_kpts_description['right_hip'])
         validation_data = normalise_skeleton_3d_batch(validation_data, analysed_kpts_description['left_hip'],
@@ -124,7 +124,7 @@ def train(classes, training_data, training_labels, validation_data, validation_l
         .add_steps(steps) \
         .add_random_rotation_y(add_random_rotation_y) \
         .add_is_3d(is_3d) \
-        .add_is_normalization_used(use_normalisation) \
+        .add_is_normalization_used(use_normalization) \
         .generate()
 
     if save_model:

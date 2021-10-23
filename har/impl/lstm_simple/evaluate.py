@@ -5,7 +5,7 @@ import torch
 
 from .model.LSTMSimpleModel import LSTMSimpleModel
 from .utils.LSTMSimpleDataset import LSTMSimpleDataset, get_input_size
-from ...utils.dataset_util import DatasetInputType, SetType, GeometricFeature
+from ...utils.dataset_util import DatasetInputType, SetType, GeometricFeature, normalise_skeleton_3d_batch, normalise_skeleton_3d
 from ...utils.evaluation_utils import draw_confusion_matrix
 
 
@@ -20,7 +20,9 @@ def load_model(model_path, classes_count, analysed_kpts_count=12, hidden_size=12
 
 
 def evaluate_tests(classes, test_data, test_labels, lstm_simple_model, analysed_kpts_description, input_type=DatasetInputType.SPLIT,
-                   split=20, steps=32, show_diagram=True, results_path='results'):
+                   split=20, steps=32, show_diagram=True, results_path='results', use_normalization=True):
+    if use_normalization:
+        test_data = normalise_skeleton_3d_batch(test_data, analysed_kpts_description['left_hip'], analysed_kpts_description['right_hip'])
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     test_data_loader = LSTMSimpleDataset(test_data, test_labels, len(test_data), analysed_kpts_description, steps=steps,
                                          split=split, input_type=input_type, is_test=True, set_type=SetType.TEST)
@@ -40,7 +42,9 @@ def evaluate_tests(classes, test_data, test_labels, lstm_simple_model, analysed_
     return np.sum([1 for c, p in zip(correct_arr, predicted_arr) if c == p]) / len(correct_arr)
 
 
-def fit(classes, data, lstm_simple_model, analysed_kpts_description, input_type=DatasetInputType.SPLIT, split=20):
+def fit(classes, data, lstm_simple_model, analysed_kpts_description, input_type=DatasetInputType.SPLIT, split=20, use_normalization=True):
+    if use_normalization:
+        data = normalise_skeleton_3d(data, analysed_kpts_description['left_hip'], analysed_kpts_description['right_hip'])
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     all_analysed_kpts = list(analysed_kpts_description.values())
     input_size = len(all_analysed_kpts) * data.shape[2]

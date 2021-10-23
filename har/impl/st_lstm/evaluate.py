@@ -5,7 +5,7 @@ import torch
 
 from .model.STLSTMModel import STLSTMModel
 from .utils.STLSTMDataset import STLSTMDataset
-from ...utils.dataset_util import DatasetInputType
+from ...utils.dataset_util import DatasetInputType, normalise_skeleton_3d_batch, normalise_skeleton_3d
 from ...utils.evaluation_utils import draw_confusion_matrix
 
 
@@ -21,7 +21,9 @@ def load_model(model_path, classes_count, analysed_kpts_count=12, hidden_size=12
 
 
 def evaluate_tests(classes, test_data, test_labels, st_lstm_model, analysed_kpts_description, input_type=DatasetInputType.SPLIT, split=20,
-                   steps=32, show_diagram=True, results_path='results'):
+                   steps=32, show_diagram=True, results_path='results', use_normalization=True):
+    if use_normalization:
+        test_data = normalise_skeleton_3d_batch(test_data, analysed_kpts_description['left_hip'], analysed_kpts_description['right_hip'])
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     test_data_loader = STLSTMDataset(test_data, test_labels, len(test_data), analysed_kpts_description, steps=steps, split=split,
@@ -42,7 +44,9 @@ def evaluate_tests(classes, test_data, test_labels, st_lstm_model, analysed_kpts
     return np.sum([1 for c, p in zip(correct_arr, predicted_arr) if c == p]) / len(correct_arr)
 
 
-def fit(classes, data, st_lstm_model, analysed_kpts_description, input_type=DatasetInputType.SPLIT, split=20):
+def fit(classes, data, st_lstm_model, analysed_kpts_description, input_type=DatasetInputType.SPLIT, split=20, use_normalization=True):
+    if use_normalization:
+        data = normalise_skeleton_3d(data, analysed_kpts_description['left_hip'], analysed_kpts_description['right_hip'])
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     all_analysed_kpts = list(analysed_kpts_description.values())
