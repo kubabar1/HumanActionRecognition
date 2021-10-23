@@ -4,14 +4,15 @@ import numpy as np
 import torch
 
 from .model.LSTMSimpleModel import LSTMSimpleModel
-from .utils.LSTMSimpleDataset import LSTMSimpleDataset
-from ...utils.dataset_util import DatasetInputType, SetType
+from .utils.LSTMSimpleDataset import LSTMSimpleDataset, get_input_size
+from ...utils.dataset_util import DatasetInputType, SetType, GeometricFeature
 from ...utils.evaluation_utils import draw_confusion_matrix
 
 
-def load_model(model_path, classes_count, analysed_kpts_count=12, hidden_size=128, hidden_layers=3, is_3d=True):
+def load_model(model_path, classes_count, analysed_kpts_count=12, hidden_size=128, hidden_layers=3, is_3d=True,
+               geometric_feature=GeometricFeature.JOINT_COORDINATE):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    input_size = analysed_kpts_count * (3 if is_3d else 2)
+    input_size = get_input_size(geometric_feature, analysed_kpts_count, is_3d)
     lstm_model = LSTMSimpleModel(input_size, hidden_size, hidden_layers, classes_count).to(device)
     lstm_model.load_state_dict(torch.load(model_path))
     lstm_model.eval()

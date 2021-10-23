@@ -5,8 +5,8 @@ import torch.nn as nn
 import torch.optim as optim
 
 from .model.LSTMSimpleModel import LSTMSimpleModel
-from .utils.LSTMSimpleDataset import LSTMSimpleDataset
-from ...utils.dataset_util import DatasetInputType, GeometricFeature, SetType, get_analysed_lines_ids, normalise_skeleton_3d_batch
+from .utils.LSTMSimpleDataset import LSTMSimpleDataset, get_input_size
+from ...utils.dataset_util import DatasetInputType, GeometricFeature, SetType, normalise_skeleton_3d_batch
 from ...utils.model_name_generator import ModelNameGenerator
 from ...utils.training_utils import save_model_common, save_diagram_common, print_train_results, \
     Optimizer, save_loss_common, validate_model, get_training_batch_accuracy
@@ -21,20 +21,7 @@ def train(classes, training_data, training_labels, validation_data, validation_l
     method_name = 'lstm_simple'
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    if geometric_feature == GeometricFeature.JOINT_COORDINATE:
-        input_size = len(analysed_kpts_description.values()) * (3 if is_3d else 2)
-    elif geometric_feature == GeometricFeature.RELATIVE_POSITION:
-        input_size = (len(analysed_kpts_description.values()) * (len(analysed_kpts_description.values()) - 1)) * 3
-    elif geometric_feature == GeometricFeature.JOINT_JOINT_DISTANCE:
-        input_size = (len(analysed_kpts_description.values()) * (len(analysed_kpts_description.values()) - 1))
-    elif geometric_feature == GeometricFeature.JOINT_JOINT_ORIENTATION:
-        input_size = (len(analysed_kpts_description.values()) * (len(analysed_kpts_description.values()) - 1)) * 3
-    elif geometric_feature == GeometricFeature.JOINT_LINE_DISTANCE:
-        input_size = len(get_analysed_lines_ids(analysed_kpts_description)) * (len(analysed_kpts_description.values()) - 2)
-    elif geometric_feature == GeometricFeature.LINE_LINE_ANGLE:
-        input_size = len(get_analysed_lines_ids(analysed_kpts_description)) * (len(get_analysed_lines_ids(analysed_kpts_description)) - 1)
-    else:
-        raise ValueError('Invalid or unimplemented geometric feature type')
+    input_size = get_input_size(geometric_feature, len(analysed_kpts_description.values()), is_3d)
 
     lstm_model = LSTMSimpleModel(input_size, hidden_size, hidden_layers, len(classes), dropout).to(device)
 

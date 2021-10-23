@@ -77,3 +77,22 @@ class LSTMSimpleDataset(Dataset):
         np_label = np.array(labels_arr)
 
         return np_data, np_label
+
+
+def get_input_size(geometric_feature, analysed_kpts_count, is_3d):
+    analysed_lines_count = 18
+    if geometric_feature == GeometricFeature.JOINT_COORDINATE:
+        input_size = analysed_kpts_count * (3 if is_3d else 2)
+    elif geometric_feature == GeometricFeature.RELATIVE_POSITION:
+        input_size = analysed_kpts_count * (analysed_kpts_count - 1) * 3
+    elif geometric_feature == GeometricFeature.JOINT_JOINT_DISTANCE:
+        input_size = (analysed_kpts_count * (analysed_kpts_count - 1))
+    elif geometric_feature == GeometricFeature.JOINT_JOINT_ORIENTATION:
+        input_size = (analysed_kpts_count * (analysed_kpts_count - 1)) * 3
+    elif geometric_feature == GeometricFeature.JOINT_LINE_DISTANCE:
+        input_size = analysed_lines_count * (analysed_kpts_count - 2)
+    elif geometric_feature == GeometricFeature.LINE_LINE_ANGLE:
+        input_size = analysed_lines_count * (analysed_lines_count - 1)
+    else:
+        raise ValueError('Invalid or unimplemented geometric feature type')
+    return input_size

@@ -90,6 +90,7 @@ if __name__ == '__main__':
 | **analysed_kpts_count** | 12 | count of analysed keypoints |
 | **hidden_size** | 128 | size of LSTM hidden layer used during training NN |
 | **hidden_layers** | 3 | count of hidden layers in LSTM network used during training NN |
+| **geometric_feature** | JOINT_COORDINATE | type of geometric feature used during training (basis on article *"On Geometric Features for Skeleton-Based Action Recognition using Multilayer LSTM Networks"*) (must be of type **GeometricFeature**, defined in *har/utils/dataset_util.py* )|
 | **is_3d** | True | boolean defining if input coordinates are 3D (for False input coordinates should be 2D) - must agree with value set during training|
 
 
