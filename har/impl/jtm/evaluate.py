@@ -121,9 +121,11 @@ def fit(classes, data, jtm_model_front, jtm_model_top, jtm_model_side, analysed_
         data = normalise_skeleton_3d(data, analysed_kpts_description['left_hip'], analysed_kpts_description['right_hip'])
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    smpl_img_front = generate_sample_images(data, analysed_kpts_description, image_width, image_height)[ModelType.FRONT.value]
-    smpl_img_top = generate_sample_images(data, analysed_kpts_description, image_width, image_height)[ModelType.TOP.value]
-    smpl_img_side = generate_sample_images(data, analysed_kpts_description, image_width, image_height)[ModelType.SIDE.value]
+    smpl_images = generate_sample_images(data, analysed_kpts_description, image_width, image_height)
+
+    smpl_img_front = smpl_images[ModelType.FRONT.value]
+    smpl_img_top = smpl_images[ModelType.TOP.value]
+    smpl_img_side = smpl_images[ModelType.SIDE.value]
 
     test_img_tensor_front = torch.unsqueeze(transform(smpl_img_front), 0).to(device)
     test_img_tensor_top = torch.unsqueeze(transform(smpl_img_top), 0).to(device)
