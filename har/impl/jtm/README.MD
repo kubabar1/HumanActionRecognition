@@ -3,15 +3,19 @@ This solution uses method described in article "Action recognition based on join
 
 1. [Training](#1-training)
 
-2. [Evaluation](#2-load-model)
+2. [Load model](#2-load-model)
 
-3. [Evaluation](#3-evaluation)
+3. [Evaluation min](#3-evaluation---min)
 
-4. [Fit](#4-fit)
+4. [Evaluation all](#4-evaluation---all)
 
-5. [Additional info](#5-additional-info)
+5. [Fit min](#5-fit---min)
 
-6. [Article](#6-article)
+6. [Fit all](#6-fit-all)
+
+7. [Additional info](#7-additional-info)
+
+8. [Article](#8-article)
 
 ### 1. Training
 
@@ -54,6 +58,7 @@ This method returns 3 models - for front, top and side view images.
 | **remove_cache** | False | boolean defining if cache directory for selected input options should be removed before use (only when use_cache is set to True) |
 | **show_diagram** | True | boolean defining if show diagram after training |
 | **add_timestamp** | True | boolean defining if add timestamp to generated output files names |
+| **use_normalization** | True | boolean defining if normalization should be performed on input data |
 | **neural_network_model** | ALEXNET | type of neural network (must be of type **NeuralNetworkModel**, defined in *har/impl/jtm/train.py* ) |
 
 
@@ -108,7 +113,8 @@ if __name__ == '__main__':
 ```
 
 
-### 3. Evaluation
+### 3. Evaluation - min
+Evaluate using only one JTM neural network model
 
 - [Parameters](#parameters---evaluation)
 
@@ -127,10 +133,11 @@ if __name__ == '__main__':
 | **model_type*** | - | type of model (trained on front, top or side images) - parameter of type "ModelType" - Enum defined in file "har/impl/jtm/evaluate.py" |
 | **show_diagram** | True | boolean defining if show diagram after evaluation |
 | **results_path** | 'results' | path, where generated results should be placed |
+| **use_normalization** | True | boolean defining if normalization should be performed on input data |
 
 #### Example - evaluation
 ```
-from har.impl.jtm.evaluate import evaluate_tests, ModelType, load_model
+from har.impl.jtm.evaluate import evaluate_tests_min, ModelType, load_model
 from har.utils.dataset_util import SetType, berkeley_mhad_classes, video_pose_3d_kpts, get_berkeley_dataset, berkeley_frame_height, \
     berkeley_frame_width
 
@@ -140,7 +147,7 @@ def main():
     model_path = 'results/model_jtm_en_5_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_100_stlr_30_gammastlr_0.1_front.pth'
     jtm_model = load_model(model_path, len(berkeley_mhad_classes))
 
-    accuracy = evaluate_tests(berkeley_mhad_classes, test_data, test_labels, jtm_model, video_pose_3d_kpts, berkeley_frame_width,
+    accuracy = evaluate_tests_min(berkeley_mhad_classes, test_data, test_labels, jtm_model, video_pose_3d_kpts, berkeley_frame_width,
                               berkeley_frame_height, ModelType.FRONT)
 
     print('Test accuracy: {}'.format(accuracy))
@@ -151,7 +158,52 @@ if __name__ == '__main__':
 ```
 
 
-### 4. Fit
+### 4. Evaluation - all
+Evaluate using all 3 JTM models
+| Parameter name  | Default value  | Description |
+| :--------- |:--------------: | :---- |
+| **classes*** | - | list of classes (class ID must comply with labels ID's) - order must agree with this used during training NN |
+| **test_data*** | - | list of test data sequences e.g. list containing 100 sequences of size (125, 17, 3) |
+| **test_labels*** | - | list containing action labels for each test sequence |
+| **jtm_model_front*** | - | trained model loaded using function load_model (for front orientation) |
+| **jtm_model_top*** | - | trained model loaded using function load_model (for top orientation) |
+| **jtm_model_side*** | - | trained model loaded using function load_model (for side orientation) |
+| **analysed_kpts_description*** | - | object describing keypoints meaning in training and validation data list (example object described [here](#example-analysed_kpts_description-object)) |
+| **image_width*** | - | width of input image (video frame) |
+| **image_height*** | - | height of input image (video frame) |
+| **show_diagram** | True | boolean defining if show diagram after evaluation |
+| **results_path** | 'results' | path, where generated results should be placed |
+| **use_normalization** | True | boolean defining if normalization should be performed on input data |
+
+#### Example - evaluation
+```
+from har.impl.jtm.evaluate import evaluate_tests, load_model
+from har.utils.dataset_util import SetType, berkeley_mhad_classes, video_pose_3d_kpts, get_berkeley_dataset, berkeley_frame_height, \
+    berkeley_frame_width
+
+
+def main():
+    test_data, test_labels = get_berkeley_dataset('datasets_processed/berkeley/3D', set_type=SetType.TEST)
+    model_path_front = 'results/model_jtm_en_5_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_100_stlr_30_gammastlr_0.1_front.pth'
+    model_path_top = 'results/model_jtm_en_5_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_100_stlr_30_gammastlr_0.1_top.pth'
+    model_path_side = 'results/model_jtm_en_5_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_100_stlr_30_gammastlr_0.1_side.pth'
+    model_path_front = load_model(model_path_front, len(berkeley_mhad_classes))
+    model_path_top = load_model(model_path_top, len(berkeley_mhad_classes))
+    model_path_side = load_model(model_path_side, len(berkeley_mhad_classes))
+
+    accuracy = evaluate_tests(berkeley_mhad_classes, test_data, test_labels, model_path_front, model_path_top, model_path_side,
+                              video_pose_3d_kpts, berkeley_frame_width, berkeley_frame_height)
+
+    print('Test accuracy: {}'.format(accuracy))
+
+
+if __name__ == '__main__':
+    main()
+```
+
+### 5. Fit - min
+
+Run fit using only one JTM model
 
 - [Parameters](#parameters---fit)
 
@@ -167,12 +219,13 @@ if __name__ == '__main__':
 | **image_width*** | - | width of input image (video frame) |
 | **image_height*** | - | height of input image (video frame) |
 | **model_type*** | - | type of model (trained on front, top or side images) - parameter of type "ModelType" - Enum defined in file "har/impl/jtm/evaluate.py" |
+| **use_normalization** | True | boolean defining if normalization should be performed on input data |
 
 #### Example - fit
 ```
 from random import randrange
 
-from har.impl.jtm.evaluate import fit, ModelType, load_model
+from har.impl.jtm.evaluate import fit_min, ModelType, load_model
 from har.utils.dataset_util import get_berkeley_dataset, SetType, berkeley_mhad_classes, video_pose_3d_kpts, berkeley_frame_width, \
     berkeley_frame_height
 
@@ -184,7 +237,7 @@ def main():
     model_path = 'results/model_jtm_en_5_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_100_stlr_30_gammastlr_0.1_front.pth'
     jtm_model = load_model(model_path, len(berkeley_mhad_classes))
 
-    predicted = fit(berkeley_mhad_classes, test_sequence, jtm_model, video_pose_3d_kpts, berkeley_frame_width, berkeley_frame_height,
+    predicted = fit_min(berkeley_mhad_classes, test_sequence, jtm_model, video_pose_3d_kpts, berkeley_frame_width, berkeley_frame_height,
                     ModelType.FRONT)
 
     print('CORRECT: {}'.format(berkeley_mhad_classes[test_label]))
@@ -196,8 +249,61 @@ if __name__ == '__main__':
 ```
 
 
+### 6. Fit all
 
-### 5. Additional info
+Run fit using only all 3 JTM models
+
+- [Parameters](#parameters---fit)
+
+- [Example](#example---fit)
+
+#### Parameters - fit
+| Parameter name  | Default value  | Description |
+| :--------- |:--------------: | :---- |
+| **classes*** | - | list of classes (class ID must comply with labels ID's) - order must agree with this used during training NN |
+| **data*** | - | input data as vector of shape (frames_count, kpts_count, kpt_coordinates_count) e.g. (59, 17, 3) |
+| **jtm_model_front*** | - | trained model loaded using function load_model (for front orientation) |
+| **jtm_model_top*** | - | trained model loaded using function load_model (for top orientation) |
+| **jtm_model_side*** | - | trained model loaded using function load_model (for side orientation) || **analysed_kpts_description*** | - | object describing keypoints meaning in training and validation data list (example object described [here](#example-analysed_kpts_description-object)) |
+| **image_width*** | - | width of input image (video frame) |
+| **image_height*** | - | height of input image (video frame) |
+| **model_type*** | - | type of model (trained on front, top or side images) - parameter of type "ModelType" - Enum defined in file "har/impl/jtm/evaluate.py" |
+| **use_normalization** | True | boolean defining if normalization should be performed on input data |
+
+#### Example - fit
+```
+from random import randrange
+
+from har.impl.jtm.evaluate import fit, load_model
+from har.utils.dataset_util import get_berkeley_dataset, SetType, berkeley_mhad_classes, video_pose_3d_kpts, berkeley_frame_width, \
+    berkeley_frame_height
+
+
+def main():
+    test_data, test_labels = get_berkeley_dataset('datasets_processed/berkeley/3D', set_type=SetType.TEST)
+    random_id = randrange(len(test_labels))
+    test_sequence, test_label = test_data[random_id], test_labels[random_id]
+
+    model_path_front = 'results/model_jtm_en_5_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_100_stlr_30_gammastlr_0.1_front.pth'
+    model_path_top = 'results/model_jtm_en_5_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_100_stlr_30_gammastlr_0.1_top.pth'
+    model_path_side = 'results/model_jtm_en_5_bs_32_lr_0.0001_op_SGD_momentum_0.9_wd_0_ar_100_stlr_30_gammastlr_0.1_side.pth'
+
+    model_path_front = load_model(model_path_front, len(berkeley_mhad_classes))
+    model_path_top = load_model(model_path_top, len(berkeley_mhad_classes))
+    model_path_side = load_model(model_path_side, len(berkeley_mhad_classes))
+
+    predicted = fit(berkeley_mhad_classes, test_sequence, model_path_front, model_path_top, model_path_side, video_pose_3d_kpts,
+                    berkeley_frame_width, berkeley_frame_height)
+
+    print('CORRECT: {}'.format(berkeley_mhad_classes[test_label]))
+    print('PREDICTED: {}'.format(predicted))
+
+
+if __name__ == '__main__':
+    main()
+```
+
+### 7. Additional info
 
 #### Example analysed_kpts_description object
 ```
@@ -217,7 +323,7 @@ if __name__ == '__main__':
 }
 ```
 
-### 6. Article
+### 8. Article
 
 ```
 @inproceedings{wang2016action,

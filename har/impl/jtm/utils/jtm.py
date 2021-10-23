@@ -7,12 +7,11 @@ from PIL import Image
 from scipy.spatial import distance
 
 
-def jtm(positions_w, positions_h, image_width, image_height, analysed_kpts_left, analysed_kpts_right, L=1, s_min=0, s_max=1,
+def jtm(positions_w, positions_h, image_width, image_height, analysed_kpts_left, L=1, s_min=0, s_max=1,
         b_min=0, b_max=1):
     img = np.zeros((image_height, image_width, 3))
     frames_count = len(positions_w)
     kpts_count = len(positions_w[0])
-    all_analysed_kpts = analysed_kpts_left + analysed_kpts_right
     hue = np.zeros([frames_count])
     v = np.zeros([frames_count, kpts_count])
     pos_tmp = np.stack([positions_w, positions_h], axis=2)

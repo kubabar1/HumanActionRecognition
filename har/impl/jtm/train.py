@@ -9,7 +9,7 @@ import torchvision.models as models
 import torchvision.transforms as transforms
 
 from .utils.JTMDataset import JTMDataset
-from ...utils.dataset_util import SetType
+from ...utils.dataset_util import SetType, normalise_skeleton_3d_batch
 from ...utils.model_name_generator import ModelNameGenerator
 from ...utils.training_utils import save_model_common, save_diagram_common, Optimizer, save_loss_common, time_since
 
@@ -26,7 +26,7 @@ def train(classes, training_data, training_labels, validation_data, validation_l
           step_size_lr=30, print_every=5, val_every=5, weight_decay=0, momentum=0.9, action_repetitions=100, results_path='results',
           model_name_suffix='', optimizer_type=Optimizer.SGD, neural_network_model=NeuralNetworkModel.ALEXNET,
           save_loss=True, save_diagram=True, save_model=True, save_model_for_inference=False, use_cache=False, show_diagram=True,
-          print_results=True, remove_cache=False, add_timestamp=True):
+          print_results=True, remove_cache=False, add_timestamp=True, use_normalization=True):
     method_name = 'jtm'
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -35,6 +35,12 @@ def train(classes, training_data, training_labels, validation_data, validation_l
         transforms.CenterCrop(224),
         transforms.ToTensor()
     ])
+
+    if use_normalization:
+        training_data = normalise_skeleton_3d_batch(training_data, analysed_kpts_description['left_hip'],
+                                                    analysed_kpts_description['right_hip'])
+        validation_data = normalise_skeleton_3d_batch(validation_data, analysed_kpts_description['left_hip'],
+                                                      analysed_kpts_description['right_hip'])
 
     model_front, model_top, model_side = get_neural_network_models(neural_network_model, classes, device)
 
@@ -221,6 +227,7 @@ def train(classes, training_data, training_labels, validation_data, validation_l
         .add_step_size_lr(step_size_lr) \
         .add_gamma_step_lr(gamma_step_lr) \
         .add_neural_network_model(neural_network_model.name) \
+        .add_is_normalization_used(use_normalization) \
         .generate()
 
     if save_model:

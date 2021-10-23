@@ -66,7 +66,7 @@ def generate_jtm_images_dataset(data, labels, image_width, image_height, action_
     data_arr_cache_path = os.path.join(dataset_cache_dir, 'data_arr_cache')
     labels_arr_cache_path = os.path.join(dataset_cache_dir, 'labels_arr_cache')
 
-    if remove_cache:
+    if remove_cache and os.path.exists(dataset_cache_dir):
         shutil.rmtree(dataset_cache_dir)
 
     if os.path.exists(data_arr_cache_path + '.npy') and os.path.exists(labels_arr_cache_path + '.npy'):
@@ -135,11 +135,8 @@ def generate_sample_images(data, analysed_kpts_description, image_width, image_h
     pos_y = (pos[:, all_analysed_kpts, 1] + 1) * image_height / 2
     pos_z = (pos[:, all_analysed_kpts, 2] + 1) * image_height / 2
 
-    smpl_img_front = jtm_res_to_pil_img(
-        jtm(pos_x, pos_y, image_width, image_height, analysed_kpts_left, analysed_kpts_right))
-    smpl_img_top = jtm_res_to_pil_img(
-        jtm(pos_x, pos_z, image_width, image_height, analysed_kpts_left, analysed_kpts_right))
-    smpl_img_side = jtm_res_to_pil_img(
-        jtm(pos_z, pos_y, image_width, image_height, analysed_kpts_left, analysed_kpts_right))
+    smpl_img_front = jtm_res_to_pil_img(jtm(pos_x, pos_y, image_width, image_height, analysed_kpts_left))
+    smpl_img_top = jtm_res_to_pil_img(jtm(pos_x, pos_z, image_width, image_height, analysed_kpts_left))
+    smpl_img_side = jtm_res_to_pil_img(jtm(pos_z, pos_y, image_width, image_height, analysed_kpts_left))
 
     return smpl_img_front, smpl_img_top, smpl_img_side
