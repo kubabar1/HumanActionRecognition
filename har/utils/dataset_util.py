@@ -329,19 +329,19 @@ def get_berkeley_dataset(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), set
     return data_list, label_list
 
 
-# def get_berkeley_custom_dataset(dataset_path):
-#     data_file_name = '3d_coordinates.npy'
-#     data_paths = []
-#     for root, dirs, files in os.walk(dataset_path):
-#         if not dirs:
-#             data_path = os.path.join(root, data_file_name)
-#             data_paths.append(data_path)
-#
-#     data_paths = sorted(data_paths)
-#     data_list = [np.load(i)[:, :, :] / 1.5 for i in data_paths]
-#     label_list = [int(i.split(os.path.sep)[-3][1:]) - 1 for i in data_paths]
-#
-#     return data_list, label_list
+def get_berkeley_custom_dataset(dataset_path):
+    data_file_name = '3d_coordinates.npy'
+    data_paths = []
+    for root, dirs, files in os.walk(dataset_path):
+        if not dirs:
+            data_path = os.path.join(root, data_file_name)
+            data_paths.append(data_path)
+
+    data_paths = sorted(data_paths)
+    data_list = [np.load(i)[:, :, :] for i in data_paths]
+    label_list = [int(i.split(os.path.sep)[-3][1:]) - 1 for i in data_paths]
+
+    return data_list, label_list
 
 
 def get_ntu_rgbd_dataset(dataset_path, train_test_val_ratio=(0.7, 0.2, 0.1), set_type=SetType.TRAINING,

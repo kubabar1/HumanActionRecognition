@@ -75,6 +75,7 @@ class HierarchicalRNNDataset(Dataset):
                     left_knees.append(body_el['left_knee'])
                     right_ankles.append(body_el['right_ankle'])
                     left_ankles.append(body_el['left_ankle'])
+                    labels_arr.append(label_el)
                     if len(left_ankles) >= self.batch_size:
                         break
             elif self.input_type == DatasetInputType.SPLIT:
@@ -91,10 +92,10 @@ class HierarchicalRNNDataset(Dataset):
                 left_knees.append(body_el['left_knee'])
                 right_ankles.append(body_el['right_ankle'])
                 left_ankles.append(body_el['left_ankle'])
+                labels_arr.append(label_el)
             else:
                 raise ValueError('Invalid or unimplemented input type')
 
-            labels_arr.append(label_el)
             if len(labels_arr) >= self.batch_size:
                 break
             it += 1

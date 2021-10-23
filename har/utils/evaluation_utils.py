@@ -13,8 +13,7 @@ class TextHandler(HandlerBase):
         return [tx]
 
 
-def draw_confusion_matrix(correct_arr, predicted_arr, classes, save_fig=True, result_path='results', font_size=12,
-                          show_diagram=True):
+def draw_confusion_matrix(correct_arr, predicted_arr, classes, save_fig=True, result_path='results', font_size=11, show_diagram=True):
     cm = confusion_matrix(correct_arr, predicted_arr, labels=classes)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
 

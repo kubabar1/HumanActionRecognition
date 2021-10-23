@@ -51,9 +51,9 @@ def train(classes, training_data, training_labels, validation_data, validation_l
                                                       analysed_kpts_description['right_hip'])
 
     train_data_loader = HierarchicalRNNDataset(training_data, training_labels, batch_size, analysed_kpts_description,
-                                               add_random_rotation_y=add_random_rotation_y, steps=steps, split=split)
+                                               add_random_rotation_y=add_random_rotation_y, steps=steps, split=split, input_type=input_type)
     validation_data_loader = HierarchicalRNNDataset(validation_data, validation_labels, batch_size, analysed_kpts_description,
-                                                    steps=steps, split=split)
+                                                    steps=steps, split=split, input_type=input_type)
 
     for epoch in range(epoch_nb):
         data, train_y = next(iter(train_data_loader))
