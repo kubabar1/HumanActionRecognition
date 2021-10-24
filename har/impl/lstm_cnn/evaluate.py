@@ -4,7 +4,8 @@ import torchvision.transforms as transforms
 from ..jtm.evaluate import ModelType
 from ..jtm.utils.JTMDataset import JTMDataset, generate_sample_images
 from ..lstm_simple.utils.LSTMSimpleDataset import LSTMSimpleDataset
-from ...utils.dataset_util import SetType, DatasetInputType, GeometricFeature, normalise_skeleton_3d_batch, normalise_skeleton_3d
+from ...utils.dataset_util import SetType, DatasetInputType, GeometricFeature, normalise_skeleton_3d_batch, normalise_skeleton_3d, \
+    get_data_for_geometric_type
 from ...utils.evaluation_utils import draw_confusion_matrix
 
 transform = transforms.Compose([
@@ -73,3 +74,36 @@ def evaluate_tests(classes, test_data, test_labels, jtm_model_front, jtm_model_t
     draw_confusion_matrix(correct_arr, predicted_arr, classes, result_path=result_path, show_diagram=show_diagram)
 
     return test_acc / len(test_x_jtm)
+
+
+def fit(classes, data, jtm_model_front, jtm_model_top, jtm_model_side, lstm_simple_model_rp, lstm_simple_model_jjd, lstm_simple_model_jld,
+        analysed_kpts_description, image_width, image_height, use_normalization=True):
+    if use_normalization:
+        data = normalise_skeleton_3d(data, analysed_kpts_description['left_hip'], analysed_kpts_description['right_hip'])
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+    smpl_images = generate_sample_images(data, analysed_kpts_description, image_width, image_height)
+
+    smpl_img_front = smpl_images[ModelType.FRONT.value]
+    smpl_img_top = smpl_images[ModelType.TOP.value]
+    smpl_img_side = smpl_images[ModelType.SIDE.value]
+
+    test_img_tensor_front = torch.unsqueeze(transform(smpl_img_front), 0).to(device)
+    test_img_tensor_top = torch.unsqueeze(transform(smpl_img_top), 0).to(device)
+    test_img_tensor_side = torch.unsqueeze(transform(smpl_img_side), 0).to(device)
+
+    test_output_front = torch.softmax(jtm_model_front(test_img_tensor_front), 1)
+    test_output_top = torch.softmax(jtm_model_top(test_img_tensor_top), 1)
+    test_output_side = torch.softmax(jtm_model_side(test_img_tensor_side), 1)
+
+    rp = get_data_for_geometric_type(data, analysed_kpts_description, GeometricFeature.RELATIVE_POSITION)
+    jjd = get_data_for_geometric_type(data, analysed_kpts_description, GeometricFeature.JOINT_JOINT_DISTANCE)
+    jld = get_data_for_geometric_type(data, analysed_kpts_description, GeometricFeature.JOINT_LINE_DISTANCE)
+
+    rp_output = torch.exp(lstm_simple_model_rp(torch.unsqueeze(torch.tensor(rp, dtype=torch.float, device=device), 0)))
+    jjd_output = torch.exp(lstm_simple_model_jjd(torch.unsqueeze(torch.tensor(jjd, dtype=torch.float, device=device), 0)))
+    jld_output = torch.exp(lstm_simple_model_jld(torch.unsqueeze(torch.tensor(jld, dtype=torch.float, device=device), 0)))
+
+    test_output = test_output_front * test_output_top * test_output_side * rp_output * jjd_output * jld_output
+
+    return classes[torch.argmax(test_output).item()]
