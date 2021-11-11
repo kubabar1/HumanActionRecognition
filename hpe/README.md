@@ -6,7 +6,7 @@ Script **run_hpe.py** allows to generate keypoints for video sequences and seque
 - *mmpose-path* - absolute path to MMPose project (if not set, by default is used this one, set in config.ini from main project directory)
 - *hpe-method* - used HPE algorithm (by default *res152_coco_384x288*)
 - *output-directory* - directory where results (keypoints coordinates) will be generated (default is *./results*)
-- *dataset-path* - absollute path to input dataset (**required**)
+- *dataset-path* - absolute path to input dataset (**required**)
 - *video* - flag that defines if given input data are video sequences or multiple images (by default it is assumed that input is array of immages)
 - *filter* - filter input files of dataset
 - *generate-video*  - flag that defines if MMPose should generate output videos with marked estimated keypoints on them

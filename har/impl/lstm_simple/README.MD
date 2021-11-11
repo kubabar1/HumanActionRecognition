@@ -130,6 +130,7 @@ if __name__ == '__main__':
 | **show_diagram** | True | boolean defining if show diagram after evaluation |
 | **results_path** | 'results' | path, where generated results should be placed |
 | **use_normalization** | True | boolean defining if normalization should be performed on input data |
+| **add_random_rotation_y** | False | is random rotation should be performed on training data during training |
 
 #### Example - evaluation
 ```

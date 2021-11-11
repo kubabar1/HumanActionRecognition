@@ -6,7 +6,7 @@ import torch
 from .model.PLSTMModel import PLSTMModel
 from .utils.PLSTMDataset import PLSTMDataset
 from ...utils.dataset_util import DatasetInputType, get_all_body_parts_splits, get_all_body_parts_steps, normalise_skeleton_3d_batch, \
-    normalise_skeleton_3d
+    normalise_skeleton_3d, random_rotate_y
 from ...utils.evaluation_utils import draw_confusion_matrix
 
 
@@ -21,9 +21,11 @@ def load_model(model_path, classes_count, hidden_size=128, is_3d=True):
 
 
 def evaluate_tests(classes, test_data, test_labels, p_lstm_model, analysed_kpts_description, input_type=DatasetInputType.SPLIT, steps=32,
-                   split=20, show_diagram=True, results_path='results', use_normalization=True):
+                   split=20, show_diagram=True, results_path='results', use_normalization=True, add_random_rotation_y=False):
     if use_normalization:
         test_data = normalise_skeleton_3d_batch(test_data, analysed_kpts_description['left_hip'], analysed_kpts_description['right_hip'])
+    if add_random_rotation_y:
+        test_data = [random_rotate_y(i) for i in test_data]
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     test_data_loader = PLSTMDataset(test_data, test_labels, len(test_data), analysed_kpts_description, steps=steps, split=split,
