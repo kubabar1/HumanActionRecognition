@@ -45,7 +45,7 @@ def draw_points_single_pose(true_video_path, predicted_kpts, min_acc=0, pause_l=
                                 (0, 255, 0),
                                 lineType)
                     cv2.putText(frame,
-                                'Mean accuracy: ' + str(np.sum([i[2] for i in pose_kpts]) / 17),
+                                'Mean accuracy: ' + str(round(np.sum([i[2] for i in pose_kpts]) / 17, 3)),
                                 (10, 70),
                                 font,
                                 fontScale,
@@ -195,8 +195,9 @@ def draw_3d_pose(data_3d, kpts_description, pause=0.1):
     left_ankle = kpts_description['left_ankle']
 
     data_3d = normalise_skeleton(data_3d, left_hip, right_hip)
+    # print(len(data_3d[0]))
     # print(data_3d.shape)
-    # data_3d = np.array([[[k[0], k[1], k[2]]  for k in f] for f in data_3d])
+    data_3d = np.array([[[-k[0], -k[1], k[2]] for k in f] for f in data_3d])
 
     line0, = ax.plot(np.array([data_3d[0][right_elbow][0], data_3d[0][right_wrist][0]]),
                      np.array([data_3d[0][right_elbow][1], data_3d[0][right_wrist][1]]),

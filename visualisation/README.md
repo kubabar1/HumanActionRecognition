@@ -4,22 +4,30 @@
 Draw chart of accuracy or loss values for train an validation basis on *.npy files generated during Human Action Recognition NN training.
 
 ##### Parameters:
-* **train-path** - list of absolute paths to *.npy files with train results
-* **validation-path** - list of absolute paths to *.npy files with test results
+* **train-path*** - list of absolute paths to *.npy files with train results
+* **validation-path*** - list of absolute paths to *.npy files with test results
+* **epoch-count*** - count of epochs used during training
+* **legends** - name for legends (array)
+* **results-path** - path where generated draw will be saved
+* **title** - chart title
+* **x-label** - label of x axis
+* **y-label** - label of y axis
 * **step** - step size
-* **legends** - array of names
 * **hide-train** - hide train plots
-* **hide-test** - hide test plots
+* **hide-validation** - hide test plots
+* **save-results** - save result chart
+* **hide-results** - do not display results
 
 ##### Example:
 ```
 python draw_chart.py \
     --train-path '../results/lstm_simple_ep_10000_b_128_h_128_lr_1e-05_RMSPROP_train_acc.npy' \
     --validation-path '../results/lstm_simple_ep_10000_b_128_h_128_lr_1e-05_RMSPROP_val_acc.npy' \
+    --legend accuracy_batch_128 \
     --train-path '../results/lstm_simple_ep_10000_b_64_h_128_lr_1e-05_RMSPROP_train_acc.npy' \
     --validation-path '../results/lstm_simple_ep_10000_b_64_h_128_lr_1e-05_RMSPROP_val_acc.npy' \
-    --legend accuracy_batch_128 \
     --legend accuracy_batch_64 \
+    --epoch-count 10000 \
     --step 50 \
     --hide-test
 ```
