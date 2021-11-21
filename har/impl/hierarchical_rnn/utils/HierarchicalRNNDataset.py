@@ -8,7 +8,7 @@ from ....utils.dataset_util import DatasetInputType, random_rotate_y, get_all_bo
 
 class HierarchicalRNNDataset(Dataset):
     def __init__(self, data, labels, batch_size, analysed_kpts_description, add_random_rotation_y=False, steps=32, split=20,
-                 input_type=DatasetInputType.SPLIT, is_test=False):
+                 input_type=DatasetInputType.SPLIT, is_test=False, use_part_of_sequence=False):
         self.data = data
         self.labels = labels
         self.batch_size = batch_size
@@ -19,6 +19,7 @@ class HierarchicalRNNDataset(Dataset):
         self.steps = steps
         self.split = split
         self.is_test = is_test
+        self.use_part_of_sequence = use_part_of_sequence
 
     def __len__(self):
         return len(self.data)
@@ -56,6 +57,11 @@ class HierarchicalRNNDataset(Dataset):
 
             if self.add_random_rotation_y:
                 data_el = random_rotate_y(data_el)
+
+            if self.use_part_of_sequence:
+                begin = randrange(data_el.shape[0] - self.steps - 1)
+                end = begin + self.steps
+                data_el = data_el[begin:end]
 
             if self.input_type == DatasetInputType.STEP:
                 parts = int(data_el.shape[0] / self.steps)

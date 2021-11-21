@@ -16,7 +16,7 @@ def train(classes, training_data, training_labels, validation_data, validation_l
           batch_size=128, hidden_size=128, learning_rate=0.0001, print_every=50, weight_decay=0, momentum=0.9, val_every=5, steps=32,
           split=20, input_type=DatasetInputType.SPLIT, optimizer_type=Optimizer.RMSPROP, results_path='results', model_name_suffix='',
           save_loss=True, save_diagram=True, save_model=True, save_model_for_inference=False, add_random_rotation_y=False, is_3d=True,
-          show_diagram=True, print_results=True, use_normalization=True, add_timestamp=True):
+          show_diagram=True, print_results=True, use_normalization=True, add_timestamp=True, use_part_of_sequence=False):
     method_name = 'hierarchical_rnn'
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -51,9 +51,11 @@ def train(classes, training_data, training_labels, validation_data, validation_l
                                                       analysed_kpts_description['right_hip'])
 
     train_data_loader = HierarchicalRNNDataset(training_data, training_labels, batch_size, analysed_kpts_description,
-                                               add_random_rotation_y=add_random_rotation_y, steps=steps, split=split, input_type=input_type)
+                                               add_random_rotation_y=add_random_rotation_y, steps=steps, split=split, input_type=input_type,
+                                               use_part_of_sequence=use_part_of_sequence)
     validation_data_loader = HierarchicalRNNDataset(validation_data, validation_labels, batch_size, analysed_kpts_description,
-                                                    steps=steps, split=split, input_type=input_type)
+                                                    steps=steps, split=split, input_type=input_type,
+                                                    add_random_rotation_y=add_random_rotation_y, use_part_of_sequence=use_part_of_sequence)
 
     for epoch in range(epoch_nb):
         data, train_y = next(iter(train_data_loader))
@@ -125,6 +127,7 @@ def train(classes, training_data, training_labels, validation_data, validation_l
         .add_random_rotation_y(add_random_rotation_y) \
         .add_is_3d(is_3d) \
         .add_is_normalization_used(use_normalization) \
+        .add_use_part_of_sequence(use_part_of_sequence) \
         .generate()
 
     if save_model:

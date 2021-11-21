@@ -99,6 +99,11 @@ class ModelNameGenerator:
             self.params.append(('', 'normalized'))
         return self
 
+    def add_use_part_of_sequence(self, is_part_of_sequence_used):
+        if is_part_of_sequence_used:
+            self.params.append(('', 'partsequence'))
+        return self
+
     def add_is_tau(self, is_tau):
         if is_tau:
             self.params.append(('', 'tau'))
