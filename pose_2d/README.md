@@ -2,6 +2,43 @@
 This module contains scripts to estimate human keypoints coordinates using MMPose. 
 Script **run_hpe.py** allows to generate keypoints for video sequences and sequence of images. 
 
+## API
+
+**load_models** - load MMDetection and MMPose models (return MMDetection and MMPose models)
+
+| Parameter name  | Default value  | Description |
+| :--------- |:--------------: | :---- |
+| **mmpose_path*** | - | path to MMPose |
+| **hpe_method** | 'res152_coco_384x288' | HPE method (for human pose estimation) |
+| **device** | 'cuda:0' if is available, else 'cpu' | used device |
+| **det_checkpoint** | 'http://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50_fpn_1x_coco/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth' | checkpoint for detection model |
+| **det_config** | os.path.join(mmpose_path, 'demo/mmdetection_cfg/faster_rcnn_r50_fpn_1x_coco.py') | config of detection model |
+| **pose_checkpoint** | 'https://download.openmmlab.com/mmpose/top_down/resnet/res152_coco_384x288_dark-d3b8ebd7_20210203.pth' | checkpoint for hpe model |
+| **pose_config** | os.path.join(mmpose_path, 'demo/mmdetection_cfg/faster_rcnn_r50_fpn_1x_coco.py') | config of hpe model |
+
+**process_2d_to_3d** - process 2D keypoints to 3D coordinates
+
+| Parameter name  | Default value  | Description |
+| :--------- |:--------------: | :---- |
+| **video_pose_path*** | - | path to VideoPose3D |
+| **keypoints*** | - | input keypoints used to generate 3D coordinates - shape (frames_count, joints_count, 2) |
+| **model_pos*** | - | VideoPose3D model pretrained loaded using load_model function |
+| **joints_left*** | - | array of left joints indexes (corresponding to input key points) |
+| **joints_right*** | - | array of right joints indexes (corresponding to input key points) |
+| **frame_width*** | - | number of input features for each joint (typically 2 for 2D input) |
+| **frame_height*** | - | width of input frame |
+| **frame_height*** | - | height of input frame |
+
+Example:
+
+```
+
+```
+
+    
+## Script
+
+
 ### Options:
 - *mmpose-path* - absolute path to MMPose project (if not set, by default is used this one, set in config.ini from main project directory)
 - *hpe-method* - used HPE algorithm (by default *res152_coco_384x288*)

@@ -2,6 +2,7 @@ import os
 import time
 
 import cv2
+import torch
 from PIL import Image
 from mmdet.apis import init_detector, inference_detector
 from mmpose.apis import (init_pose_model, inference_top_down_pose_model, inference_bottom_up_pose_model, vis_pose_result)
@@ -11,8 +12,8 @@ from .pose_estimation_utils import create_output_directories, process_mmdet_resu
 
 
 def estimate_pose(det_config, det_checkpoint, pose_config, pose_checkpoint, input_path, output_path, is_video=True,
-                  device='cuda:0', return_heatmap=False, save_keypoints=True, save_bounding_boxes=True, save_out_video=True,
-                  kpt_thr=0.3, bbox_thr=0.3, model_type='top_down', output_layer_names=None):
+                  device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu"), return_heatmap=False, save_keypoints=True,
+                  save_bounding_boxes=True, save_out_video=True, kpt_thr=0.3, bbox_thr=0.3, model_type='top_down', output_layer_names=None):
     video_writer = None
     cap = None
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
