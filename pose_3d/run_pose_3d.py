@@ -11,6 +11,11 @@ def main():
     parser.add_argument('--input-directory', help='Path to input data', required=True)
     parser.add_argument('--frame-width', help='Width of frame', required=True)
     parser.add_argument('--frame-height', help='Height of frame', required=True)
+    parser.add_argument('--joints-count', help='Count of joints given as input', required=False, type=int, default=17)
+    parser.add_argument('--joints-left', help='Joints from left part of silhouette', required=False, type=int, nargs='+',
+                        default=[1, 3, 5, 7, 9, 11, 13, 15])
+    parser.add_argument('--joints-right', help='Joints from right part of silhouette', required=False, type=int, nargs='+',
+                        default=[2, 4, 6, 8, 10, 12, 14, 16])
     parser.add_argument('--generate-2D', help='Generate 2D coordinates too', default=False, action='store_true')
 
     args = parser.parse_args()
@@ -20,6 +25,9 @@ def main():
     generate_2D = args.generate_2D
     frame_width = int(args.frame_width)
     frame_height = int(args.frame_height)
+    joints_count = int(args.joints_count)
+    joints_left = args.joints_left
+    joints_right = args.joints_right
 
     if video_pose_3d_path is None:
         config = ConfigParser()
@@ -31,7 +39,8 @@ def main():
         process_to_2d_single_person(input_directory, output_directory)
         print('2D data generated')
     print('generating 3D data ...')
-    process_to_3d_single_person(input_directory, output_directory, frame_width, frame_height, video_pose_3d_path)
+    process_to_3d_single_person(video_pose_3d_path, input_directory, output_directory, frame_width, frame_height, joints_count, joints_left,
+                                joints_right)
     print('3D data generated')
 
 
