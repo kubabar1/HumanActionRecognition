@@ -6,7 +6,7 @@ import shutil
 import numpy as np
 import tqdm
 
-from har_pose_3d.run_video_pose_3d import process_2d_to_3d, load_model
+from har_pose_3d.pose_estimation_3d import process_2d_to_3d, load_model
 from .mmpose_results_utils import get_keypoints_for_all_frames
 
 
