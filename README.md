@@ -55,7 +55,9 @@ To use **pose_3d** module **VideoPose3D** needs to be configured. In this case o
 ```
 
 To use remaining modules libraries from requirements needs to be installed:
-
+```
+pip install -r requirements.txt
+```
 
 At the end **har_skeleton** project needs to be installed. Below command needs to be executed in project root directory containing **setup.py** file:
 ```
