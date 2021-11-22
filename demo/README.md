@@ -12,6 +12,30 @@
 - *joints-left* - Joints from left part of silhouette (by default [1, 3, 5, 7, 9, 11, 13, 15])
 - *joints-right* - Joints from right part of silhouette (by default [2, 4, 6, 8, 10, 12, 14, 16])
 
+Example structure of input:
+```
+dataset/
+├─ cluster1/
+│  ├─ cam1/
+│  │  ├─ action1/
+│  │  │  ├─ video_001.avi
+│  │  │  ├─ video_002.avi
+│  │  │  ├─ video_003.avi
+│  │  ├─ action2/
+│  │  │  ├─ video_001.avi
+│  │  │  ├─ video_002.avi
+│  │  │  ├─ video_003.avi
+│  ├─ cam2/
+│  │  ├─ action1/
+│  │  │  ├─ video_001.avi
+│  │  │  ├─ video_002.avi
+│  │  │  ├─ video_003.avi
+│  │  ├─ action2/
+│  │  │  ├─ video_001.avi
+│  │  │  ├─ video_002.avi
+│  │  │  ├─ video_003.avi
+```
+
 #### Example
 
 ```
