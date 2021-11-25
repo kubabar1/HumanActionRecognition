@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 import tqdm
 
-from pose_2d.hpe_2d_api import load_models, estimate_pose
+from pose_2d.hpe_2d_api import load_models, estimate_pose, get_best_pose_for_frame
 from pose_3d.hpe_3d_api import process_2d_to_3d, load_model
 
 
