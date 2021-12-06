@@ -13,6 +13,8 @@ import har.impl.hierarchical_rnn.evaluate
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--video-path', help='Absolute path to analysed video', required=True)
+    parser.add_argument('--output-path', help='Generated file path', required=False, default='output.avi')
     parser.add_argument('--mmpose-path', help='Absolute path to VideoPose3D', required=False)
     parser.add_argument('--video-pose-3d-path', help='Absolute path to MMPose', required=False)
     parser.add_argument('--joints-count', help='Count of joints given as input', required=False, type=int, default=17)
@@ -29,7 +31,14 @@ def main():
     joints_left = args.joints_left
     joints_right = args.joints_right
 
-    cap = cv2.VideoCapture(0)
+    video_path = args.video_path
+    output_path = args.output_path
+
+    cap = cv2.VideoCapture(video_path)
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    size = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+    out = cv2.VideoWriter(output_path, fourcc, fps, size)
 
     if mmpose_path is None:
         config = ConfigParser()
@@ -81,12 +90,11 @@ def main():
             kpts_3d = process_2d_to_3d(video_pose_3d_path, np.array([kpts]), video_pose_model, joints_left, joints_right, frame_width,
                                        frame_height)
 
-            print(kpts_3d.shape)
-            
             if not frame_id % separator and frame_id > 0:
                 data = np.concatenate(np.array(data))
                 predicted, accuracy = har.impl.hierarchical_rnn.evaluate.fit(exercises_v2_classes, data, har_model, video_pose_3d_kpts,
-                                                                             input_type=DatasetInputType.SPLIT, split=split, steps=separator)
+                                                                             input_type=DatasetInputType.SPLIT, split=split,
+                                                                             steps=separator)
                 data = []
             data.append(kpts_3d)
         frame_id += 1
@@ -120,10 +128,12 @@ def main():
                     2)
 
         cv2.imshow('frame', frame)
+        out.write(frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     cap.release()
+    out.release()
     cv2.destroyAllWindows()
 
 
