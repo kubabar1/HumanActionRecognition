@@ -5,16 +5,18 @@ from configparser import ConfigParser
 import cv2
 import numpy as np
 
+from demo.prepare_dataset import get_best_pose_for_frame, get_best_bbox_for_frame
 from har.utils.dataset_util import exercises_v2_classes, video_pose_3d_kpts, DatasetInputType
-from pose_2d.hpe_2d_api import load_models, estimate_pose, get_best_pose_for_frame, get_best_bbox_for_frame
+from pose_2d.hpe_2d_api import load_models, estimate_pose
 from pose_3d.hpe_3d_api import load_model, process_2d_to_3d
 import har.impl.hierarchical_rnn.evaluate
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--mmpose-path', help='Absolute path to VideoPose3D', required=False)
-    parser.add_argument('--video-pose-3d-path', help='Absolute path to MMPose', required=False)
+    parser.add_argument('--har-model-path', help='Path to trained model', required=True)
+    parser.add_argument('--mmpose-path', help='Absolute path to VideoPose3D', required=True)
+    parser.add_argument('--video-pose-3d-path', help='Absolute path to MMPose', required=True)
     parser.add_argument('--joints-count', help='Count of joints given as input', required=False, type=int, default=17)
     parser.add_argument('--joints-left', help='Joints from left part of silhouette', required=False, type=int, nargs='+',
                         default=[1, 3, 5, 7, 9, 11, 13, 15])
@@ -24,6 +26,7 @@ def main():
     args = parser.parse_args()
     mmpose_path = args.mmpose_path
     video_pose_3d_path = args.video_pose_3d_path
+    har_model_path = args.har_model_path
 
     joints_count = int(args.joints_count)
     joints_left = args.joints_left
@@ -44,7 +47,6 @@ def main():
     det_model, pose_model = load_models(mmpose_path, hpe_method='mobilenetv2_coco_384x288')
     video_pose_model = load_model(video_pose_3d_path, joints_count)
 
-    har_model_path = '/home/kuba/workspace/human_action_recognition/research/exercises_v2/SPLIT_PART_SEQUENCE/model_hierarchical_rnn_en_10000_bs_128_lr_0.0001_op_RMSPROP_hs_128_it_SPLIT_momentum_0.9_wd_0_split_20_steps_60_rotations_3D_normalized_1636840165681.pth'
     har_model = har.impl.hierarchical_rnn.evaluate.load_model(har_model_path, len(exercises_v2_classes))
 
     frame_width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
