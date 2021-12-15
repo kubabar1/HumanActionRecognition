@@ -3,6 +3,9 @@
 1. [Prepare dataset](#1-prepare-dataset)
 2. [Analyse video](#2-analyse-video)
 3. [Real time analysis](#3-real-time-analysis)
+4. [Run evaluation](#4-run-evaluation)
+5. [Run fit](#5-run-fit)
+6. [Run training](#3-run-training)
 
 
 ### 1. Prepare dataset
